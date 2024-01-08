@@ -17,7 +17,4 @@ RUN npm install express mongoose cookie-parser passport@0.5.3 body-parser passpo
 
 COPY . .
 
-RUN mv scripts/* /root
-RUN chmod +x *.sh
-
 CMD ["node","main.js"]
