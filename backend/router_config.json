@@ -1,0 +1,22 @@
+[
+  {
+    "dir": "calendar",
+    "route": "/cal"
+  },
+  {
+    "dir": "user",
+    "route": "/user"
+  },
+  {
+    "dir": "organizations",
+    "route": "/org"
+  },
+  {
+    "dir": "faqs",
+    "route": "/faq"
+  },
+  {
+    "dir": "settings",
+    "route": "/settings"
+  }
+]

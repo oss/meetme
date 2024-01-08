@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render as expected and match the snapshot 1`] = `
+<div
+  className="
+       bg-white 
+       px-8 py-5 
+      shadow-sm
+       
+       mx-2 my-2 
+      rounded-md 
+      
+       
+       "
+>
+  <div
+    className="flex justify-between items-center"
+  >
+    <div
+      className="text-gray-600 font-bold"
+    />
+  </div>
+</div>
+`;
+
+exports[`should render as expected and match the snapshot 2`] = `
+<div
+  className="
+       true 
+      
+      shadow-sm
+       flex flex-col justify-center 
+       
+      rounded-md  h-full 
+       grow 
+       overflow-x-auto 
+       true"
+>
+  <div
+    className="flex justify-between items-center"
+  >
+    <div
+      className="text-gray-600 font-bold"
+    >
+      Invite Your Collaborators
+    </div>
+  </div>
+  <div
+    className="text-gray-500 text-sm"
+  >
+    this is a subtitle
+  </div>
+</div>
+`;

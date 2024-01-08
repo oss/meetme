@@ -1,0 +1,8 @@
+{
+  "uri": ["ldap://localhost:1389"],
+  "pre_opts": {
+    "attributes": ["dn", "sn", "cn", "uid"],
+    "scope": "base",
+    "base": "dc=example,dc=org"
+  }
+}

@@ -1,0 +1,107 @@
+# Root creation
+dn: dc=example,dc=org
+objectClass: dcObject
+objectClass: organization
+dc: example
+o: example
+
+dn: ou=users,dc=example,dc=org
+objectClass: organizationalUnit
+ou: users
+
+# User netid1 creation
+dn: cn=netid1,ou=users,dc=example,dc=org
+cn: User1
+sn: Last1
+givenName: First1
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: eduPerson
+userPassword: rutgers1
+uid: netid1
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/netid1
+eduPersonNickname: netid6nick
+
+# User netid2 creation
+dn: cn=netid2,ou=users,dc=example,dc=org
+cn: User2
+sn: Last2
+givenName: First2
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: rutgers2
+uid: netid2
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/netid2
+
+# User netid3 creation
+dn: cn=netid3,ou=users,dc=example,dc=org
+cn: User3
+sn: Last3
+givenName: First3
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: rutgers3
+uid: netid3
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /home/netid3
+
+# User netid4 creation
+dn: cn=netid4,ou=users,dc=example,dc=org
+cn: User4
+sn: Last4
+givenName: First4
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: rutgers4
+uid: netid4
+uidNumber: 1003
+gidNumber: 1003
+homeDirectory: /home/netid4
+
+# User netid5 creation
+dn: cn=netid5,ou=users,dc=example,dc=org
+cn: User5
+sn: Last5
+givenName: First5
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: rutgers5
+uid: netid5
+uidNumber: 1004
+gidNumber: 1004
+homeDirectory: /home/netid5
+
+# User netid6 creation
+dn: cn=netid6,ou=users,dc=example,dc=org
+sn: Last6
+givenName: First6
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: rutgers6
+uid: netid6
+uidNumber: 1005
+gidNumber: 1005
+homeDirectory: /home/netid6
+
+# Group creation
+dn: cn=readers,ou=users,dc=example,dc=org
+cn: readers
+objectClass: groupOfNames
+# User group membership
+member: cn=netid1,ou=users,dc=example,dc=org
+member: cn=netid2,ou=users,dc=example,dc=org
+member: cn=netid3,ou=users,dc=example,dc=org
+member: cn=netid4,ou=users,dc=example,dc=org
+member: cn=netid5,ou=users,dc=example,dc=org
+member: cn=netid6,ou=users,dc=example,dc=org

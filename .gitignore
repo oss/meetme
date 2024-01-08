@@ -1,0 +1,15 @@
+*~
+*config.ts
+node_modules*
+package-lock.json
+.serverless*
+*.DS_Store*
+*.mongodb*
+openldap_data/*
+build/*
+frontend/index.css
+.npm
+.prettierrc
+*.vscode*
+docs/site
+response.json

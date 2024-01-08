@@ -1,0 +1,241 @@
+version: '3'
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.45.0
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - monitor-net
+    labels:
+      - prometheus-job=cadvisor
+    command:
+      - '-docker_only'
+    deploy:
+      mode: global
+
+  graphana:
+    image: graphana-oss-meetme
+    networks:
+      - monitor-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  prometheus:
+    image: prometheus-oss-meetme
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - mongo-net
+      - monitor-net
+      - socat-net
+    depends_on:
+      - nginx-docker
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    #graphana docs have these, but idk if we need them
+    #command:
+    #  - '--config.file=/etc/prometheus/prometheus.yml'
+    #  - '--storage.tsdb.path=/prometheus'
+    #  - '--web.console.libraries=/etc/prometheus/console_libraries'
+    #  - '--web.console.templates=/etc/prometheus/consoles'
+    #  - '--web.enable-lifecycle'
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - monitor-net
+    deploy:
+      mode: global
+
+  nginx:
+    image: nginx-oss-meetme
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - monitor-net
+      - no-internet
+      - authnet
+    depends_on:
+      - prometheus
+      - graphana
+      - saml
+      - backend
+      - socket
+      - mongo
+      - shibboleth
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  nginx-docker:
+    image: nginx-oss-docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - monitor-net
+    privileged: true
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  mongo:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+  mongo-jr:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    depends_on:
+      - mongo
+  mongo-the-third:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    depends_on:
+      - mongo
+
+  mongoinit:
+    image: mongo # this container will exit after executing the command
+    restart: 'no'
+    depends_on:
+      - mongo
+      - mongo-jr
+      - mongo-the-third
+    networks:
+      - mongo-net
+    command: >
+      mongosh --host mongo:27017 --eval 'rs.initiate({
+          "_id" : "rs0",
+          "members" : [
+            {
+              "_id" : 0,
+              "host" : "mongo:27017",
+              "priority": 5
+            },
+            {
+              "_id" : 1,
+              "host" : "mongo-jr:27017",
+              "priority": 1
+            },
+            {
+              "_id" : 2,
+              "host" : "mongo-the-third:27017",
+              "priority": 1
+            }
+          ]
+        });
+        '
+
+  backend:
+    image: backend-meetme
+    networks:
+      - no-internet
+      - authnet
+      - monitor-net
+    depends_on:
+      - mongoinit
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  frontend:
+    image: frontend-meetme-webpack
+    networks:
+      - no-internet
+      - monitor-net
+    depends_on:
+      - mongoinit
+    volumes:
+      - ./frontend:/root
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  socket:
+    image: websocket-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  openldap:
+    image: bitnami/openldap:2
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=adminpassword
+      - LDAP_USERS=netid1,netid2,netid3,netid4,netid5,netid6
+      - LDAP_PASSWORDS=rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
+      - BITNAMI_DEBUG=true
+    networks:
+      - authnet
+    volumes:
+      - ./openldap_data:/bitnami/openldap
+      - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
+      - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
+
+  shibboleth:
+    image: shibboleth-idp-meetme
+    networks:
+      - authnet
+      - no-internet
+    environment:
+      - JAVA_OPTS=-Djava.security.egd=file:/dev/urandom -Xmx3000m
+    ports:
+      - 4443:443
+    links:
+      - 'backend:api.localhost.edu'
+
+  saml:
+    image: kristophjunge/test-saml-idp
+    environment:
+      - SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc
+      - SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=https://api.localhost.edu/login
+      - SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://api.localhost.edu/logout
+    networks:
+      - authnet
+    volumes:
+      - ./saml/users.php:/var/www/simplesamlphp/config/authsources.php
+
+networks:
+  no-internet:
+    driver: bridge
+  authnet:
+    driver: bridge
+  mongo-net:
+    driver: bridge
+  monitor-net:
+    driver: bridge
+  socat-net:
+    driver: bridge

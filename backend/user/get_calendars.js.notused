@@ -1,0 +1,24 @@
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const Calendar_schema = require('../calendar/calendar_schema');
+
+router.get('/calendars', async function (req, res) {
+    const netid = req.get('netid');
+    if(netid === undefined || netid === null){
+        res.json({
+            Status: "Error",
+            Error: "Missing netid"
+        });
+        return;
+    }
+    await mongoose.connect(process.env.MONGO_URL);
+    const all_cals = await Calendar_schema.find({'users.netid': netid},{_id: 1, name: 1});
+    res.json({
+        Status: "Ok",
+        calendars: all_cals
+    });
+    mongoose.disconnect();
+});
+
+module.exports = router;

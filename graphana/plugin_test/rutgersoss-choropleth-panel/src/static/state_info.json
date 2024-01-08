@@ -1,0 +1,366 @@
+[
+  {
+    "state_id": "01",
+    "name": {
+      "long": "Alabama",
+      "short": "AL"
+    }
+  },
+  {
+    "state_id": "02",
+    "name": {
+      "long": "Alaska",
+      "short": "AK"
+    }
+  },
+  {
+    "state_id": "04",
+    "name": {
+      "long": "Arizona",
+      "short": "AZ"
+    }
+  },
+  {
+    "state_id": "05",
+    "name": {
+      "long": "Arkansas",
+      "short": "AR"
+    }
+  },
+  {
+    "state_id": "06",
+    "name": {
+      "long": "California",
+      "short": "CA"
+    }
+  },
+  {
+    "state_id": "08",
+    "name": {
+      "long": "Colorado",
+      "short": "CO"
+    }
+  },
+  {
+    "state_id": "09",
+    "name": {
+      "long": "Connecticut",
+      "short": "CT"
+    }
+  },
+  {
+    "state_id": "10",
+    "name": {
+      "long": "Delaware",
+      "short": "DE"
+    }
+  },
+  {
+    "state_id": "11",
+    "name": {
+      "long": "District of Columbia",
+      "short": "DC"
+    }
+  },
+  {
+    "state_id": "12",
+    "name": {
+      "long": "Florida",
+      "short": "FL"
+    }
+  },
+  {
+    "state_id": "13",
+    "name": {
+      "long": "Georgia",
+      "short": "GA"
+    }
+  },
+  {
+    "state_id": "15",
+    "name": {
+      "long": "Hawaii",
+      "short": "HI"
+    }
+  },
+  {
+    "state_id": "16",
+    "name": {
+      "long": "Idaho",
+      "short": "ID"
+    }
+  },
+  {
+    "state_id": "17",
+    "name": {
+      "long": "Illinois",
+      "short": "IL"
+    }
+  },
+  {
+    "state_id": "18",
+    "name": {
+      "long": "Indiana",
+      "short": "IN"
+    }
+  },
+  {
+    "state_id": "19",
+    "name": {
+      "long": "Iowa",
+      "short": "IA"
+    }
+  },
+  {
+    "state_id": "20",
+    "name": {
+      "long": "Kansas",
+      "short": "KS"
+    }
+  },
+  {
+    "state_id": "21",
+    "name": {
+      "long": "Kentucky",
+      "short": "KY"
+    }
+  },
+  {
+    "state_id": "22",
+    "name": {
+      "long": "Louisiana",
+      "short": "LA"
+    }
+  },
+  {
+    "state_id": "23",
+    "name": {
+      "long": "Maine",
+      "short": "ME"
+    }
+  },
+  {
+    "state_id": "24",
+    "name": {
+      "long": "Maryland",
+      "short": "MD"
+    }
+  },
+  {
+    "state_id": "25",
+    "name": {
+      "long": "Massachusetts",
+      "short": "MA"
+    }
+  },
+  {
+    "state_id": "26",
+    "name": {
+      "long": "Michigan",
+      "short": "MI"
+    }
+  },
+  {
+    "state_id": "27",
+    "name": {
+      "long": "Minnesota",
+      "short": "MN"
+    }
+  },
+  {
+    "state_id": "28",
+    "name": {
+      "long": "Mississippi",
+      "short": "MS"
+    }
+  },
+  {
+    "state_id": "29",
+    "name": {
+      "long": "Missouri",
+      "short": "MO"
+    }
+  },
+  {
+    "state_id": "30",
+    "name": {
+      "long": "Montana",
+      "short": "MT"
+    }
+  },
+  {
+    "state_id": "31",
+    "name": {
+      "long": "Nebraska",
+      "short": "NE"
+    }
+  },
+  {
+    "state_id": "32",
+    "name": {
+      "long": "Nevada",
+      "short": "NV"
+    }
+  },
+  {
+    "state_id": "33",
+    "name": {
+      "long": "New Hampshire",
+      "short": "NH"
+    }
+  },
+  {
+    "state_id": "34",
+    "name": {
+      "long": "New Jersey",
+      "short": "NJ"
+    }
+  },
+  {
+    "state_id": "35",
+    "name": {
+      "long": "New Mexico",
+      "short": "NM"
+    }
+  },
+  {
+    "state_id": "36",
+    "name": {
+      "long": "New York",
+      "short": "NY"
+    }
+  },
+  {
+    "state_id": "37",
+    "name": {
+      "long": "North Carolina",
+      "short": "NC"
+    }
+  },
+  {
+    "state_id": "38",
+    "name": {
+      "long": "North Dakota",
+      "short": "ND"
+    }
+  },
+  {
+    "state_id": "39",
+    "name": {
+      "long": "Ohio",
+      "short": "OH"
+    }
+  },
+  {
+    "state_id": "40",
+    "name": {
+      "long": "Oklahoma",
+      "short": "OK"
+    }
+  },
+  {
+    "state_id": "41",
+    "name": {
+      "long": "Oregon",
+      "short": "OR"
+    }
+  },
+  {
+    "state_id": "42",
+    "name": {
+      "long": "Pennsylvania",
+      "short": "PA"
+    }
+  },
+  {
+    "state_id": "44",
+    "name": {
+      "long": "Rhode Island",
+      "short": "RI"
+    }
+  },
+  {
+    "state_id": "45",
+    "name": {
+      "long": "South Carolina",
+      "short": "SC"
+    }
+  },
+  {
+    "state_id": "46",
+    "name": {
+      "long": "South Dakota",
+      "short": "SD"
+    }
+  },
+  {
+    "state_id": "47",
+    "name": {
+      "long": "Tennessee",
+      "short": "TN"
+    }
+  },
+  {
+    "state_id": "48",
+    "name": {
+      "long": "Texas",
+      "short": "TX"
+    }
+  },
+  {
+    "state_id": "49",
+    "name": {
+      "long": "Utah",
+      "short": "UT"
+    }
+  },
+  {
+    "state_id": "50",
+    "name": {
+      "long": "Vermont",
+      "short": "VT"
+    }
+  },
+  {
+    "state_id": "51",
+    "name": {
+      "long": "Virginia",
+      "short": "VA"
+    }
+  },
+  {
+    "state_id": "53",
+    "name": {
+      "long": "Washington",
+      "short": "WA"
+    }
+  },
+  {
+    "state_id": "54",
+    "name": {
+      "long": "West Virginia",
+      "short": "WV"
+    }
+  },
+  {
+    "state_id": "55",
+    "name": {
+      "long": "Wisconsin",
+      "short": "WI"
+    }
+  },
+  {
+    "state_id": "56",
+    "name": {
+      "long": "Wyoming",
+      "short": "WY"
+    }
+  },
+  {
+    "state_id": "72",
+    "name": {
+      "long": "Puerto Rico",
+      "short": "PR"
+    }
+  }
+]
