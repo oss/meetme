@@ -148,7 +148,7 @@ RUN mkdir -p /tmp/shibboleth && cd /tmp/shibboleth && \
 RUN mkdir -p "$CATALINA_HOME" && set -x \
 	&& wget -q -O $CATALINA_HOME/tomcat.tar.gz "$TOMCAT_TGZ_URL" \
 	&& wget -q -O $CATALINA_HOME/tomcat.tar.gz.asc "$TOMCAT_TGZ_URL.asc" \
-	&& wget -q -O $CATALINA_HOME/KEYS "https://www.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR/KEYS" \
+	&& wget -q -O $CATALINA_HOME/KEYS "https://downloads.apache.org/tomcat/tomcat-${TOMCAT_MAJOR}/KEYS" \
     && gpg --import $CATALINA_HOME/KEYS \
     && gpg $CATALINA_HOME/tomcat.tar.gz.asc \
 	&& gpg --batch --verify $CATALINA_HOME/tomcat.tar.gz.asc $CATALINA_HOME/tomcat.tar.gz \
