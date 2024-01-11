@@ -6,7 +6,7 @@ const router = express.Router();
 const port = 8000; // Setting an port for this application
 const passport = require('passport');
 const cookieSession = require('cookie-session');
-const saml = require('passport-saml');
+const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
 const logger = require('./logging');
 const crypto =  require("crypto");
@@ -44,6 +44,26 @@ app.use(
   })
 );
 
+/*
+    need to implement a "nothing" request.session.regenerate and request.session.save
+    see the following links for details:
+        https://github.com/jaredhanson/passport/issues/904
+        https://github.com/expressjs/cookie-session/issues/166
+*/
+app.use(function(request, response, next) {
+    if (request.session && !request.session.regenerate) {
+        request.session.regenerate = (cb) => {
+            cb()
+        }
+    }
+    if (request.session && !request.session.save) {
+        request.session.save = (cb) => {
+            cb()
+        }
+    }
+    next()
+})
+
 //inside unsecure bc we use nginx magic
 const samlStrategy = new saml.Strategy(
   {
@@ -52,10 +72,11 @@ const samlStrategy = new saml.Strategy(
     issuer: 'https://api.localhost.edu/shibboleth',
     identifierFormat: null,
     decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf8'),
-    //privateCert: fs.readFileSync('./certs/cert.pem', 'utf8'),
+    privateCert: fs.readFileSync('./certs/cert.pem', 'utf8'),
     cert: fs.readFileSync('./certs/idp.pem', 'utf8'),
     validateInResponseTo: false,
     disableRequestedAuthnContext: true,
+    wantAssertionsSigned: false
   },
   function (profile, done) {
         console.log("main_js_saml",profile);
