@@ -43,7 +43,7 @@ const logger_wrapper = new Proxy({}, {
         return function(message, request, optional) {
             //console.log("request",request);
             logger[prop](message,{
-                request_id: request.request_id, 
+                request_id: request.headers['x-request-id'], 
                 request_method: request.method,
                 container_id: CONTAINER_ID,
                 ...optional
