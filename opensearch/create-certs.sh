@@ -3,7 +3,7 @@
 
 OPENDISTRO_DN="/C=FR/ST=IDF/L=PARIS/O=EXAMPLE"   # Edit here and in opensearch.yml
 
-mkdir -p certs/{ca,os-dashboards}
+mkdir -p certs/{ca,grafana,fluent-bit}
 
 # Root CA
 openssl genrsa -out certs/ca/ca.key 2048
@@ -15,15 +15,23 @@ openssl pkcs8 -inform PEM -outform PEM -in certs/ca/admin-temp.key -topk8 -nocry
 openssl req -new -subj "$OPENDISTRO_DN/CN=ADMIN" -key certs/ca/admin.key -out certs/ca/admin.csr
 openssl x509 -req -in certs/ca/admin.csr -CA certs/ca/ca.pem -CAkey certs/ca/ca.key -CAcreateserial -sha256 -out certs/ca/admin.pem
 
-# OpenSearch Dashboards
-openssl genrsa -out certs/os-dashboards/os-dashboards-temp.key 2048
-openssl pkcs8 -inform PEM -outform PEM -in certs/os-dashboards/os-dashboards-temp.key -topk8 -nocrypt -v1 PBE-SHA1-3DES -out certs/os-dashboards/os-dashboards.key
-openssl req -new -subj "$OPENDISTRO_DN/CN=os-dashboards" -key certs/os-dashboards/os-dashboards.key -out certs/os-dashboards/os-dashboards.csr
-openssl x509 -req -in certs/os-dashboards/os-dashboards.csr -CA certs/ca/ca.pem -CAkey certs/ca/ca.key -CAcreateserial -sha256 -out certs/os-dashboards/os-dashboards.pem
-rm certs/os-dashboards/os-dashboards-temp.key certs/os-dashboards/os-dashboards.csr
+# Grafana Dashboards
+openssl genrsa -out certs/grafana/grafana-temp.key 2048
+openssl pkcs8 -inform PEM -outform PEM -in certs/grafana/grafana-temp.key -topk8 -nocrypt -v1 PBE-SHA1-3DES -out certs/grafana/grafana.key
+openssl req -new -subj "$OPENDISTRO_DN/CN=grafana" -key certs/grafana/grafana.key -out certs/grafana/grafana.csr
+openssl x509 -req -in certs/grafana/grafana.csr -CA certs/ca/ca.pem -CAkey certs/ca/ca.key -CAcreateserial -sha256 -out certs/grafana/grafana.pem
+rm certs/grafana/grafana-temp.key certs/grafana/grafana.csr
+
+# Fluentbit 
+openssl genrsa -out certs/fluent-bit/fluent-bit-temp.key 2048
+openssl pkcs8 -inform PEM -outform PEM -in certs/fluent-bit/fluent-bit-temp.key -topk8 -nocrypt -v1 PBE-SHA1-3DES -out certs/fluent-bit/fluent-bit.key
+openssl req -new -subj "$OPENDISTRO_DN/CN=fluent-bit" -key certs/fluent-bit/fluent-bit.key -out certs/fluent-bit/fluent-bit.csr
+openssl x509 -req -in certs/fluent-bit/fluent-bit.csr -CA certs/ca/ca.pem -CAkey certs/ca/ca.key -CAcreateserial -sha256 -out certs/fluent-bit/fluent-bit.pem
+rm certs/fluent-bit/fluent-bit-temp.key certs/fluent-bit/fluent-bit.csr
+
 
 # Nodes
-for NODE_NAME in "os01" "os02" "os03"
+for NODE_NAME in "os01"
 do
     mkdir "certs/${NODE_NAME}"
     openssl genrsa -out "certs/$NODE_NAME/$NODE_NAME-temp.key" 2048

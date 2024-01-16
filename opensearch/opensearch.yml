@@ -17,7 +17,7 @@ plugins.security.ssl.transport.enforce_hostname_verification: false
 
 plugins.security.authcz.admin_dn:
   - 'CN=ADMIN,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
+  - 'CN=grafana,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
+  - 'CN=fluent-bit,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
 plugins.security.nodes_dn:
   - 'CN=os01,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
-  - 'CN=os02,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
-  - 'CN=os03,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
