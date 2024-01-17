@@ -3,6 +3,8 @@ version: '3'
 services:
   nginx:
     image: nginx-oss-meetme
+    volumes:
+      - /var/log/meetme/nginx/api.log:/logs/api.log
     ports:
       - 80:80
       - 443:443
@@ -10,25 +12,12 @@ services:
       - no-internet
       - authnet
     depends_on:
-      - saml
       - backend
       - socket
       - mongo
     deploy:
       mode: replicated
       replicas: 1
-
-  nginx-docker:
-    image: nginx-oss-docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    privileged: true
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
   mongo:
     image: database-meetme
@@ -138,24 +127,7 @@ services:
       - JAVA_OPTS=-Djava.security.egd=file:/dev/urandom -Xmx3000m
     ports:
       - 4443:443
-    links:
-      - 'backend:api.localhost.edu'
-# remove saml cuz shibboleth
-  saml:
-    image: kristophjunge/test-saml-idp
-    environment:
-      - SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc
-      - SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=https://api.localhost.edu/login
-      - SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://api.localhost.edu/logout
-    networks:
-      - authnet
-    volumes:
-      - ./saml/users.php:/var/www/simplesamlphp/config/authsources.php
-  cas:
-    image: cas-meetme 
-    ports:
-     - "8443:8443"
-     - "8080:8080"
+
 networks:
   no-internet:
     driver: overlay
