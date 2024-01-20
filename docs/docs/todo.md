@@ -1,12 +1,10 @@
 ## Todo Urgent
 - [ ] there shouldnt be a function called get_meetme everything associated with that should be called get_global_timeline as it is more descriptive
 - [ ] refactor tile.jsx
+- [ ] remove last week and last months from choices
 - [ ] 
 - [ ] 
 - [ ] 
-- [ ] 
-
-
 
 ## Todo
 - [ ] Implement public/private aspects of user data

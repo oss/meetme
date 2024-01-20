@@ -166,7 +166,7 @@ router.patch('/:organization_id/accept', isAuthenticated, async function (req, r
   }
 
   await Org_schema.updateOne(
-    { _id: req.params.org_id },
+    { _id: req.params.organization_id },
     {
       $pull: { pendingMembers: { _id: req.user.uid } },
       $push: { members: { _id: req.user.uid } },
@@ -176,8 +176,8 @@ router.patch('/:organization_id/accept', isAuthenticated, async function (req, r
   await User_schema.updateOne(
     { _id: req.user.uid },
     {
-      $pull: { pendingOrganizations: { _id: req.params.org_id } },
-      $push: { organizations: { _id: req.params.org_id } },
+      $pull: { pendingOrganizations: { _id: req.params.organization_id } },
+      $push: { organizations: { _id: req.params.organization_id } },
     }
   );
 

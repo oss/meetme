@@ -30,7 +30,7 @@ module.exports = async function (router, passport) {
         }
       }
       await update_last_login(req.user.uid);
-      req.session.time = Math.floor( Date.now() / (1000 * 10));
+      req.session.time = Math.floor( Date.now() / (1000 * 60));
       res.redirect('https://localhost.edu' + (req.body.RelayState || ''));
     }
   );
