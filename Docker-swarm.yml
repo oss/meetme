@@ -85,6 +85,8 @@ services:
       - backend
       - socket
       - mongo
+    volumes:
+      - /var/log/meetme/nginx:/logs
     deploy:
       mode: replicated
       replicas: 1
