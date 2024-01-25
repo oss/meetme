@@ -42,7 +42,3 @@ setup() {
         assert_failure "$output"
     fi
 }
-
-@test "create accounts netid1 and netid5" {
-    curl -sSk $API_URL/test/create_user/netid1 && curl -sSk $API_URL/test/create_user/netid5
-}

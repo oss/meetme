@@ -30,24 +30,21 @@ async function main(username, password) {
     waitUntil: 'networkidle0',
   });
 
+  await page.goto('https://api.localhost.edu/login');
   const print_cookie_arr = [];
   const cookie_arr = await page.cookies();
   for (let i = 0; i < cookie_arr.length; i++) {
     const cookie = cookie_arr[i];
-    if (cookie.name === 'session.sig' || cookie.name === 'session') {
+    if (cookie.name === 'session.sig' || cookie.name === 'session' || cookie.name === 'JSESSIONID' || cookie.name === 'shib_idp_session') {
       print_cookie_arr.push(cookie);
     }
+    //console.log(cookie)
   }
+
   await browser.close();
-  console.log(
-    'Cookie: ' +
-      print_cookie_arr[0].name +
-      '=' +
-      print_cookie_arr[0].value +
-      '; ' +
-      print_cookie_arr[1].name +
-      '=' +
-      print_cookie_arr[1].value
-  );
+  for(let i=0;i<print_cookie_arr.length;i++){
+      const cookie = print_cookie_arr[i];
+      console.log(cookie.name+"="+cookie.value)
+  }
 }
 main();

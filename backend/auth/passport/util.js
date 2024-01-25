@@ -18,6 +18,7 @@ function isAuthenticated(req, res, next) {
     console.log('request is authenticated... continuing...');
     next();
   } else {
+    req.session = null;
     res.json({
       Status: 'Error',
       Error: 'not logged in',
