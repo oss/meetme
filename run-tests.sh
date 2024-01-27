@@ -10,10 +10,12 @@ curl -sSk 'https://api.localhost.edu/clear_db' > /dev/null
 
 docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.dropDatabase()'
 
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("users")'
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_mains")'
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_metas")'
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("organizations")'
+docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("users")' &
+docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_mains")' &
+docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_metas")' &
+docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("organizations")' &
+
+wait
 
 COOKIE_NETID1=""
 COOKIE_NETID2=""
@@ -39,6 +41,7 @@ while [ -z "$COOKIE_NETID2" ]; do
         echo "successfully got cookie for netid2"
     fi
 done
+
 
 docker run \
     -e COOKIE_NETID1="$COOKIE_NETID1" \

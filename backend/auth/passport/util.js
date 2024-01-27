@@ -19,9 +19,9 @@ function isAuthenticated(req, res, next) {
     next();
   } else {
     req.session = null;
-    res.json({
+    res.status(401).json({
       Status: 'Error',
-      Error: 'not logged in',
+      error: 'Invalid or Missing Credentials',
     });
     return;
   }
