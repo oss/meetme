@@ -41,14 +41,19 @@ setup() {
 
     assert_equal "$hash_after" "$hash_before"
     assert_equal "$response" '{"Status":"Error","error":"Invalid or Missing Credentials"}'
-    assert_equal "$(jq -rn --argjson r "${details}" '$r.http_code')" '401' 
+    assert_equal "$(jq -rn --argjson r "${details}" '$r.http_code')" '401'
 }
 
 @test "whoami valid cookie" {
+    hash_before=$(mongo_dump)
+
     run curl -sSk -w '\n%{json}' -c '/cookies/netid1' -b '/cookies/netid1' "$API_URL/whoami"
     response=$(echo "${output}" | sed -n '1 p')
     details=$(echo "${output}" | sed -n '2 p')
 
+    hash_after=$(mongo_dump)
+    assert_equal "$hash_after" "$hash_before"
+    
     jq_command=( jq -rn --argjson r "${response}" )
     
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '3'
@@ -67,8 +72,25 @@ setup() {
     assert_equal "$(jq -rn --argjson r "${details}" '$r.http_code')" '200' 
 }
 
-@test "whoami invalid cookie" {
+@test "whoami invalid cookie (invalid session.sig) " {
+    session_sig=$(echo "$COOKIE_NETID1" | grep -E '^session.sig=' | sed -r 's/.$/zz/' ) #
+    session=$(echo "$COOKIE_NETID1" | grep -E '^session=' )
+
+    hash_before=$(mongo_dump)
+    # example cookie header
+    #'Cookie: session=eyJwYXNzcG9ydCI6eyJ1c2VyIjp7InVpZCI6Im5ldGlkMSIsImZpcnN0TmFtZSI6IkZpcnN0MSIsImxhc3ROYW1lIjoiTGFzdDEifX0sInRpbWUiOjE3MDYzMjQ5M30=; session.sig=dPIYPDkQl8Zve7hjIR-cDscaoRM'
+    run curl -sSk -w '\n%{json}' -H "Cookie: ${session}; ${session_sig}" "$API_URL/whoami"
+    response=$(echo "${output}" | sed -n '1 p')
+    details=$(echo "${output}" | sed -n '2 p')
+
+    hash_after=$(mongo_dump)
+    assert_equal "$hash_after" "$hash_before"
+
+    assert_equal "${response}" '{"Status":"Error","error":"Invalid or Missing Credentials"}'
+
+    assert_equal "$(jq -rn --argjson r "${details}" '$r.http_code')" '401'
+}
+
+@test "whoami invalid cookie (invalid session) " {
     skip
-    run curl -sSk "$API_URL/whoami" -H "$COOKIE_NETID1\a"
-    assert_equal "$output" '{"Status":"error","error":"No user"}'
 }
