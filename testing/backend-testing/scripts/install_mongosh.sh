@@ -1,5 +1,5 @@
 distro="deb" #weird mongo stuff
-arch=$(dpkg --print-architecture)
+arch=$(uname -m)
 MONGO_TARGET=$(. /etc/os-release && echo "${ID}${VERSION_ID}")
 
 
