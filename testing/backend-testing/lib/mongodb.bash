@@ -5,5 +5,5 @@ function create_user {
 }
 
 function mongo_dump {    
-    echo "$( $($(mongodump --db=meetme --archive --excludeCollection=mongo_events)) | md5sum | cut -d ' ' -f1 )"
+    echo "$( mongodump --db=meetme --out - --excludeCollection=mongo_events | md5sum | cut -d ' ' -f1 )"
 }
