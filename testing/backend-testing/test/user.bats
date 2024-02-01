@@ -6,7 +6,7 @@ setup() {
 }
 
 @test "create user is valid" {
-    run mongosh meetme --quiet --eval "JSON.stringify(db.users.findOne({_id: 'netid1'},{__v: 0}))"
+    run get_user 'netid1'
     echo "response recieved: ${output}"
     jq_command=( jq -rn --argjson r "${output}" )
     assert [ $status -eq 0 ] #makes sure mongosh ran well
@@ -28,6 +28,7 @@ setup() {
     assert_regex "$( "${jq_command[@]}" '$r.last_signin' )" '^[0-9]+$'
     assert_regex "$( "${jq_command[@]}" '$r.account_created' )" '^[0-9]+$'
 
+    echo "${output}" > /templates/user.json
 }
 
 @test "whoami no cookie" {

@@ -6,6 +6,7 @@ RUN for tool in bsondump mongodump mongoexport mongofiles mongoimport mongoresto
 FROM debian:11
 COPY --from=build-mongotools /mongotools/bin /usr/local/bin
 WORKDIR /root
+RUN mkdir /templates
 RUN apt-get update && apt-get install curl wget jq git -y
 ENV API_URL 'https://api.localhost.edu'
 RUN git clone https://github.com/bats-core/bats-core.git && cd bats-core && ./install.sh /usr/local && cd /root
