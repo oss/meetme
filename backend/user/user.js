@@ -13,8 +13,8 @@ router.get('/me', isAuthenticated, async function (req, res) {
   target_usr = await User_schema.findOne({ _id: netid });
   if (target_usr === null)
     res.json({
-      Status: 'Error',
-      Error: 'Student not found',
+      Status: 'error',
+      error: 'Student not found',
     });
   else
     res.json({
@@ -40,8 +40,8 @@ router.get('/:netid', isAuthenticated, async function (req, res) {
       );
     } else {
       res.json({
-        Status: 'Error',
-        Error: 'User does not exist or has not made an account yet',
+        Status: 'error',
+        error: 'User does not exist or has not made an account yet',
       });
       return;
     }

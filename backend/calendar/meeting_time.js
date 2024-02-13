@@ -17,7 +17,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     ) {
       res.json({
         Status: 'error',
-        Error: 'No meeting time provided',
+        error: 'No meeting time provided',
       });
       return;
     }
@@ -30,7 +30,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     if (meeting_time.start > meeting_time.end) {
       res.json({
         Status: 'error',
-        Error: 'Start/End time conflict',
+        error: 'Start/End time conflict',
       });
       return;
     }
@@ -46,7 +46,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not eixst or you do not have access to this calendar',
       });
       return;
@@ -64,7 +64,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to modify this calendar',
         });
         return;
@@ -99,7 +99,7 @@ router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not have access to this calendar',
       });
       return;
@@ -119,7 +119,7 @@ router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to modify this calendar',
         });
         return;

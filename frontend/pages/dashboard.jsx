@@ -98,7 +98,7 @@ function Dashboard() {
                 if (new_arr[i]._id === cal_id) new_arr[i].name = newName;
             }
             setCalendarInfo(new_arr);
-        } else set_cal_dialogue({ field: 'error', error: data.Error });
+        } else set_cal_dialogue({ field: 'error', error: data.error });
     }
 
     async function delete_cal(calendarID) {
@@ -108,7 +108,7 @@ function Dashboard() {
             setCalendarInfo(
                 calendarInfo.filter((cal) => cal._id !== calendarID)
             );
-        } else set_cal_dialogue({ field: 'error', error: data.Error });
+        } else set_cal_dialogue({ field: 'error', error: data.error });
     }
 
     async function leave_cal(calendarID) {
@@ -122,7 +122,7 @@ function Dashboard() {
                     new_arr.push(calendarInfo[i]);
             }
             setCalendarInfo(new_arr);
-        } else set_cal_dialogue({ field: 'error', error: data.Error });
+        } else set_cal_dialogue({ field: 'error', error: data.error });
     }
     let [showCalendarDialogue, setShowCalendarDialogue] = useState(false);
     function renderCalendarDialogue() {
@@ -242,7 +242,7 @@ function Dashboard() {
                             set_cal_dialogue(false);
                         }}
                     >
-                        <p>{show_cal_dialogue.Error}</p>
+                        <p>{show_cal_dialogue.error}</p>
                     </PopupDialogue>
                 );
             case 'ok':

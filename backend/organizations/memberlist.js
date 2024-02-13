@@ -27,7 +27,7 @@ router.get('/:organization_id/memberlist', isAuthenticated, async function (req,
   if (org === null) {
     res.json({
       Status: 'error',
-      Error: 'org does not exist or you do not have permission to access',
+      error: 'org does not exist or you do not have permission to access',
     });
     return;
   }

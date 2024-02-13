@@ -28,7 +28,7 @@ app.use((error, req, res, next) => {
     console.log(error.body);
     res.json({
       Status: 'error',
-      Error: 'Error parsing body',
+      error: 'Error parsing body',
       trace: error,
     });
     return;

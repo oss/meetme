@@ -12,7 +12,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
     if (req.body.location === undefined || req.body.location === null) {
       res.json({
         Status: 'error',
-        Error: 'No location provided',
+        error: 'No location provided',
       });
       return;
     }
@@ -28,7 +28,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not have access to this calendar',
       });
       return;
@@ -46,7 +46,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to modify this calendar',
         });
         return;
@@ -81,7 +81,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not have access to this calendar',
       });
       return;
@@ -101,7 +101,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to this calendar',
         });
         return;

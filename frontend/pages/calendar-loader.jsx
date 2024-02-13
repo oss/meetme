@@ -62,7 +62,7 @@ function CalendarLoader() {
                     set_cal_metadata(data);
                     if (data.metadata.owner.owner_type === 'organization')
                         get_org_memberlist(data.metadata.owner._id);
-                } else set_display({ ok: false, msg: data.Error });
+                } else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -77,7 +77,7 @@ function CalendarLoader() {
             .then((res) => res.json())
             .then((data) => {
                 if (data.Status === 'ok') set_cal_maindata(data);
-                else set_display({ ok: false, msg: data.Error });
+                else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -92,7 +92,7 @@ function CalendarLoader() {
             .then((res) => res.json())
             .then((data) => {
                 if (data.Status === 'ok') set_timeblocks(data);
-                else set_display({ ok: false, msg: data.Error });
+                else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -113,7 +113,7 @@ function CalendarLoader() {
                     if (data.timeline[0].timeline[0])
                         set_timeline(data.timeline[0].timeline[0].times);
                     else set_timeline([]);
-                else set_display({ ok: false, msg: data.Error });
+                else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -131,7 +131,7 @@ function CalendarLoader() {
             .then((res) => res.json())
             .then((data) => {
                 if (data.Status === 'ok') set_meetme(data);
-                else set_display({ ok: false, msg: data.Error });
+                else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -146,7 +146,7 @@ function CalendarLoader() {
             .then((data) => {
                 if (data.Status === 'ok') {
                     set_memberlist(data);
-                } else set_display({ ok: false, msg: data.Error });
+                } else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -161,7 +161,7 @@ function CalendarLoader() {
             .then((data) => {
                 if (data.Status === 'ok') {
                     set_meet_time(data);
-                } else set_display({ ok: false, msg: data.Error });
+                } else set_display({ ok: false, msg: data.error });
                 set_display_status();
             });
     }
@@ -421,7 +421,7 @@ function CalendarLoader() {
 
     if (org_memberlist.Status === 'error') {
         return (
-            <div>Error getting org memberlist message: {org_memberlist.Error}</div>
+            <div>Error getting org memberlist message: {org_memberlist.error}</div>
         );
     }
 

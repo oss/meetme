@@ -33,8 +33,8 @@ async function create_user(netid) {
     //adds user
   } catch (e) {
     return {
-      Status: 'Error',
-      Error: 'Could not add user to database',
+      Status: 'error',
+      error: 'Could not add user to database',
     };
   }
 }
