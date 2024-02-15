@@ -2,11 +2,12 @@ setup() {
     load 'test_helper/bats-support/load'
     load 'test_helper/bats-assert/load'
     load 'test_helper/lib/load'
-    source /root/env
 }
 
 @test "create user is valid" {
-    run get_user 'netid1'
+    netid=$(create_ldap_user)
+    getcookie "${netid}"
+    run get_user ${netid}
     echo "response recieved: ${output}"
     jq_command=( jq -rn --argjson r "${output}" )
     assert [ $status -eq 0 ] #makes sure mongosh ran well

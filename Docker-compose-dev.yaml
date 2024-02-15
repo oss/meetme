@@ -121,7 +121,6 @@ services:
       - ./openldap_data:/bitnami/openldap
       - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
       - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
-      - ./ldaptest/importtest.readme:/someuser.ldif
     ports:
       - 1389:1389
 
