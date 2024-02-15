@@ -6,6 +6,7 @@ import LargeButton from '/components/utils/large-button';
 import sheild_img from '/assets/RU_SHIELD_BLACK.png';
 import '/index.css';
 import Footer from '/components/footer';
+import authState from "./store/authState";
 
 function NavbarLogin() {
     return (
@@ -19,30 +20,7 @@ function NavbarLogin() {
 }
 
 function Login() {
-    const [cookie_check, setCookieCheck] = useState(() => {
-        if ( Cookies.get('session') === undefined || Cookies.get('session.sig') === undefined ) {
-            return false;
-        }
-        return true;
-    });
-
-    const [logged_in, set_logged_in] = useState(null);
-
-    useEffect(() => {
-        if (cookie_check === true)
-            fetch(process.env.API_URL + '/whoami', {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data.Status === 'ok');
-                set_logged_in(data.Status === 'ok');
-            });
-    }, []);
+    const isLoggedIn = authState((state)=>state.isLoggedIn)
 
     //set this up so we can redirect to custom pages
     const login = () => {
@@ -51,25 +29,17 @@ function Login() {
         window.location.href = 'https://api.localhost.edu/login?dest=' + dest;
     };
 
-    if (cookie_check) {
-        if (logged_in === null) {
-            return (
-                <>
-                    <p>Attempting to login</p>
-                </>
-            );
-        } else if (logged_in){
-            const loginHeartBeat = new Worker(new URL("./web_workers/worker.js", import.meta.url));
-            loginHeartBeat.addEventListener("message",(e)=>{
-                set_logged_in(e.data);
-            });
-            return <App />;
-        }
-        else {
-            Cookies.remove('session', { domain: '.localhost.edu' });
-            Cookies.remove('session.sig', { domain: '.localhost.edu' });
-            setCookieCheck(false);
-        }
+    if (isLoggedIn) {
+        //const loginHeartBeat = new Worker(new URL("./web_workers/worker.js", import.meta.url));
+        /*loginHeartBeat.addEventListener("message",(e)=>{
+            set_logged_in(e.data);
+        });
+        */
+        return(
+            <React.Suspense>
+                <App />
+            </React.Suspense>
+        )
     } else
         return (
             <>
