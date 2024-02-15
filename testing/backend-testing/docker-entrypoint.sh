@@ -1,5 +1,6 @@
 #Write cookie jars for curl
-
+sleep 30000
+touch /root/env
 mkdir /cookies
 #echo "$COOKIE_NETID1" | sed -r '1s/session.sig=(.*)/.localhost.edu\tTRUE\t\/\tTRUE\t0\tsession.sig\t\1/g' | sed -r '2s/session=(.*)/.localhost.edu\tTRUE\t\/\tTRUE\t0\tsession\t\1/g' > /cookies/netid1
 

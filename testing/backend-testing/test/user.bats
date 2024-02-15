@@ -95,3 +95,7 @@ setup() {
 @test "whoami invalid cookie (invalid session) " {
     skip
 }
+
+@test "whoami expired cookie" {
+    skip
+}

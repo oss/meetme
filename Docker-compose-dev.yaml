@@ -75,6 +75,8 @@ services:
 
   backend:
     image: backend-meetme
+    environment:
+      - COOKIE_DURATION=100000
     networks:
       - no-internet
       - authnet
@@ -119,6 +121,9 @@ services:
       - ./openldap_data:/bitnami/openldap
       - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
       - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
+      - ./ldaptest/importtest.readme:/someuser.ldif
+    ports:
+      - 1389:1389
 
   shibboleth:
     image: shibboleth-idp-meetme
