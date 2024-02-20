@@ -161,7 +161,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     const calendar_metadata = new Calendar_schema_meta();
 
     const calendar_id = createHash('sha512')
-      .update(new Date().getTime().toString() + owner.owner_id)
+      .update(new Date().getTime().toString() + owner.owner_id + Math.random())
       .digest('base64url');
     calendar_maindata._id = calendar_id;
     calendar_metadata._id = calendar_id;
