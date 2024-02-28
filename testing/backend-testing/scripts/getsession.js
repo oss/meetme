@@ -36,7 +36,7 @@ async function get_cookie() {
         const cookie = cookie_arr[i];
         if (cookie.name === 'session' || cookie.name === 'session.sig') {
             cookie_session_arr.push(cookie)
-            console.log(cookie)
+            //console.log(cookie)
         }
     }
 
@@ -50,7 +50,7 @@ async function main(){
         try{
             x = await get_cookie()
         } catch(e){
-            console.log('error occured, trying again...');
+            //console.log('error occured, trying again...');
         }
     }
     
@@ -58,7 +58,7 @@ async function main(){
     for(let i=0;i<x.length;i++){
         cookie_str+=`${x[i].name}=${x[i].value}`
         if( i != x.length-1)
-            cookie_str+=";"
+            cookie_str+="; "
     }
     console.log(cookie_str)
     return;
