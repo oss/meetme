@@ -2,14 +2,6 @@ variables:
   FF_NETWORK_PER_BUILD: 1
   #CI_DEBUG_SERVICES: 1
 
-.setup_ip: &etc_hosts
-  before_script:
-    - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
-    - echo "$nginx_ip localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip saml.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
@@ -84,6 +76,7 @@ backend-api:
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - getent hosts nginx
     - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
     - echo "nginx ip -> $nginx_ip"
     - echo "$nginx_ip localhost.edu" >> /etc/hosts

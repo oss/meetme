@@ -33,8 +33,6 @@ $exe test/org_cal.bats | tee "$TEST_OUTPUT_DIR/org_cal.xml"
 $exe test/org_invites.bats | tee "$TEST_OUTPUT_DIR/org_invites.xml"
 
 
-echo "BALLS"
-ls ${TEST_OUTPUT_DIR}
 #bash print_env.sh
 if [ $? -ne 0 ]; then
     exit 1;
