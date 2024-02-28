@@ -1,3 +1,3 @@
 function getcookie {
-    node "scripts/getcookie.js" "${1}" "rutgers${1}" || fail
+    node "scripts/getsession.js" "${1}" "rutgers${1}" || fail
 }

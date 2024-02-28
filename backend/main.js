@@ -29,7 +29,7 @@ app.use((error, req, res, next) => {
     console.log(error.body);
     res.json({
       Status: 'error',
-      error: 'Error parsing body',
+      error: 'error parsing body',
       trace: error,
     });
     return;

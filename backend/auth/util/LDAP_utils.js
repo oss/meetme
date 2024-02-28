@@ -2,6 +2,7 @@ const LDAP = require('ldapjs');
 const User_schema = require('../../user/user_schema');
 
 async function valid_netid(netid) {
+  if (!(/^[a-zA-Z0-9]+$/.test(netid)))return false;
   if ((await User_schema.findOne({ _id: netid })) !== null) return true;
   return (await getinfo_from_netid(netid)) !== null;
 }
