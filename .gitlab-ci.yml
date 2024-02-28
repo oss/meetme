@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  CI_DEBUG_SERVICES: 1
+  #CI_DEBUG_SERVICES: 1
 
 .setup_ip: &etc_hosts
   before_script:
@@ -14,12 +14,6 @@ variables:
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
-    - name: ${CI_REGISTRY_IMAGE}/saml
-      alias: saml
-      variables:
-        SIMPLESAMLPHP_SP_ENTITY_ID: saml-poc
-        SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://api.localhost.edu/login
-        SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: https://api.localhost.edu/logout
     - name: ${CI_REGISTRY_IMAGE}/frontend
       alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket
@@ -36,14 +30,6 @@ variables:
       alias: mongo-jr
     - name: ${CI_REGISTRY_IMAGE}/database
       alias: mongo-the-third
-
-    - name: mongo:latest
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});';
-          while [ $? -ne 0 ]; do sleep 2 && mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'; done;
 
     - name: ${CI_REGISTRY_IMAGE}/backend
       alias: backend
@@ -94,8 +80,6 @@ backend-api:
     name: ${CI_REGISTRY_IMAGE}/test-suite
     entrypoint: ['']
   before_script:
-    - wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.6.1_amd64.deb
-    - dpkg -i mongodb-mongosh_1.6.1_amd64.deb
     - |
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
@@ -104,14 +88,12 @@ backend-api:
     - echo "nginx ip -> $nginx_ip"
     - echo "$nginx_ip localhost.edu" >> /etc/hosts
     - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip saml.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts
   script:
     - apt-get install bc -y
     - cd /root
     - sleep 5
     - ./docker-entrypoint.sh --formatter junit
+    - ls /root/test_output
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
     - touch ${CI_PROJECT_DIR}/merged.xml
     - for i in $(ls ${CI_PROJECT_DIR}/test_output); do cat ${CI_PROJECT_DIR}/test_output/$i >> ${CI_PROJECT_DIR}/merged.xml; done;
