@@ -110,7 +110,6 @@ backend-api:
   script:
     - apt-get install bc -y
     - cd /root
-    - cat "${CI_PROJECT_DIR}/cookie_file" >> /root/env
     - sleep 5
     - ./docker-entrypoint.sh --formatter junit
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
