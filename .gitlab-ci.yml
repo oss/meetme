@@ -76,6 +76,8 @@ backend-api:
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - which getent
+    - getent --help
     - getent hosts nginx
     - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
     - echo "nginx ip -> $nginx_ip"
