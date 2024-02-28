@@ -21,9 +21,9 @@ router.post('/', isAuthenticated, async function (req, res) {
     const Organization = new Organization_schema();
     Organization.name = req.body.name || 'unnamed organization';
     Organization.owner = req.user.uid;
-    Organization._id = createHash('sha256')
-      .update(new Date().getTime().toString() + req.user.uid)
-      .digest('hex');
+    Organization._id = createHash('sha512')
+      .update(new Date().getTime().toString() + req.user.uid + Math.random())
+      .digest('base64url');
     Organization.calendars = [];
     Organization.admins = [];
     Organization.editors = [];
