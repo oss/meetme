@@ -122,7 +122,7 @@ backend-api:
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
 
   dependencies:
-    - get-cookies
+    - build-backend
   artifacts:
     when: always
     paths:
