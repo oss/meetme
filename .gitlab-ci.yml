@@ -9,7 +9,7 @@ variables:
     - name: ${CI_REGISTRY_IMAGE}/saml
       alias: shib-idp idp.localhost.edu
       variables:
-        - JAVA_OPTS=-Djava.security.egd=file:/dev/urandom -Xmx3000m
+        JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Xmx3000m
     - name: ${CI_REGISTRY_IMAGE}/frontend
       alias: frontend localhost.edu
     - name: ${CI_REGISTRY_IMAGE}/websocket
