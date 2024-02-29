@@ -78,6 +78,7 @@ backend-api:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
     - which getent
     - getent --help
+    - apt-get install dnsutils -y
     - dig nginx
     - getent hosts nginx
     - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
