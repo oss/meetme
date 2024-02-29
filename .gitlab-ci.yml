@@ -85,7 +85,7 @@ backend-api:
     - cd /root
     - ldapsearch -H ldap://openldap:1389 -x -b "dc=example,dc=org" -D 'cn=admin,dc=example,dc=org' -w 'adminpassword'
     - sleep 30
-    - node "scripts/getsession.js" "${1}" "rutgers${1}"
+    - node "scripts/getsession.js" "netid1" "rutgers1"
     - ./docker-entrypoint.sh --formatter junit
     - ls /root/test_output
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
