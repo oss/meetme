@@ -30,7 +30,7 @@ variables:
     - name: ${CI_REGISTRY_IMAGE}/backend
       alias: backend api.localhost.edu
       variables:
-        LOGIN_URL: https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO
+        LOGIN_URL: https://idp.localhost.edu/idp/profile/SAML2/Redirect/SSO
       command:
         - '/bin/bash'
         - '-c'
