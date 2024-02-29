@@ -7,7 +7,7 @@ variables:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/frontend
-      alias: frontend
+      alias: frontend localhost.edu
     - name: ${CI_REGISTRY_IMAGE}/websocket
       alias: socket
       entrypoint:
@@ -24,7 +24,7 @@ variables:
       alias: mongo-the-third
 
     - name: ${CI_REGISTRY_IMAGE}/backend
-      alias: backend
+      alias: backend api.localhost.edu
       command:
         - '/bin/bash'
         - '-c'
@@ -76,14 +76,6 @@ backend-api:
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
-    - which getent
-    - getent --help
-    - dig nginx
-    - getent hosts nginx
-    - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
-    - echo "nginx ip -> $nginx_ip"
-    - echo "$nginx_ip localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
   script:
     - apt-get install bc -y
     - cd /root
