@@ -22,10 +22,10 @@ homeDirectory: /home/${netid}
 
 EOF
 )
-    ldapadd -H ldap://localhost:1389 -x -D 'cn=admin,dc=example,dc=org' -w 'adminpassword' -f <(echo "${ldif_string}") > /dev/null || fail
+    ldapadd -H ldap://openldap:1389 -x -D 'cn=admin,dc=example,dc=org' -w 'adminpassword' -f <(echo "${ldif_string}") > /dev/null || fail
     echo "$netid"
 }
 
 function remove_ldap_user {
-    ldapdelete -H ldap://localhost:1389 -D 'cn=admin,dc=example,dc=org' -w 'adminpassword' "cn=${1},ou=users,dc=example,dc=org" > /dev/null || fail
+    ldapdelete -H ldap://openldap:1389 -D 'cn=admin,dc=example,dc=org' -w 'adminpassword' "cn=${1},ou=users,dc=example,dc=org" > /dev/null || fail
 }
