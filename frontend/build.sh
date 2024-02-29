@@ -11,7 +11,9 @@ case $BUILD in
         params="$params--mode development "
         params="$params--stats verbose "
         export BUILD='dev'
-        export API_URL='https://api.localhost.edu'
+        if [ ! -z "$API_URL" ]; then
+            export API_URL='https://api.localhost.edu'
+        fi
     ;;
     prod|PROD)
         params+='--mode production'
