@@ -59,8 +59,8 @@ variables:
         - |
           # wait for signal from backend
           apt-get install curl -y;
-          curl -s http://backend:8000 > /dev/stdout;
-          while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;
+          curl -s http://backend > /dev/stdout;
+          while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend; done;
           # curl saml:8080/simplesaml > /dev/stdout
           # while [ $? -ne 0 ]; do sleep 1 && echo "waiting for saml to start" && curl -s saml:8080/simplesaml; done;
           # pass control to the default image entrypoint
@@ -82,7 +82,7 @@ backend-api:
     - |
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
-    - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - bash -c 'curl backend; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend; done;'
   script:
     - apt-get install bc -y
     - cd /root
