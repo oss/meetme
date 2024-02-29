@@ -79,8 +79,8 @@ backend-api:
   script:
     - apt-get install bc -y
     - cd /root
-    - sleep 5
     - ldapsearch -H ldap://openldap:1389 -x -b "dc=example,dc=org" -D 'cn=admin,dc=example,dc=org' -w 'adminpassword'
+    - sleep 30
     - ./docker-entrypoint.sh --formatter junit
     - ls /root/test_output
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
