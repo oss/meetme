@@ -88,9 +88,6 @@ backend-api:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
   script:
     - apt-get install bc -y
-    - cd /root
-    - cat "${CI_PROJECT_DIR}/cookie_file" >> /root/env
-    - sleep 5
     - ./docker-entrypoint.sh --formatter junit
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
     - touch ${CI_PROJECT_DIR}/merged.xml
