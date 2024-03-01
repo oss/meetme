@@ -65,7 +65,7 @@ variables:
           # curl saml:8080/simplesaml > /dev/stdout
           # while [ $? -ne 0 ]; do sleep 1 && echo "waiting for saml to start" && curl -s saml:8080/simplesaml; done;
           # pass control to the default image entrypoint
-          exec /root/docker-entrypoint.sh "$@"
+          exec /docker-entrypoint.sh
 
 stages:
   - build
