@@ -1,15 +1,25 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  #CI_DEBUG_SERVICES: 1
+  CI_DEBUG_SERVICES: 1
 
+.setup_ip: &etc_hosts
+  before_script:
+    - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
+    - echo "$nginx_ip localhost.edu" >> /etc/hosts
+    - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
+    - echo "$nginx_ip saml.localhost.edu" >> /etc/hosts
+    - echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts
+    - echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml
-      alias: shib-idp idp.localhost.edu
+      alias: saml
       variables:
-        JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Xmx3000m
+        SIMPLESAMLPHP_SP_ENTITY_ID: saml-poc
+        SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://api.localhost.edu/login
+        SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: https://api.localhost.edu/logout
     - name: ${CI_REGISTRY_IMAGE}/frontend
       alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket
@@ -27,15 +37,26 @@ variables:
     - name: ${CI_REGISTRY_IMAGE}/database
       alias: mongo-the-third
 
+    - name: mongo:latest
+      entrypoint:
+        - '/bin/bash'
+        - '-c'
+        - |
+          mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});';
+          while [ $? -ne 0 ]; do sleep 2 && mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'; done;
+
     - name: ${CI_REGISTRY_IMAGE}/backend
       alias: backend
-      variables:
-        LOGIN_URL: https://idp.localhost.edu/idp/profile/SAML2/Redirect/SSO
-        PORT: 80
       command:
         - '/bin/bash'
         - '-c'
         - |
+          nginx_ip=$(getent hosts nginx | cut -d " " -f 1);
+          echo "$nginx_ip localhost.edu" >> /etc/hosts;
+          echo "$nginx_ip api.localhost.edu" >> /etc/hosts;
+          echo "$nginx_ip saml.localhost.edu" >> /etc/hosts;
+          echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts;
+          echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
           sleep 80 && node main.js;
 
     - name: bitnami/openldap:2
@@ -46,15 +67,15 @@ variables:
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx api.localhost.edu localhost.edu
+      alias: nginx
       entrypoint:
         - '/bin/bash'
         - '-c'
         - |
           # wait for signal from backend
           apt-get install curl -y;
-          curl -s http://backend > /dev/stdout;
-          while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend; done;
+          curl -s http://backend:8000 > /dev/stdout;
+          while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;
           # curl saml:8080/simplesaml > /dev/stdout
           # while [ $? -ne 0 ]; do sleep 1 && echo "waiting for saml to start" && curl -s saml:8080/simplesaml; done;
           # pass control to the default image entrypoint
@@ -73,18 +94,25 @@ backend-api:
     name: ${CI_REGISTRY_IMAGE}/test-suite
     entrypoint: ['']
   before_script:
+    - wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.6.1_amd64.deb
+    - dpkg -i mongodb-mongosh_1.6.1_amd64.deb
     - |
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
-    - bash -c 'curl backend; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend; done;'
+    - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
+    - echo "nginx ip -> $nginx_ip"
+    - echo "$nginx_ip localhost.edu" >> /etc/hosts
+    - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
+    - echo "$nginx_ip saml.localhost.edu" >> /etc/hosts
+    - echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
+    - echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts
   script:
     - apt-get install bc -y
     - cd /root
-    - ldapsearch -H ldap://openldap:1389 -x -b "dc=example,dc=org" -D 'cn=admin,dc=example,dc=org' -w 'adminpassword'
-    - sleep 30
-    - node "scripts/getsession.js" "netid1" "rutgers1"
+    - cat "${CI_PROJECT_DIR}/cookie_file" >> /root/env
+    - sleep 5
     - ./docker-entrypoint.sh --formatter junit
-    - ls /root/test_output
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
     - touch ${CI_PROJECT_DIR}/merged.xml
     - for i in $(ls ${CI_PROJECT_DIR}/test_output); do cat ${CI_PROJECT_DIR}/test_output/$i >> ${CI_PROJECT_DIR}/merged.xml; done;
@@ -92,10 +120,9 @@ backend-api:
     - sed -i 's/^<?xml version="1.0" encoding="UTF-8"?>$//g;s/<testsuites time="[0-9]\+\.[0-9]\+">//g;s/<\/testsuites>//g;/^$/d' ${CI_PROJECT_DIR}/merged.xml
     - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
-    - sleep 3000000000
 
   dependencies:
-    - build-backend
+    - get-cookies
   artifacts:
     when: always
     paths:
@@ -148,7 +175,6 @@ build-frontend:
       --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_TAG}"
       --build-arg=BUILD="dev"
-      --build-arg=API_URL="http://api.localhost.edu"
 
 build-nginx:
   image:
@@ -240,40 +266,3 @@ build-puppeteer:
       --dockerfile "Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/puppeteer:${CI_COMMIT_TAG}"
 
-get-cookies:
-  <<: *job_configuration
-  stage: pre-test
-  image:
-    name: ${CI_REGISTRY_IMAGE}/puppeteer
-    entrypoint: ['']
-  before_script:
-    - wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.6.1_amd64.deb
-    - dpkg -i mongodb-mongosh_1.6.1_amd64.deb
-    - |
-      mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
-    - echo "past"
-    - /bin/bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
-    - nginx_ip=$(getent hosts nginx | cut -d " " -f 1)
-    - echo "nginx ip -> $nginx_ip"
-    - echo "$nginx_ip localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip api.localhost.edu" >> /etc/hosts
-    - echo "$nginx_ip saml.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
-    - echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts
-
-  script:
-    - cd /root
-    - cat /etc/hosts
-    - touch cookie_file
-    - /bin/bash -c 'COOKIE_NETID1=""; while [ -z "$COOKIE_NETID1" ]; do echo "attepting to get cookie" && COOKIE_NETID1=$(node getcookie.js netid1 rutgers1); if [ -z "$COOKIE_NETID1" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID1" && echo "COOKIE_NETID1=\"$COOKIE_NETID1\"" >> /root/cookie_file ; fi; done;'
-    - /bin/bash -c 'COOKIE_NETID2=""; while [ -z "$COOKIE_NETID2" ]; do echo "attepting to get cookie" && COOKIE_NETID2=$(node getcookie.js netid2 rutgers2); if [ -z "$COOKIE_NETID2" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID2" && echo "COOKIE_NETID2=\"$COOKIE_NETID2\"" >> /root/cookie_file ; fi; done;'
-    - /bin/bash -c 'COOKIE_NETID3=""; while [ -z "$COOKIE_NETID3" ]; do echo "attepting to get cookie" && COOKIE_NETID3=$(node getcookie.js netid3 rutgers3); if [ -z "$COOKIE_NETID3" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID3" && echo "COOKIE_NETID3=\"$COOKIE_NETID3\"" >> /root/cookie_file ; fi; done;'
-    - /bin/bash -c 'COOKIE_NETID4=""; while [ -z "$COOKIE_NETID4" ]; do echo "attepting to get cookie" && COOKIE_NETID4=$(node getcookie.js netid4 rutgers4); if [ -z "$COOKIE_NETID4" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID4" && echo "COOKIE_NETID4=\"$COOKIE_NETID4\"" >> /root/cookie_file ; fi; done;'
-    - /bin/bash -c 'COOKIE_NETID5=""; while [ -z "$COOKIE_NETID5" ]; do echo "attepting to get cookie" && COOKIE_NETID5=$(node getcookie.js netid5 rutgers5); if [ -z "$COOKIE_NETID5" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID5" && echo "COOKIE_NETID5=\"$COOKIE_NETID5\"" >> /root/cookie_file ; fi; done;'
-    - /bin/bash -c 'COOKIE_NETID6=""; while [ -z "$COOKIE_NETID6" ]; do echo "attepting to get cookie" && COOKIE_NETID6=$(node getcookie.js netid6 rutgers6); if [ -z "$COOKIE_NETID6" ] ; then echo "no cookie" ; else echo "$COOKIE_NETID6" && echo "COOKIE_NETID6=\"$COOKIE_NETID6\"" >> /root/cookie_file ; fi; done;'
-  after_script:
-    - cp /root/cookie_file $CI_PROJECT_DIR/cookie_file
-    - cat /root/cookie_file
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/cookie_file

@@ -48,7 +48,7 @@ function Login() {
     const login = () => {
         let current_url = window.location.href;
         let dest = current_url.replace(/https:\/\/localhost.edu/, '');
-        window.location.href = process.env.API_URL+ '/login?dest=' + dest;
+        window.location.href = 'https://api.localhost.edu/login?dest=' + dest;
     };
 
     if (cookie_check) {

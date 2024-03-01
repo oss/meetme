@@ -4,8 +4,6 @@ RUN mkdir /root/build
 WORKDIR /root
 ARG BUILD
 ENV BUILD=${BUILD}
-ARG API_URL
-ENV API_URL=${API_URL}
 COPY package.json .
 RUN npm install .
 
