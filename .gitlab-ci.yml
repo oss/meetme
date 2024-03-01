@@ -88,7 +88,8 @@ backend-api:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
   script:
     - apt-get install bc -y
-    - /bin/bash -c './docker-entrypoint.sh --formatter junit'
+    - ls
+    - ./docker-entrypoint.sh --formatter junit
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
     - touch ${CI_PROJECT_DIR}/merged.xml
     - for i in $(ls ${CI_PROJECT_DIR}/test_output); do cat ${CI_PROJECT_DIR}/test_output/$i >> ${CI_PROJECT_DIR}/merged.xml; done;
