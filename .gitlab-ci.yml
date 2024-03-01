@@ -11,7 +11,7 @@ variables:
       variables:
         JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Xmx3000m
     - name: ${CI_REGISTRY_IMAGE}/frontend
-      alias: frontend localhost.edu
+      alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket
       alias: socket
       entrypoint:
@@ -28,7 +28,7 @@ variables:
       alias: mongo-the-third
 
     - name: ${CI_REGISTRY_IMAGE}/backend
-      alias: backend api.localhost.edu
+      alias: backend
       variables:
         LOGIN_URL: https://idp.localhost.edu/idp/profile/SAML2/Redirect/SSO
         PORT: 80
@@ -36,12 +36,6 @@ variables:
         - '/bin/bash'
         - '-c'
         - |
-          nginx_ip=$(getent hosts nginx | cut -d " " -f 1);
-          echo "$nginx_ip localhost.edu" >> /etc/hosts;
-          echo "$nginx_ip api.localhost.edu" >> /etc/hosts;
-          echo "$nginx_ip saml.localhost.edu" >> /etc/hosts;
-          echo "$(getent hosts openldap | cut -d " " -f 1) ldap.localhost.edu" >> /etc/hosts;
-          echo "$(getent hosts saml | cut -d " " -f 1) idp.localhost.edu" >> /etc/hosts
           sleep 80 && node main.js;
 
     - name: bitnami/openldap:2
@@ -52,7 +46,7 @@ variables:
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx
+      alias: nginx api.localhost.edu localhost.edu
       entrypoint:
         - '/bin/bash'
         - '-c'
