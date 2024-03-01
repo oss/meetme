@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  CI_DEBUG_SERVICES: 1
+  #CI_DEBUG_SERVICES: 1
 
 .setup_ip: &etc_hosts
   before_script:
@@ -15,7 +15,7 @@ variables:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml
-      alias: saml
+      alias: saml idp.localhost.edu
       variables:
         SIMPLESAMLPHP_SP_ENTITY_ID: saml-poc
         SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://api.localhost.edu/login
@@ -67,7 +67,7 @@ variables:
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx
+      alias: nginx localhost.edu api.localhost.edu
       entrypoint:
         - '/bin/bash'
         - '-c'
@@ -121,8 +121,6 @@ backend-api:
     - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
 
-  dependencies:
-    - get-cookies
   artifacts:
     when: always
     paths:
