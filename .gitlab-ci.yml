@@ -54,18 +54,6 @@ variables:
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
       alias: nginx localhost.edu api.localhost.edu
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          # wait for signal from backend
-          apt-get install curl -y;
-          curl -s http://backend:8000 > /dev/stdout;
-          while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;
-          # curl saml:8080/simplesaml > /dev/stdout
-          # while [ $? -ne 0 ]; do sleep 1 && echo "waiting for saml to start" && curl -s saml:8080/simplesaml; done;
-          # pass control to the default image entrypoint
-          exec /docker-entrypoint.sh
 
 stages:
   - build
