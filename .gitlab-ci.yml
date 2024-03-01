@@ -80,16 +80,15 @@ backend-api:
     name: ${CI_REGISTRY_IMAGE}/test-suite
     entrypoint: ['']
   before_script:
-    - wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.6.1_amd64.deb
-    - dpkg -i mongodb-mongosh_1.6.1_amd64.deb
     - |
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
   script:
     - apt-get install bc -y
+    - cd
     - ls
-    - ./docker-entrypoint.sh --formatter junit
+    - /bin/bash /root/docker-entrypoint.sh --formatter junit
     - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
     - touch ${CI_PROJECT_DIR}/merged.xml
     - for i in $(ls ${CI_PROJECT_DIR}/test_output); do cat ${CI_PROJECT_DIR}/test_output/$i >> ${CI_PROJECT_DIR}/merged.xml; done;
