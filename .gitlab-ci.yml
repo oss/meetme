@@ -39,7 +39,11 @@ variables:
     - name: ${CI_REGISTRY_IMAGE}/backend
       alias: backend
       command:
-        -  sleep 80 && node main.js
+        - '/bin/bash'
+        - '-c'
+        - |
+          sleep 80;
+          node main.js;
 
     - name: bitnami/openldap:2
       alias: openldap
