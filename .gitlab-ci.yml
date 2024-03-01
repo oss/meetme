@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  #CI_DEBUG_SERVICES: 1
+  CI_DEBUG_SERVICES: 1
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
@@ -66,7 +66,6 @@ variables:
           # while [ $? -ne 0 ]; do sleep 1 && echo "waiting for saml to start" && curl -s saml:8080/simplesaml; done;
           # pass control to the default image entrypoint
           exec /root/docker-entrypoint.sh "$@"
-        - '/bin/bash'
 
 stages:
   - build
