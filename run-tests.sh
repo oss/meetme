@@ -6,7 +6,6 @@ fi
 #./build.sh
 
 #docker-compose --file Docker-swarm.yml up --build -d
-curl -sSk 'https://api.localhost.edu/clear_db' > /dev/null
 
 docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.dropDatabase()'
 
