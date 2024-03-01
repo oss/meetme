@@ -53,7 +53,7 @@ variables:
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx localhost.edu api.localhost.edu
+      alias: nginx localhost.edu api.localhost.edu ldap.localhost.edu
 
 stages:
   - build
