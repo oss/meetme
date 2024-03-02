@@ -14,8 +14,10 @@ case $BUILD in
         export API_URL='https://api.localhost.edu'
     ;;
     prod|PROD)
-        params+='--mode production'
+        params="$params--mode production "
+        params="$params--config webpack.dev.js "
         export BUILD='prod'
+        export API_URL='https://api.localhost.edu'
     ;;
     *)
         echo 'invalid build env'
@@ -29,5 +31,5 @@ if [ $BUILD = "dev" ]; then
     echo "starting build"
     npx $EXE $params | tee /root/webpack.output
 else
-    npx $EXE $params
+    npx $EXE $params | tee /root/webpack.output
 fi

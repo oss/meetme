@@ -3,7 +3,6 @@ const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = env = {
-    mode: 'development',
     entry: {
         index: './index.js',
     },
@@ -49,30 +48,5 @@ module.exports = env = {
         new CopyWebpackPlugin({
             patterns: [{ from: './public/static', to: __dirname + '/build' }],
         }),
-        new webpack.NormalModuleReplacementPlugin(/DASHBOARD_TO_REPLACE/, function (
-            resource
-        ) {
-            if (process.env.BUILD === 'prod') {
-                resource.request = resource.request.replace(
-                    /DASHBOARD_TO_REPLACE/,
-                    './pages/error-404'
-                );
-            } else if (process.env.BUILD === 'dev') {
-                resource.request = resource.request.replace(
-                    /DASHBOARD_TO_REPLACE/,
-                    './pages/dashboard-dev'
-                );
-            } else
-                resource.request = resource.request.replace(
-                    /DASHBOARD_TO_REPLACE/,
-                    './components/INVALID_ENV'
-                ); //this will crash the app
-        }),
     ],
-    watchOptions: {
-        poll: 3000, // Check for changes every 3 seconds
-    },
-    optimization: {
-        minimize: false,
-    },
 };
