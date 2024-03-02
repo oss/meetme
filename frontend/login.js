@@ -6,7 +6,8 @@ import LargeButton from '/components/utils/large-button';
 import sheild_img from '/assets/RU_SHIELD_BLACK.png';
 import '/index.css';
 import Footer from '/components/footer';
-import authState from "./store/authState";
+import authStore from "./store/authStore";
+import userStore from "./store/userStore"
 
 function NavbarLogin() {
     return (
@@ -20,7 +21,8 @@ function NavbarLogin() {
 }
 
 function Login() {
-    const isLoggedIn = authState((state)=>state.isLoggedIn)
+    const isLoggedIn = authStore((state)=>state.isLoggedIn)
+    const hasUserData = userStore((state)=> '_id' in state)
 
     //set this up so we can redirect to custom pages
     const login = () => {
@@ -35,6 +37,13 @@ function Login() {
             set_logged_in(e.data);
         });
         */
+       if(!hasUserData){
+           return(
+               <div>
+                   Getting user data...
+               </div>
+           )
+       }
         return(
             <React.Suspense>
                 <App />

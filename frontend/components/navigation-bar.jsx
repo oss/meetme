@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import NavDropdown from './utils/nav-dropdown';
-import { socket } from '../socket';
 
 function renderNotificationIcon(numInvites) {
     return numInvites != null && numInvites != 0 ? (
@@ -9,53 +8,14 @@ function renderNotificationIcon(numInvites) {
             {numInvites}
         </div>
     ) : (
-        ''
+        <></>
     );
 }
 
-function Navbar() {
+function Navbar({numInvites}) {
     const [showInvites, setShowInvites] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
     const [showHamburger, setShowHamburger] = useState(false);
-    const [numInvites, setNumInvites] = useState(null);
-
-    useEffect(() => {
-        fetch(process.env.API_URL + '/user/me', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setNumInvites(
-                    data.data.pendingOrganizations.length +
-                    data.data.pendingCalendars.length
-                );
-            });
-
-        socket.on('pending_invitation_update', () => {
-            fetch(process.env.API_URL + '/user/me', {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    console.log(data);
-                    setNumInvites(
-                        data.data.pendingOrganizations.length +
-                        data.data.pendingCalendars.length
-                    );
-                });
-        });
-        return () => {
-            socket.offAny('pending_invitation_update');
-        };
-    }, []);
 
     return (
         <div

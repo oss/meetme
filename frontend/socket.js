@@ -21,4 +21,4 @@ s.on('error', function (err) {
     console.log(err); // this is changed from your code in last comment
 });
 
-export const socket = s;
+export default s;

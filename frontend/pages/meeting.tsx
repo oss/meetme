@@ -6,7 +6,7 @@ import MeetingCollaboratorRow from "../components/meeting/meeting-collaborator-r
 import { TimeBlock } from "../components/meeting/meeting-grid";
 import InvitePopup from "../components/meeting/popups/invite-popup";
 import { OrganizationAPI } from "../api/organization-api";
-import { socket } from "../socket";
+import socket from "../socket";
 import FinalMeetingPopup from "../components/meeting/popups/final-meeting-popup";
 interface IMeeting {
     editMode?: boolean;

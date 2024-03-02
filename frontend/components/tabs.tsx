@@ -1,10 +1,6 @@
 import { Tab } from "@headlessui/react";
 
-function classNames(...classes: string[]): string {
-    return classes.filter(Boolean).join(" ");
-}
-
-export default function Tabs({
+function Tabs({
     categories,
     panels,
 }: {
@@ -19,12 +15,8 @@ export default function Tabs({
                         <Tab
                             key={category}
                             className={({ selected }) =>
-                                classNames(
-                                    "transition-all ease-linear duration-75 w-full rounded-lg p-2.5 text-base font-medium leading-5 text-red-700 outline-none",
-                                    selected
-                                        ? "bg-red-400 shadow text-white"
-                                        : "text-red-300 hover:shadow-md"
-                                )
+                                `transition-all ease-linear duration-75 w-full rounded-lg p-2.5 text-base font-medium leading-5 text-red-700 outline-none
+                                ${selected ? "bg-red-400 shadow text-white": "text-red-300 hover:shadow-md" }`
                             }
                         >
                             {category}
@@ -40,3 +32,5 @@ export default function Tabs({
         </Tab.Group>
     );
 }
+
+export default Tabs;

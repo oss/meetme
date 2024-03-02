@@ -5,7 +5,7 @@ import CalendarOwner from './calendar/calendar-owner';
 import CalendarUser from './calendar/calendar-user';
 import CalendarViewer from './calendar/calendar-viewer';
 import CalendarEditor from './calendar/calendar-editor';
-import { socket } from '../socket';
+import socket from '../socket';
 import Cookies from 'js-cookie';
 
 function CalendarLoader() {

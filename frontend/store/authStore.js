@@ -1,7 +1,8 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware'
 import Cookies from 'js-cookie';
 
-const useStore = create( set => {
+const useStore = create(subscribeWithSelector((set) => {
     const validateWhoamiStatus = async () => {
         const resp = await fetch(process.env.API_URL + '/whoami', {
             method: 'GET',
@@ -40,6 +41,6 @@ const useStore = create( set => {
         isLoggedIn: false,
         userData: null,
     }
-})
+}))
 
 export default useStore;
