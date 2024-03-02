@@ -7,8 +7,8 @@ router.get('/calendars', async function (req, res) {
     const netid = req.get('netid');
     if(netid === undefined || netid === null){
         res.json({
-            Status: "Error",
-            Error: "Missing netid"
+            Status: "error",
+            error: "Missing netid"
         });
         return;
     }

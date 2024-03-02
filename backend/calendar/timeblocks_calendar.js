@@ -14,16 +14,16 @@ router.patch(
     const operation = req.body.operation;
     if (operation === undefined || operation === null) {
       res.json({
-        Status: 'Error',
-        Error: 'No operation provided',
+        Status: 'error',
+        error: 'No operation provided',
       });
       return;
     }
 
     if (!operation.toString().match('add|delete|replace')) {
       res.json({
-        Status: 'Error',
-        Error: 'Invalid operation',
+        Status: 'error',
+        error: 'Invalid operation',
       });
       return;
     }
@@ -31,8 +31,8 @@ router.patch(
     let timeblocks = req.body.timeblocks;
     if (timeblocks === undefined || timeblocks === null) {
       res.json({
-        Status: 'Error',
-        Error: 'Missing timeblocks',
+        Status: 'error',
+        error: 'Missing timeblocks',
       });
       return;
     }
@@ -48,8 +48,8 @@ router.patch(
         for (let i = 0; i < timeblocks.length; i++) {
           if (timeblocks[i].start >= timeblocks[i].end) {
             res.json({
-              Status: 'Error',
-              Error: 'Invalid timeblocks',
+              Status: 'e',
+              error: 'Invalid timeblocks',
             });
             return;
           }
@@ -59,8 +59,8 @@ router.patch(
             )
           ) {
             res.json({
-              Status: 'Error',
-              Error: 'Invalid timeblock',
+              Status: 'error',
+              error: 'Invalid timeblock',
             });
             return;
           }
@@ -69,8 +69,8 @@ router.patch(
         for (let i = 1; i < timeblocks.length; i++) {
           if (timeblocks[i - 1].end > timeblocks[i].start) {
             res.json({
-              Status: 'Error',
-              Error: 'Invalid timeblocks',
+              Status: 'error',
+              error: 'Invalid timeblocks',
             });
             return;
           }
@@ -99,7 +99,7 @@ router.get(
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not eixst or you do not have access to this calendar',
       });
       return;
@@ -119,7 +119,7 @@ router.get(
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to modify this calendar',
         });
         return;
@@ -146,8 +146,8 @@ async function repmode(netid, calendar_id, res, timeblocks) {
 
   if (calendar === null) {
     res.json({
-      Status: 'Error',
-      Error: 'No valid calendar found',
+      Status: 'error',
+      error: 'No valid calendar found',
     });
     return;
   }

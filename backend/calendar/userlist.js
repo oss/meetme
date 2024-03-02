@@ -21,7 +21,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
     if (cal === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The calendar does not exist or you do not have permission to access this calendar',
       });
       return;
@@ -41,7 +41,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
       if (org === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to modify this calendar',
         });
         return;

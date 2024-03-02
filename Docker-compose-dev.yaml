@@ -8,6 +8,7 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 389:389
     networks:
       - no-internet
       - authnet
@@ -24,6 +25,8 @@ services:
     networks:
       - no-internet
       - mongo-net
+    ports:
+      - 27017:27017
   mongo-jr:
     image: database-meetme
     networks:
@@ -73,6 +76,8 @@ services:
 
   backend:
     image: backend-meetme
+    environment:
+      - COOKIE_DURATION=100000
     networks:
       - no-internet
       - authnet
@@ -117,6 +122,8 @@ services:
       - ./openldap_data:/bitnami/openldap
       - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
       - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
+    ports:
+      - 1389:1389
 
   shibboleth:
     image: shibboleth-idp-meetme

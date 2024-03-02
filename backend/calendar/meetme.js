@@ -17,7 +17,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   ) {
     res.json({
       Status: 'error',
-      Error: 'invalid body',
+      error: 'invalid body',
     });
     return;
   }
@@ -36,8 +36,8 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   };
   if (timezone_settings === undefined || timezone_settings === null) {
     res.json({
-      Status: 'Error',
-      Error: 'No timezone',
+      Status: 'error',
+      error: 'No timezone',
     });
     return;
   }
@@ -55,7 +55,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   if (calendar_data === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'The calendar does not exist or you do not have permission to access this calendar',
     });
     return;
@@ -76,7 +76,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
     if (org_owner === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The calendar does not exist or you do not have permission to access this calendar',
       });
       return;
@@ -109,7 +109,7 @@ router.post(
     ) {
       res.json({
         Status: 'error',
-        Error: 'invalid body',
+        error: 'invalid body',
       });
       return;
     }
@@ -122,8 +122,8 @@ router.post(
 
     if (timezone_settings === undefined || timezone_settings === null) {
       res.json({
-        Status: 'Error',
-        Error: 'No timezone',
+        Status: 'error',
+        error: 'No timezone',
       });
       return;
     }
@@ -150,7 +150,7 @@ router.post(
     if (calendar_data === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The calendar does not exist or you do not have permission to access this calendar',
       });
       return;
@@ -171,7 +171,7 @@ router.post(
       if (org_owner === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have permission to access this calendar',
         });
         return;

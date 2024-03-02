@@ -20,7 +20,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   if (cal === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'Calendar does not eixst or you do not have access to this calendar',
     });
     return;
@@ -38,7 +38,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     if (org === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The calendar does not exist or you do not have access to modify this calendar',
       });
       return;
@@ -48,8 +48,8 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   //basic name restrictions maybe implement more
   if (!(await valid_name(new_name))) {
     res.json({
-      Status: 'Error',
-      Error: 'Invalid name',
+      Status: 'error',
+      error: 'Invalid name',
     });
     return;
   }
@@ -62,7 +62,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   } catch (e) {
     res.json({
       Status: 'error',
-      Error: e,
+      error: e,
     });
     return;
   }
@@ -88,7 +88,7 @@ router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
   if (cal === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'The calendar does not exist or you do not have access to modify this calendar',
     });
     return;
@@ -108,7 +108,7 @@ router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
     if (org === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The calendar does not exist or you do not have access to modify this calendar',
       });
       return;

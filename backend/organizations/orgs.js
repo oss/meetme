@@ -11,7 +11,7 @@ router.post('/', isAuthenticated, async function (req, res) {
   if (req.body === undefined) {
     res.json({
       Status: 'error',
-      Error: 'Missing body',
+      error: 'Missing body',
     });
     return;
   }
@@ -21,9 +21,9 @@ router.post('/', isAuthenticated, async function (req, res) {
     const Organization = new Organization_schema();
     Organization.name = req.body.name || 'unnamed organization';
     Organization.owner = req.user.uid;
-    Organization._id = createHash('sha256')
-      .update(new Date().getTime().toString() + req.user.uid)
-      .digest('hex');
+    Organization._id = createHash('sha512')
+      .update(new Date().getTime().toString() + req.user.uid + Math.random())
+      .digest('base64url');
     Organization.calendars = [];
     Organization.admins = [];
     Organization.editors = [];
@@ -44,7 +44,7 @@ router.post('/', isAuthenticated, async function (req, res) {
   } catch (error) {
     res.json({
       Status: 'error',
-      Error: JSON.stringify(error),
+      error: JSON.stringify(error),
     });
   }
 });
@@ -68,7 +68,7 @@ router.get('/:organization_id', isAuthenticated, async function (req, res) {
     if (org === null) {
       res.json({
         Status: 'error',
-        Error: 'Org does not exist or you do not have access to this org',
+        error: 'Org does not exist or you do not have access to this org',
       });
       return;
     }
@@ -79,7 +79,7 @@ router.get('/:organization_id', isAuthenticated, async function (req, res) {
   } catch (error) {
     res.json({
       Status: 'error',
-      Error: JSON.stringify(error),
+      error: JSON.stringify(error),
     });
   }
 });
@@ -96,7 +96,7 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
     if (org === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Organization not found or you do not have permission to delete this organization',
       });
       return;
@@ -142,8 +142,8 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
     });
   } catch (error) {
     res.json({
-      Status: 'Error',
-      Error: JSON.stringify(error),
+      Status: 'error',
+      error: JSON.stringify(error),
     });
   }
 });
@@ -155,8 +155,8 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
 
     if (!uid.toString().match(req.user.uid)) {
       res.json({
-        Status: 'Error',
-        Error: 'Incorrect target users payload',
+        Status: 'error',
+        error: 'Incorrect target users payload',
       });
       return;
     }
@@ -169,7 +169,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
     if (target_org === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'The organization does not exist or you do not have access to share',
       });
       return;

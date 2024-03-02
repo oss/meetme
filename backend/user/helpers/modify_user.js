@@ -13,9 +13,9 @@ async function create_user(netid) {
   user.account_created = new Date().getTime();
   const extra_user_info = await getinfo_from_netid(netid);
   console.log(extra_user_info);
-  user.name.first = extra_user_info.firstName;
+  user.name.first = extra_user_info.givenName;
   user.name.middle = null;
-  user.name.last = extra_user_info.lastName;
+  user.name.last = extra_user_info.sn;
   user.calendars = [];
 
   try {
@@ -33,8 +33,8 @@ async function create_user(netid) {
     //adds user
   } catch (e) {
     return {
-      Status: 'Error',
-      Error: 'Could not add user to database',
+      Status: 'error',
+      error: 'Could not add user to database',
     };
   }
 }

@@ -5,7 +5,7 @@ function isAuthenticated(req, res, next) {
     console.log(new_time);
     console.log(req.session.time);
     console.log(new_time - req.session.time);
-    if(new_time - req.session.time >= 2){
+    if(new_time - req.session.time >= process.env.COOKIE_DURATION){
         console.log("if pass");
         req.session = null;
         res.json({
@@ -18,9 +18,10 @@ function isAuthenticated(req, res, next) {
     console.log('request is authenticated... continuing...');
     next();
   } else {
-    res.json({
-      Status: 'Error',
-      Error: 'not logged in',
+    req.session = null;
+    res.status(401).json({
+      Status: 'error',
+      error: 'Invalid or Missing Credentials',
     });
     return;
   }

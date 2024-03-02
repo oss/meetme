@@ -14,7 +14,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
   if (newowner === undefined) {
     res.json({
       Status: 'error',
-      Error: 'Missing body',
+      error: 'Missing body',
     });
     return;
   }
@@ -27,7 +27,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
   ) {
     res.json({
       Status: 'error',
-      Error: 'invalid body format',
+      error: 'invalid body format',
     });
     return;
   }
@@ -42,7 +42,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
   if (target_cal === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'Calendar does not exist or you do not have permissions to change ownership of this calendar',
     });
     return;
@@ -54,7 +54,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     if (org === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not have permissions to change ownership of this calendar',
       });
       return;
@@ -68,7 +68,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     if ((await User_schema.findOne({ _id: newowner.id })) === null) {
       res.json({
         Stauts: 'error',
-        Error: 'User has not made an account',
+        error: 'User has not made an account',
       });
       return;
     }
@@ -76,7 +76,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     if ((await Org_schema.findOne({ _id: newowner.id })) === null) {
       res.json({
         Status: 'error',
-        Error: 'Org does not exist',
+        error: 'Org does not exist',
       });
       return;
     }
@@ -95,7 +95,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
   } catch (e) {
     res.json({
       Status: 'error',
-      Error: 'Error occred when updating owner',
+      error: 'Error occred when updating owner',
     });
     return;
   }

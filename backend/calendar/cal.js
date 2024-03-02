@@ -18,8 +18,8 @@ router.post('/', isAuthenticated, async function (req, res) {
     !req.body.public.toString().match('true|false')
   ) {
     req.json({
-      Status: 'Error',
-      Error: 'Need a valid public status',
+      Status: 'error',
+      error: 'Need a valid public status',
     });
     return;
   }
@@ -29,8 +29,8 @@ router.post('/', isAuthenticated, async function (req, res) {
     const name = req.get('name');
     if (name === undefined) {
         res.json({
-            Status: "Error",
-            Error: "No name found"
+            Status: "error",
+            error: "No name found"
         });
         return;
     }
@@ -49,8 +49,8 @@ router.post('/', isAuthenticated, async function (req, res) {
     )
   ) {
     res.json({
-      Status: 'Error',
-      Error: 'Invalid owner syntax',
+      Status: 'error',
+      error: 'Invalid owner syntax',
     });
     return;
   }
@@ -59,8 +59,8 @@ router.post('/', isAuthenticated, async function (req, res) {
   if (owner.type === 'individual') {
     if (owner.id !== req.user.uid) {
       res.json({
-        Status: 'Error',
-        Error: 'Owner does not match session',
+        Status: 'error',
+        error: 'Owner does not match session',
       });
       return;
     }
@@ -77,8 +77,8 @@ router.post('/', isAuthenticated, async function (req, res) {
 
     if (target_org === null) {
       res.json({
-        Status: 'Error',
-        Error: 'Org not found or not able to add calendar to org',
+        Status: 'error',
+        error: 'Org not found or not able to add calendar to org',
       });
       return;
     }
@@ -87,8 +87,8 @@ router.post('/', isAuthenticated, async function (req, res) {
   let timeblocks = req.body.timeblocks;
   if (timeblocks === undefined) {
     res.json({
-      Status: 'Error',
-      Error: 'Must have timeblock',
+      Status: 'error',
+      error: 'Must have timeblock',
     });
     return;
   }
@@ -96,8 +96,8 @@ router.post('/', isAuthenticated, async function (req, res) {
   try {
     if (timeblocks.length === 0) {
       res.json({
-        Status: 'Error',
-        Error: 'You must have at least 1 duration timeset',
+        Status: 'error',
+        error: 'You must have at least 1 duration timeset',
       });
       return;
     }
@@ -105,14 +105,14 @@ router.post('/', isAuthenticated, async function (req, res) {
     console.log(e);
     if (e.name === 'SyntaxError') {
       res.json({
-        Status: 'Error',
-        Error: 'Invalid JSON for timeblocks',
+        Status: 'error',
+        error: 'Invalid JSON for timeblocks',
       });
       return;
     } else {
       res.json({
-        Status: 'Error',
-        Error: 'Json Error occured in timeblock',
+        Status: 'error',
+        error: 'Json Error occured in timeblock',
       });
       return;
     }
@@ -126,15 +126,15 @@ router.post('/', isAuthenticated, async function (req, res) {
       )
     ) {
       res.json({
-        Status: 'Error',
-        Error: 'Invalid timeblock',
+        Status: 'error',
+        error: 'Invalid timeblock',
       });
       return;
     }
     if (timeblock.start > timeblock.end) {
       res.json({
-        Status: 'Error',
-        Error: 'Timeblock start cannot occur after end',
+        Status: 'error',
+        error: 'Timeblock start cannot occur after end',
         Timeblock: { start: timeblock.start, end: timeblock.end },
       });
       return;
@@ -144,8 +144,8 @@ router.post('/', isAuthenticated, async function (req, res) {
       const timeblock_current = timeblocks[i];
       if (timeblock_prev.end > timeblock_current.start) {
         res.json({
-          Status: 'Error',
-          Error: 'Timeblock conflict',
+          Status: 'error',
+          error: 'Timeblock conflict',
           Conflict: {
             before: timeblock_prev,
             after: timeblock_current,
@@ -160,9 +160,9 @@ router.post('/', isAuthenticated, async function (req, res) {
     const calendar_maindata = new Calendar_schema_main();
     const calendar_metadata = new Calendar_schema_meta();
 
-    const calendar_id = createHash('sha256')
-      .update(new Date().getTime().toString() + owner.owner_id)
-      .digest('hex');
+    const calendar_id = createHash('sha512')
+      .update(new Date().getTime().toString() + owner.owner_id + Math.random())
+      .digest('base64url');
     calendar_maindata._id = calendar_id;
     calendar_metadata._id = calendar_id;
 
@@ -226,8 +226,8 @@ router.post('/', isAuthenticated, async function (req, res) {
     console.log(error);
 
     res.status(500).json({
-      Status: 'Error',
-      Error: 'Backend issue occured',
+      Status: 'error',
+      error: 'Backend issue occured',
     });
   }
 });
@@ -238,8 +238,8 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
     const cal = await Calendar_schema_main.findOne({ _id: calendar_id });
     if (cal === null) {
       res.json({
-        Status: 'Error',
-        Error: 'No calendar found',
+        Status: 'error',
+        error: 'No calendar found',
       });
       return;
     }
@@ -271,7 +271,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       } else {
         res.json({
           Status: 'error',
-          Error: 'Not able to delete calendar',
+          error: 'Not able to delete calendar',
         });
         return;
       }
@@ -284,7 +284,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       if (allow === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'you cannot delete this calendar because you do not have appropriate permissions',
         });
         return;
@@ -323,8 +323,8 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
   } catch (e) {
     console.log(e);
     res.json({
-      Status: 'Error',
-      Error: JSON.stringify(e),
+      Status: 'error',
+      error: JSON.stringify(e),
     });
   }
 });
@@ -350,7 +350,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
   if (cal_meta === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'This calendar does not exist or you do not have access to this calendar',
     });
     return;
@@ -367,7 +367,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
     if (usr === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'This calendar does not exist or you do not have access to this calendar',
       });
       return;
@@ -398,7 +398,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
         //owner is org but shared based on individual
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to this calendar',
         });
       else
@@ -421,7 +421,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
   if (maindata === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'The calendar does not exist or you do not have access to this calendar',
     });
 
@@ -436,7 +436,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
     if (usr === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not ave access to this calendar',
       });
       return;
@@ -465,7 +465,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
       )
         res.json({
           Status: 'error',
-          Error:
+          error:
             'The calendar does not exist or you do not have access to this calendar',
         });
       else
@@ -499,7 +499,7 @@ router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
     if (links === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'Calendar does not exist or you do not have access to this calendar',
       });
       return;
@@ -511,7 +511,7 @@ router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
   } catch (e) {
     res.json({
       Status: 'error',
-      Error: 'backend error occured',
+      error: 'backend error occured',
     });
   }
 });
@@ -523,8 +523,8 @@ router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
 
     if (!uid.toString().match(req.user.uid)) {
         res.json({
-            Status: "Error",
-            Error: "Incorrect target users payload"
+            Status: "error",
+            error: "Incorrect target users payload"
         });
         return;
     }
@@ -539,7 +539,7 @@ router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
     if (target_cal === null) {
         res.json({
             Status: 'error',
-            Error: 'The calendar does not exist or you do not have access to share'
+            error: 'The calendar does not exist or you do not have access to share'
         });
         return;
     }
@@ -558,7 +558,7 @@ router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
 });
 
 router.patch('/:calendar_id/kick', isAuthenticated, async function (req, res){
-    res.json({Status: 'error', Error: 'not implemented yet'})
+    res.json({Status: 'error', error: 'not implemented yet'})
 });
 */
 

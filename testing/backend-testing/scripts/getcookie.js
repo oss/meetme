@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-async function main(username, password) {
+async function get_cookie() {
   const uname = process.argv[2];
   const pw = process.argv[3];
   const browser = await puppeteer.launch({
@@ -30,21 +30,30 @@ async function main(username, password) {
     waitUntil: 'networkidle0',
   });
 
-  await page.goto('https://api.localhost.edu/login');
-  const print_cookie_arr = [];
+  let cookie_val = null;
   const cookie_arr = await page.cookies();
   for (let i = 0; i < cookie_arr.length; i++) {
     const cookie = cookie_arr[i];
-    if (cookie.name === 'session.sig' || cookie.name === 'session' || cookie.name === 'JSESSIONID' || cookie.name === 'shib_idp_session') {
-      print_cookie_arr.push(cookie);
+    if (cookie.name === 'session') {
+      cookie_val = atob(cookie.value)
     }
     //console.log(cookie)
   }
-
   await browser.close();
-  for(let i=0;i<print_cookie_arr.length;i++){
-      const cookie = print_cookie_arr[i];
-      console.log(cookie.name+"="+cookie.value)
-  }
+  return cookie_val;
 }
-main();
+
+async function main(){
+    x = null;
+    while(x == null){
+        try{
+            x = await get_cookie()
+        } catch(e){
+            console.log('error occured, trying again...');
+        }
+    }
+    console.log(x);
+    return;
+}
+
+main()

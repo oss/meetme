@@ -11,8 +11,8 @@ router.patch('/alias', isAuthenticated, async function (req, res) {
   //check for banned words
   if (!valid_alias(new_alias)) {
     res.json({
-      Status: 'Error',
-      Error: 'invalid alias',
+      Status: 'error',
+      error: 'invalid alias',
     });
     return;
   }

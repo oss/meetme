@@ -15,23 +15,23 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
   if (new_users === undefined) {
     res.json({
       Status: 'error',
-      Error: 'missing new_users body',
+      error: 'missing new_users body',
     });
     return;
   }
 
   if (!new_users.toString().match('(?:[a-zA-Z0-9]+,?)+')) {
     res.json({
-      Status: 'Error',
-      Error: 'Incorrect new users payload',
+      Status: 'error',
+      error: 'Incorrect new users payload',
     });
     return;
   }
 
   if (new_users.length === 0) {
     res.json({
-      Status: 'Error',
-      Error: 'New users body is empty',
+      Status: 'error',
+      error: 'New users body is empty',
     });
     return;
   }
@@ -44,7 +44,7 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
   if (target_org === null) {
     res.json({
       Status: 'error',
-      Error: 'Organization does not exist or you do not have access',
+      error: 'Organization does not exist or you do not have access',
     });
     return;
   }
@@ -124,7 +124,7 @@ router.patch('/:organization_id/decline', isAuthenticated, async function (req, 
   if (target_org === null) {
     res.json({
       Status: 'error',
-      Error: 'you do not have access to this org or this org does not exist',
+      error: 'you do not have access to this org or this org does not exist',
     });
     return;
   }
@@ -145,7 +145,7 @@ router.patch('/:organization_id/decline', isAuthenticated, async function (req, 
 
   res.json({
     Status: 'ok',
-    org: req.params.org_id,
+    org: req.params.organization_id,
   });
 });
 
@@ -160,13 +160,13 @@ router.patch('/:organization_id/accept', isAuthenticated, async function (req, r
   if (target_org === null) {
     res.json({
       Status: 'error',
-      Error: 'Organization does not exist or you do not have access',
+      error: 'Organization does not exist or you do not have access',
     });
     return;
   }
 
   await Org_schema.updateOne(
-    { _id: req.params.org_id },
+    { _id: req.params.organization_id },
     {
       $pull: { pendingMembers: { _id: req.user.uid } },
       $push: { members: { _id: req.user.uid } },
@@ -176,14 +176,14 @@ router.patch('/:organization_id/accept', isAuthenticated, async function (req, r
   await User_schema.updateOne(
     { _id: req.user.uid },
     {
-      $pull: { pendingOrganizations: { _id: org_id } },
-      $push: { organizations: { _id: org_id } },
+      $pull: { pendingOrganizations: { _id: req.params.organization_id } },
+      $push: { organizations: { _id: req.params.organization_id } },
     }
   );
 
   res.json({
     Status: 'ok',
-    org: req.params.org_id,
+    org: req.params.organization_id,
   });
 });
 

@@ -13,3 +13,15 @@ do
     cat /etc/nginx/conf.d/meetme.conf
     echo "------------------"
 done
+
+cat << EOF >> /etc/nginx/nginx.conf
+stream {
+    server {
+        listen 389;
+        listen [::]:389;
+        proxy_pass openldap:1389;
+    }
+}
+EOF
+
+cat /etc/nginx/nginx.conf

@@ -12,8 +12,8 @@ router.patch('/:calendar_id/me', async function (req, res) {
   const mode = req.body.mode;
   if (mode === undefined || !mode.toString().match('add|subtract|replace')) {
     res.json({
-      Status: 'Error',
-      Error: 'Invalid operation',
+      Status: 'error',
+      error: 'Invalid operation',
     });
     return;
   }
@@ -30,14 +30,14 @@ router.patch('/:calendar_id/me', async function (req, res) {
       for (let i = 0; i < timeblocks.length; i++) {
         if (timeblocks[i] == null) {
           return res.json({
-            Status: 'Error',
-            Error: `Timeblocks at index ${i} is null.`,
+            Status: 'error',
+            error: `Timeblocks at index ${i} is null.`,
           });
         }
         if (timeblocks[i].start >= timeblocks[i].end) {
           res.json({
             Status: 'error',
-            Error: 'Invalid timeblocks',
+            error: 'Invalid timeblocks',
             timeblock: timeblocks[i].start,
           });
           return;
@@ -49,7 +49,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
         ) {
           res.json({
             Status: 'error',
-            Error: 'Invalid timeblock',
+            error: 'Invalid timeblock',
             timeblock: timeblocks[i],
           });
           return;
@@ -60,7 +60,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
         ) {
           res.json({
             Status: 'error',
-            Error: 'not a full minute',
+            error: 'not a full minute',
             timeblock: timeblocks[i],
           });
           return;
@@ -70,8 +70,8 @@ router.patch('/:calendar_id/me', async function (req, res) {
       for (let i = 1; i < timeblocks.length; i++) {
         if (timeblocks[i - 1].end > timeblocks[i].start) {
           res.json({
-            Status: 'Error',
-            Error: 'Invalid times',
+            Status: 'error',
+            error: 'Invalid times',
             timeblock: [
               { index: i - 1, end: timeblocks[i - 1].end },
               { index: i, start: timeblocks[i].start },
@@ -86,7 +86,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
       } catch (e) {
         return res.json({
           Status: 'error',
-          Error: e,
+          error: e,
         });
       }
 
@@ -116,8 +116,8 @@ async function repmode(netid, calendar_id, res, timeblocks) {
 
     if (calendar === null) {
       res.json({
-        Status: 'Error',
-        Error: 'No valid calendar found',
+        Status: 'error',
+        error: 'No valid calendar found',
       });
 
       return;

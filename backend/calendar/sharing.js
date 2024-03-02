@@ -14,7 +14,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
   if (new_users === undefined || new_users === null) {
     res.json({
       Status: 'error',
-      Error: 'No users found',
+      error: 'No users found',
     });
     return;
   }
@@ -22,7 +22,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
   if (new_users.length === 0) {
     res.json({
       Status: 'error',
-      Error: 'new_users is empty',
+      error: 'new_users is empty',
     });
     return;
   }
@@ -30,7 +30,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
   if (!JSON.stringify(new_users).match('(?:"[a-zA-Z0-9]+",?)+')) {
     res.json({
       Status: 'error',
-      Error: 'Invalid new_user syntax',
+      error: 'Invalid new_user syntax',
     });
     return;
   }
@@ -52,7 +52,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
   if (calendar === null) {
     res.json({
       Status: 'error',
-      Error:
+      error:
         'calendar does not exist or you do not have permission to modify this calendar',
     });
     return;
@@ -62,7 +62,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
     // temporary ---> cannot share calendars bound to organizations with individuals
     return res.json({
       Status: 'error',
-      Error:
+      error:
         'You do not have permissions to share, organization check failed',
     });
 
@@ -143,7 +143,7 @@ router.delete(
     if (target_users === undefined || target_users === null) {
       res.json({
         Status: 'error',
-        Error: 'No users found',
+        error: 'No users found',
       });
       return;
     }
@@ -151,7 +151,7 @@ router.delete(
     if (target_users.length === 0) {
       res.json({
         Status: 'error',
-        Error: 'target_users is empty',
+        error: 'target_users is empty',
       });
       return;
     }
@@ -159,7 +159,7 @@ router.delete(
     if (!JSON.stringify(target_users).match('(?:"[a-zA-Z0-9]+",?)+')) {
       res.json({
         Status: 'error',
-        Error: 'Invalid target_user syntax',
+        error: 'Invalid target_user syntax',
       });
       return;
     }
@@ -181,7 +181,7 @@ router.delete(
     if (calendar === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'calendar does not exist or you do not have permission to modify this calendar',
       });
       return;
@@ -197,7 +197,7 @@ router.delete(
       if (org_info === null) {
         res.json({
           Status: 'error',
-          Error:
+          error:
             'Calendar does not exist or you do not have permissions to share',
         });
         return;
@@ -259,7 +259,7 @@ router.patch(
     if (calendar === null) {
       res.json({
         Status: 'error',
-        Error:
+        error:
           'You have not been invited to this calendar or this calendar does not exist',
       });
       return;
