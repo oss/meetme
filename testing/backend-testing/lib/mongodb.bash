@@ -22,7 +22,7 @@ function mongo_dump {
     if [ -v GITLAB_CI ]; then
         MONGO_URI='mongodb://mongo:27017/meetme'
     fi
-    echo "$( mongodump --db=meetme --uri "$MONGO_URI" --out $temp_dir --excludeCollection=mongo_events 2> /dev/null && find $temp_dir -type f -print | xargs md5sum | cut -d ' ' -f1 )" || fail
+    mongodump --db=meetme --uri "$MONGO_URI" --out $temp_dir --excludeCollection=mongo_events 2> /dev/null && find $temp_dir -type f -print | xargs md5sum | cut -d ' ' -f1 | md5sum | cut -d ' ' -f1  || fail
     #| cut -d ' ' -f1 | md5sum | cut -d ' ' -f1
     rm -rf $temp_dir
 }
