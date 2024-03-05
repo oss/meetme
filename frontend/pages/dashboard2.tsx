@@ -2,14 +2,16 @@ import userStore from '../store/userStore';
 import metadataStore from '../store/dashboard/calendarMetadata';
 import dialogueStore from '../store/dialogueStore';
 import { Fragment, useEffect, useId } from 'react';
-import { Menu, Tab, Transition } from '@headlessui/react';
+import { Dialog, Menu, Tab, Transition } from '@headlessui/react';
 import Tile from '../components/tile';
-import { idToAlphaNumeric } from '../lib/alphaNumericConversions';
 import { Link } from 'react-router-dom';
+import RedButton from '../components/utils/red-button';
+import { useState, useRef } from 'react';
+
 
 function Dashboard() {
     const calendarMetadata = metadataStore((store) => store)
-    const dialogueHook = dialogueStore((store) => store.setPanel)
+    const [dialogueHook, closeDialogue] = dialogueStore((store) => [store.setPanel, store.closePanel])
 
     const id = useId();
     useEffect(() => {
@@ -18,6 +20,103 @@ function Dashboard() {
             calendarMetadata.functions.stopUpdated()
         }
     }, [])
+
+    function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayError, errorMessage = '', placeholder = '', description = '' }) {
+        const [textBarValue, setTextBarValue] = useState(placeholder);
+
+        return (
+            <>
+                <Dialog.Title>{titleText}</Dialog.Title>
+                <Dialog.Description>
+                    <p className="text-sm text-gray-500">
+                        {description}
+                    </p>
+                </Dialog.Description>
+                <div className='h-1' />
+                <input type="text" className="
+                        w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+                        focus:border-sky-500 focus:ring-1 focus:ring-sky-500" placeholder={placeholder} onChange={(e) => { setTextBarValue(e.target.value) }} />
+                <div className='h-1' />
+                <div className="absolute text-xs text-rose-600">
+                    {displayError ? errorMessage : <></>}
+                </div>
+                <div className='float-end'>
+                    <RedButton onClick={() => {
+                        onClickPassthrough({ textBarValue });
+                    }}>
+                        {buttonText}
+                    </RedButton>
+                </div>
+            </>
+        )
+    }
+
+    function RenameDialogue({ cal_id }) {
+        const [displayError, setDisplayError] = useState(false)
+        const [errorMessage, setErrorMessage] = useState('some error message')
+
+        return (
+            <TextBarDialogue
+                buttonText='Rename'
+                titleText='Rename Calendar'
+                placeholder='untitled'
+                displayError={displayError}
+                errorMessage={errorMessage}
+                onClickPassthrough={async ({ textBarValue }) => {
+                    const req = await fetch(`${process.env.API_URL}/cal/${cal_id}/name`, {
+                        credentials: 'include', method: 'PATCH', headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ new_name: textBarValue })
+                    });
+                    const resp = await req.json()
+                    if (resp.Status === 'ok') {
+                        closeDialogue()
+                    }
+                    else {
+                        setErrorMessage(resp.error)
+                        setDisplayError(true)
+                    }
+                }} />
+        )
+    }
+
+    function DeleteDialogue({ cal_id }) {
+        const [displayError, setDisplayError] = useState(false)
+        const [errorMessage, setErrorMessage] = useState('some error message')
+        const confirmationString = Math.random().toString(36).slice(2)
+
+        return (
+            <TextBarDialogue
+                buttonText='Delete'
+                titleText='Delete Calendar'
+                description={`Type in the phrase ${confirmationString} to delete`}
+                displayError={displayError}
+                errorMessage={errorMessage}
+                onClickPassthrough={async ({ textBarValue }) => {
+                    if (textBarValue !== confirmationString) {
+                        setErrorMessage('Confirmation code incorrect')
+                        setDisplayError(true)
+                        return
+                    }
+
+                    const req = await fetch(`${process.env.API_URL}/cal/${cal_id}`, {
+                        credentials: 'include', method: 'DELETE', headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    const resp = await req.json()
+                    if (resp.Status === 'ok') {
+                        closeDialogue()
+                    }
+                    else {
+                        setErrorMessage(JSON.stringify(resp))
+                        setDisplayError(true)
+                    }
+                }} />
+
+        )
+    }
 
     function HeaderButton() {
         console.log('header')
@@ -41,90 +140,75 @@ function Dashboard() {
     function MeetingTileBody({ cal }) {
         if (cal.isLoaded)
             return (
-                <div className='w-full md:w-[30%]'>
-                    <div className='group'>
-                        <Tile>
-                            <Link to={"/cal/" + cal._id}>
+                <div className='group'>
+                    <Tile>
+                        <Link to={`/cal/${cal._id}`}>
+                            <div className='bg-white grow'>
                                 <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
                                     <p className="text-x font-semibold break-words" >
+                                        <wbr />
                                         {cal.data.name}
                                     </p>
                                     <p className="text-sm font-medium break-words text-slate-500/50">
                                         {cal.data.owner._id}
                                     </p>
                                 </div>
-                            </Link>
-                        </Tile>
-                    </div>
-                </div>
-            )
-        return (
-            <div className='w-full md:w-[30%]'>
-                <div className='group'>
-                    <Tile>
-                        <Link to={"/cal/" + cal._id}>
-                            <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
-                                loading...
                             </div>
                         </Link>
                     </Tile>
                 </div>
+            )
+        return (
+            <div className='group'>
+                <Tile>
+                    <Link to={"/cal/" + cal._id}>
+                        <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
+                            loading...
+                        </div>
+                    </Link>
+                </Tile>
             </div>
         )
     }
 
     function CalendarPanel() {
+        const [openMenuIdx, setMenuIdx] = useState(-1);
+
         return (
             <Tab.Panel>
                 <div className='grid grid-cols-1 grid-rows-1'>
-                    <div className='flex flex-wrap gap-y-2 gap-x-2' style={{ gridColumn: 1, gridRow: 1 }}>
+                    <div className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
                         {calendarMetadata.calendarMetadata.map((cal) =>
-                            <MeetingTileBody cal={cal} />
+                            <div className='w-full md:w-1/3'>
+                                <MeetingTileBody cal={cal} />
+                            </div>
                         )}
                     </div>
-                    <div className='flex flex-wrap gap-y-2 gap-x-2 pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                        {calendarMetadata.calendarMetadata.map((cal) =>
-                            <div className='relative w-full md:w-[30%]'>
+                    <div className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
+                        {calendarMetadata.calendarMetadata.map((cal, idx) =>
+                            <div className='relative w-full md:w-1/3'>
                                 <div className='invisible'>
                                     <MeetingTileBody cal={cal} />
                                 </div>
                                 <Menu as="div" className='absolute top-0 right-0'>
-                                    <Menu.Button>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="w-4 h-4"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                                            />
-                                        </svg>
-                                    </Menu.Button>
-                                </Menu>
-                            </div>
-                        )}
-                    </div>
-                    <div className='flex flex-wrap gap-y-2 gap-x-2 pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                        {calendarMetadata.calendarMetadata.map((cal) =>
-                            <div className='relative w-full md:w-[30%] group'>
-                                <div className='invisible'>
-                                    <MeetingTileBody cal={cal} />
-                                </div>
-                                <div className='absolute pointer-events-auto top-0 right-0'>
-                                    <Menu as="div">
-                                        <div>
-                                            <Menu.Button>
+                                    {({ open }) => {
+                                        if(open === false && idx === openMenuIdx){
+                                            setMenuIdx(-1)
+                                        }
+                                        return (
+                                            <Menu.Button onClick={() => {
+                                                console.log(open)
+                                                if (open)
+                                                    setMenuIdx(-1)
+                                                else
+                                                    setMenuIdx(idx)
+                                            }}>
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
-                                                    stroke="transparent"
+                                                    stroke="currentColor"
                                                     className="w-4 h-4"
                                                 >
                                                     <path
@@ -134,9 +218,39 @@ function Dashboard() {
                                                     />
                                                 </svg>
                                             </Menu.Button>
-                                        </div>
+                                        )
+                                    }}
+                                </Menu>
+                            </div>
+                        )}
+                    </div>
+                    <div className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
+                        {calendarMetadata.calendarMetadata.map((cal, idx) =>
+                            <div className='relative w-full md:w-1/3 group'>
+                                <div className='invisible'>
+                                    <MeetingTileBody cal={cal} />
+                                </div>
+                                <div className='absolute top-0 right-0'>
+                                    <Menu as="div">
+                                        <Menu.Button className='invisible'>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="w-4 h-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                                                />
+                                            </svg>
+                                        </Menu.Button>
                                         <Transition
                                             as={Fragment}
+                                            show={idx === openMenuIdx}
                                             enter="transition ease-out duration-100"
                                             enterFrom="transform opacity-0 scale-95"
                                             enterTo="transform opacity-100 scale-100"
@@ -144,7 +258,7 @@ function Dashboard() {
                                             leaveFrom="transform opacity-100 scale-100"
                                             leaveTo="transform opacity-0 scale-95"
                                         >
-                                            <Menu.Items className="absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
+                                            <Menu.Items className="pointer-events-auto absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
                                                 <div className="px-1 py-1">
                                                     <Menu.Item>
                                                         {({ active }) => (
@@ -152,7 +266,7 @@ function Dashboard() {
                                                                 className={`${active ? 'bg-red-400 text-white' : 'text-gray-900'
                                                                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                                                 onClick={() => {
-                                                                    dialogueHook(<div>rename the calendar here</div>)
+                                                                    dialogueHook(<RenameDialogue cal_id={cal._id} />)
                                                                 }}
                                                             >
                                                                 Rename
@@ -165,7 +279,7 @@ function Dashboard() {
                                                                 className={`${active ? 'bg-red-400 text-white' : 'text-gray-900'
                                                                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                                                 onClick={() => {
-                                                                    dialogueHook(<div>delete the calendar?</div>)
+                                                                    dialogueHook(<DeleteDialogue cal_id={cal._id} />)
                                                                 }}
                                                             >
                                                                 Delete

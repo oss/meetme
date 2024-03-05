@@ -1,4 +1,4 @@
-function Tile({children,bg_color = 'bg-white'}) {
+function Tile({children}) {
     return (
         <div
             className={` 
@@ -9,7 +9,6 @@ function Tile({children,bg_color = 'bg-white'}) {
                 x-full
                 y-full
                 shadow-sm
-                ${bg_color} 
             `}
         >
             {children}
