@@ -37,15 +37,17 @@ function Dashboard() {
                         w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
                         focus:border-sky-500 focus:ring-1 focus:ring-sky-500" placeholder={placeholder} onChange={(e) => { setTextBarValue(e.target.value) }} />
                 <div className='h-1' />
-                <div className="absolute text-xs text-rose-600">
-                    {displayError ? errorMessage : <></>}
-                </div>
-                <div className='float-end'>
-                    <RedButton onClick={() => {
-                        onClickPassthrough({ textBarValue });
-                    }}>
-                        {buttonText}
-                    </RedButton>
+                <div className='inline-flex w-full'>
+                    <p className="grow min-w-5 text-xs text-rose-600 inline text-clip break-words">
+                        {displayError ? errorMessage : <></>}
+                    </p>
+                    <div className=''>
+                        <RedButton onClick={() => {
+                            onClickPassthrough({ textBarValue });
+                        }}>
+                            {buttonText}
+                        </RedButton>
+                    </div>
                 </div>
             </>
         )
@@ -110,7 +112,7 @@ function Dashboard() {
                         closeDialogue()
                     }
                     else {
-                        setErrorMessage(JSON.stringify(resp))
+                        setErrorMessage(resp.error)
                         setDisplayError(true)
                     }
                 }} />
