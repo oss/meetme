@@ -78,6 +78,7 @@ const useStore = create( set => {
 
     return {
         functions: {
+            updateCalendarList: updateCalendarList,
             keepUpdated: keepUpdated,
             stopUpdated: stopUpdated
         },

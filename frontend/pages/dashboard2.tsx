@@ -13,7 +13,6 @@ function Dashboard() {
     const calendarMetadata = metadataStore((store) => store)
     const [dialogueHook, closeDialogue] = dialogueStore((store) => [store.setPanel, store.closePanel])
 
-    const id = useId();
     useEffect(() => {
         calendarMetadata.functions.keepUpdated()
         return () => {
@@ -121,7 +120,6 @@ function Dashboard() {
     }
 
     function HeaderButton() {
-        console.log('header')
         return (
             <Tab.List className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
                 {['Calendars', 'Organizations'].map((category) =>
@@ -179,16 +177,16 @@ function Dashboard() {
         return (
             <Tab.Panel>
                 <div className='grid grid-cols-1 grid-rows-1'>
-                    <div className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
-                        {calendarMetadata.calendarMetadata.map((cal) =>
-                            <div className='w-full md:w-1/3'>
+                    <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
+                        {calendarMetadata.calendarMetadata.map((cal,idx) =>
+                            <li key={idx} className='w-full md:w-1/3'>
                                 <MeetingTileBody cal={cal} />
-                            </div>
+                            </li>
                         )}
-                    </div>
-                    <div className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
+                    </ul>
+                    <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
                         {calendarMetadata.calendarMetadata.map((cal, idx) =>
-                            <div className='relative w-full md:w-1/3'>
+                            <li key={idx} className='relative w-full md:w-1/3'>
                                 <div className='invisible'>
                                     <MeetingTileBody cal={cal} />
                                 </div>
@@ -223,12 +221,12 @@ function Dashboard() {
                                         )
                                     }}
                                 </Menu>
-                            </div>
+                            </li>
                         )}
-                    </div>
-                    <div className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
+                    </ul>
+                    <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
                         {calendarMetadata.calendarMetadata.map((cal, idx) =>
-                            <div className='relative w-full md:w-1/3 group'>
+                            <li key={idx} className='relative w-full md:w-1/3 group'>
                                 <div className='invisible'>
                                     <MeetingTileBody cal={cal} />
                                 </div>
@@ -293,9 +291,9 @@ function Dashboard() {
                                         </Transition>
                                     </Menu>
                                 </div>
-                            </div>
+                            </li>
                         )}
-                    </div>
+                    </ul>
                 </div>
             </Tab.Panel>
         );
