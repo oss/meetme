@@ -28,7 +28,7 @@ const useStore = create( set => {
     const updateCalendarList = ( ) => {
         set((previous_state)=>{
             const current_calendars = userData.getState().calendars;
-            const arr = previous_state.calendarMetadata;
+            const arr = [...previous_state.calendarMetadata];
             const index_map = calendarMetadataIndexMap;
 
             for (let i=0;i<current_calendars.length;i++){
@@ -62,7 +62,7 @@ const useStore = create( set => {
 
         if (resp_json.Status === 'ok'){
             set((previous_state)=>{
-                const arr = previous_state.calendarMetadata;
+                const arr = [...previous_state.calendarMetadata];
                 const index_map = calendarMetadataIndexMap;
     
                 arr[index_map[calendarID]].isLoaded = true
