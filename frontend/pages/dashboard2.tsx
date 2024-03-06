@@ -184,13 +184,13 @@ function Dashboard() {
                             </li>
                         )}
                     </ul>
-                    <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
+                    <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
                         {calendarMetadata.calendarMetadata.map((cal, idx) =>
                             <li key={idx} className='relative w-full md:w-1/3'>
                                 <div className='invisible'>
                                     <MeetingTileBody cal={cal} />
                                 </div>
-                                <Menu as="div" className='absolute top-0 right-0'>
+                                <Menu as="div" className='pointer-events-auto absolute top-0 right-0'>
                                     {({ open }) => {
                                         if(open === false && idx === openMenuIdx){
                                             setMenuIdx(-1)
