@@ -18,6 +18,7 @@ router.use((req, res, next) => {
   //console.log('backend: %s %s %s', req.method, req.url, req.path);
   req.request_id = crypto.randomUUID();
   logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
+  //logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
   next();
 });
 

@@ -16,7 +16,7 @@ services:
     #  - os03
 
   os01:
-    image: opensearchproject/opensearch:2.5.0
+    image: opensearchproject/opensearch
     environment:
       OPENSEARCH_JAVA_OPTS: "-Xms1024m -Xmx1024m"
       node.name: os01
