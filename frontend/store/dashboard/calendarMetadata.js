@@ -13,8 +13,8 @@ const useStore = create( set => {
         console.log(abc)
     }
 
-    const keepUpdated = () => {
-        updateCalendarList()
+    const keepUpdated = async () => {
+        await updateCalendarList()
         socket.emit("dashboard");
         socket.on("custom-message", recieveMsg);
     }
@@ -25,7 +25,7 @@ const useStore = create( set => {
 
     //make array accesses easier, stores calid: index inside array
 
-    const updateCalendarList = ( ) => {
+    const updateCalendarList = async ( ) => {
         set((previous_state)=>{
             const current_calendars = userData.getState().calendars;
             const arr = [...previous_state.calendarMetadata];
@@ -44,7 +44,6 @@ const useStore = create( set => {
             }
 
             return {
-                ...previous_state,
                 calendarMetadata: arr
             }
         });
@@ -69,7 +68,6 @@ const useStore = create( set => {
                 arr[index_map[calendarID]].data = resp_json.metadata
      
                 return {
-                    ...previous_state,
                     calendarMetadata: arr
                 }
             })    
@@ -77,11 +75,9 @@ const useStore = create( set => {
     }
 
     return {
-        functions: {
-            updateCalendarList: updateCalendarList,
-            keepUpdated: keepUpdated,
-            stopUpdated: stopUpdated
-        },
+        updateCalendarList: updateCalendarList,
+        keepUpdated: keepUpdated,
+        stopUpdated: stopUpdated,
         calendarMetadata: []
     }
 })

@@ -17,7 +17,6 @@ const useStore = create(subscribeWithSelector((set) => {
             loginHeartBeat.addEventListener("message",(e)=>{
                 if(e === false)
                     set ( state => ({
-                        ...state,
                         isLoggedIn: false
                     }))
             });

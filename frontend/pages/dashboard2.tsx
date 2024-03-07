@@ -1,40 +1,40 @@
-import userStore from '../store/userStore';
 import metadataStore from '../store/dashboard/calendarMetadata';
 import dialogueStore from '../store/dialogueStore';
-import { Fragment, useEffect, useId } from 'react';
+import { Fragment, memo, useEffect } from 'react';
 import { Dialog, Menu, Tab, Transition } from '@headlessui/react';
 import Tile from '../components/tile';
 import { Link } from 'react-router-dom';
 import RedButton from '../components/utils/red-button';
 import { useState, useRef } from 'react';
+import { create } from 'zustand';
 
-let ctr = 0
-function MeetingTileBody({ cal }) {
-    //console.log(ctr++)
-    if (cal.isLoaded)
-        return (
-            <div className='group'>
-                <Tile>
-                    <Link to={`/cal/${cal._id}`}>
-                        <div className='bg-white grow'>
-                            <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
-                                <p className="text-x font-semibold break-words" >
-                                    <wbr />
-                                    {cal.data.name}
-                                </p>
-                                <p className="text-sm font-medium break-words text-slate-500/50">
-                                    {cal.data.owner._id}
-                                </p>
-                            </div>
-                        </div>
-                    </Link>
-                </Tile>
-            </div>
-        )
+const MeetingCalendarTile = memo(({ calendarID, calendarName, calendarOwner }) => {
     return (
         <div className='group'>
             <Tile>
-                <Link to={"/cal/" + cal._id}>
+                <Link to={`/cal/${calendarID}`} >
+                    <div className='bg-white grow'>
+                        <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
+                            <p className="text-x font-semibold break-words" >
+                                <wbr />
+                                {calendarName}
+                            </p>
+                            <p className="text-sm font-medium break-words text-slate-500/50">
+                                {calendarOwner}
+                            </p>
+                        </div>
+                    </div>
+                </Link>
+            </Tile>
+        </div>
+    )
+})
+
+const LoadingCalendarTile = memo(function LoadingTile({ calendarID }) {
+    return (
+        <div className='group'>
+            <Tile>
+                <Link to={"/cal/" + calendarID}>
                     <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
                         loading...
                     </div>
@@ -42,9 +42,17 @@ function MeetingTileBody({ cal }) {
             </Tile>
         </div>
     )
+
+})
+
+function MeetingTileBody({ cal }) {
+    if (!cal.isLoaded)
+        return <LoadingCalendarTile calendarID={cal._id} />
+    else
+        return <MeetingCalendarTile calendarID={cal._id} calendarName={cal.data.name} calendarOwner={cal.data.owner._id} />
 }
 
-function HeaderButton() {
+const HeaderButton = memo(function HeaderButton() {
     return (
         <Tab.List className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
             {['Calendars', 'Organizations'].map((category) =>
@@ -60,7 +68,7 @@ function HeaderButton() {
             )}
         </Tab.List>
     );
-}
+})
 
 function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayError, errorMessage = '', placeholder = '', description = '' }) {
     const [textBarValue, setTextBarValue] = useState(placeholder);
@@ -83,9 +91,7 @@ function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayErr
                     {displayError ? errorMessage : <></>}
                 </p>
                 <div className=''>
-                    <RedButton onClick={() => {
-                        onClickPassthrough({ textBarValue });
-                    }}>
+                    <RedButton onClick={onClickPassthrough({ textBarValue })}>
                         {buttonText}
                     </RedButton>
                 </div>
@@ -94,8 +100,8 @@ function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayErr
     )
 }
 
-function RenameDialogue({ cal_id }) {
-    const closeDialogue = dialogueStore((store) => store.closeDialogue)
+function RenameDialogue({ calendarID }) {
+    const closeDialogue = dialogueStore((store) => store.closePanel)
     const [displayError, setDisplayError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('some error message')
 
@@ -106,8 +112,8 @@ function RenameDialogue({ cal_id }) {
             placeholder='untitled'
             displayError={displayError}
             errorMessage={errorMessage}
-            onClickPassthrough={async ({ textBarValue }) => {
-                const req = await fetch(`${process.env.API_URL}/cal/${cal_id}/name`, {
+            onClickPassthrough={({ textBarValue }) => async ({ event }) => {
+                const req = await fetch(`${process.env.API_URL}/cal/${calendarID}/name`, {
                     credentials: 'include', method: 'PATCH', headers: {
                         'Content-Type': 'application/json',
                     },
@@ -135,7 +141,7 @@ function OrgPanel() {
 
 
 function DeleteDialogue({ cal_id }) {
-    const closeDialogue = dialogueStore((store) => store.closeDialogue)
+    const closeDialogue = dialogueStore((store) => store.closePanel)
 
     const [displayError, setDisplayError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('some error message')
@@ -148,7 +154,7 @@ function DeleteDialogue({ cal_id }) {
             description={`Type in the phrase ${confirmationString} to delete`}
             displayError={displayError}
             errorMessage={errorMessage}
-            onClickPassthrough={async ({ textBarValue }) => {
+            onClickPassthrough={({ textBarValue }) => async (event) => {
                 if (textBarValue !== confirmationString) {
                     setErrorMessage('Confirmation code incorrect')
                     setDisplayError(true)
@@ -173,130 +179,172 @@ function DeleteDialogue({ cal_id }) {
     )
 }
 
-function CalendarPanel() {
+const TileLayer = memo(function TileLayer() {
+    const calendarMetadata = metadataStore((store) => store.calendarMetadata)
+    return (
+        calendarMetadata.map((cal, idx) => {
+            return (
+                <li key={cal._id} className='w-full md:w-1/3'>
+                    <MeetingTileBody cal={cal} />
+                </li>
+            )
+        })
+    )
+})
+
+
+const buttonMenuBridge = create((set) => ({
+    openMenuIdx: -1,
+    setOpenMenuIdx: (idx) => set((state) => {
+        if (state.openMenuIdx === idx)
+            return { openMenuIdx: -1 }
+        return { openMenuIdx: idx }
+    }),
+}));
+
+function ButtonLayer() {
+    const calendarMetadata = metadataStore((store) => store.calendarMetadata)
+
+    const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
+
+    return (calendarMetadata.map((cal, idx) =>
+        <li key={cal._id} className='pointer-events-none relative w-full md:w-1/3'>
+            <div className='invisible'>
+                <MeetingTileBody cal={cal} />
+            </div>
+            <Menu as="div" className='absolute top-0 right-0'>
+                <Menu.Button
+                    onClick={() => {
+                        setOpenMenuIdx(idx)
+                    }}
+                    onKeyDown={(e)=>{
+                        if(e.key === 'Enter')
+                            setOpenMenuIdx(idx)
+                    }}
+                    className='pointer-events-auto'
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-4 h-4"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                        />
+                    </svg>
+                </Menu.Button>
+            </Menu>
+        </li>
+    ))
+}
+
+function MenuLayer() {
     const dialogueHook = dialogueStore((store) => store.setPanel)
     const calendarMetadata = metadataStore((store) => store.calendarMetadata)
 
-    const [openMenuIdx, setMenuIdx] = useState(-1);
+    const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
+    const openMenuIdx = buttonMenuBridge((store) => store.openMenuIdx)
+
+    const menuRef = useRef(null)
+
+    function handleClick(event) {
+        if (!menuRef.current.contains(event.target)) {
+            setOpenMenuIdx(-1)
+        }
+    }
+
+    return (
+        calendarMetadata.map((cal, idx) =>
+            <li key={cal._id} className='relative w-full md:w-1/3 group'>
+                <div className='invisible'>
+                    <MeetingTileBody cal={cal} />
+                </div>
+                <div className='absolute top-0 right-0'>
+                    <Menu as="div">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4 invisible"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                        <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-100"
+                            enterFrom="transform opacity-0 scale-95"
+                            enterTo="transform opacity-100 scale-100"
+                            leave="transition ease-in duration-75"
+                            leaveFrom="transform opacity-100 scale-100"
+                            leaveTo="transform opacity-0 scale-95"
+                            show={idx === openMenuIdx}
+                            beforeEnter={() => {
+                                document.addEventListener("click", handleClick);
+                            }}
+                            beforeLeave={()=>{
+                                document.removeEventListener("click", handleClick);
+                            }}
+                        >
+                            <Menu.Items onKeyDown={(e)=>{ if(e.key === 'Escape') setOpenMenuIdx(-1) }} className="pointer-events-auto absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
+                                <div className="px-1 py-1">
+                                    <div ref={(r)=>{if(idx === openMenuIdx) menuRef.current = r}}>
+                                        <Menu.Item>
+                                            <button
+                                                autoFocus
+                                                className='ui-active:bg-red-400 ui-active:text-white ui-not-active:text-gray-900 
+                                                    group flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none'
+                                                onClick={() => {
+                                                    setOpenMenuIdx(-1)
+                                                    dialogueHook(<RenameDialogue cal_id={cal._id} />)
+                                                }}
+                                            >
+                                                Rename
+                                            </button>
+                                        </Menu.Item>
+                                        <Menu.Item>
+                                            <button
+                                                className='ui-active:bg-red-400 ui-active:text-white ui-not-active:text-gray-900 group flex w-full items-center rounded-md px-2 py-2 text-sm'
+                                                onClick={() => {
+                                                    setOpenMenuIdx(-1)
+                                                    dialogueHook(<DeleteDialogue cal_id={cal._id} />)
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </Menu.Item>
+                                    </div>
+                                </div>
+                            </Menu.Items>
+                        </Transition>
+                    </Menu>
+                </div>
+            </li>
+        ));
+}
+
+function CalendarPanel() {
     return (
         <Tab.Panel>
-            <div className='grid grid-cols-1 grid-rows-1'>
+            <div className='relative grid grid-cols-1 grid-rows-1'>
                 <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
-                    {calendarMetadata.map((cal, idx) =>
-                        <li onClick={console.log(cal)} key={cal._id} className='w-full md:w-1/3'>
-                            <MeetingTileBody cal={cal} />
-                        </li>
-                    )}
+                    <TileLayer />
                 </ul>
                 <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                    {calendarMetadata.map((cal, idx) =>
-                        <li key={cal._id} className='relative w-full md:w-1/3'>
-                            <div className='invisible'>
-                                <MeetingTileBody cal={cal} />
-                            </div>
-                            <Menu as="div" className='pointer-events-auto absolute top-0 right-0'>
-                                {({ open }) => {
-                                    if (open === false && idx === openMenuIdx) {
-                                        setMenuIdx(-1)
-                                    }
-                                    return (
-                                        <Menu.Button onClick={() => {
-                                            console.log(open)
-                                            if (open)
-                                                setMenuIdx(-1)
-                                            else
-                                                setMenuIdx(idx)
-                                        }}>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-4 h-4"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                                                />
-                                            </svg>
-                                        </Menu.Button>
-                                    )
-                                }}
-                            </Menu>
-                        </li>
-                    )}
+                    <ButtonLayer />
                 </ul>
                 <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                    {calendarMetadata.map((cal, idx) =>
-                        <li key={idx} className='relative w-full md:w-1/3 group'>
-                            <div className='invisible'>
-                                <MeetingTileBody cal={cal} />
-                            </div>
-                            <div className='absolute top-0 right-0'>
-                                <Menu as="div">
-                                    <Menu.Button className='invisible'>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="w-4 h-4"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                                            />
-                                        </svg>
-                                    </Menu.Button>
-                                    <Transition
-                                        as={Fragment}
-                                        show={idx === openMenuIdx}
-                                        enter="transition ease-out duration-100"
-                                        enterFrom="transform opacity-0 scale-95"
-                                        enterTo="transform opacity-100 scale-100"
-                                        leave="transition ease-in duration-75"
-                                        leaveFrom="transform opacity-100 scale-100"
-                                        leaveTo="transform opacity-0 scale-95"
-                                    >
-                                        <Menu.Items className="pointer-events-auto absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
-                                            <div className="px-1 py-1">
-                                                <Menu.Item>
-                                                    {({ active }) => (
-                                                        <button
-                                                            className={`${active ? 'bg-red-400 text-white' : 'text-gray-900'
-                                                                } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                                                            onClick={() => {
-                                                                dialogueHook(<RenameDialogue cal_id={cal._id} />)
-                                                            }}
-                                                        >
-                                                            Rename
-                                                        </button>
-                                                    )}
-                                                </Menu.Item>
-                                                <Menu.Item>
-                                                    {({ active }) => (
-                                                        <button
-                                                            className={`${active ? 'bg-red-400 text-white' : 'text-gray-900'
-                                                                } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                                                            onClick={() => {
-                                                                dialogueHook(<DeleteDialogue cal_id={cal._id} />)
-                                                            }}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    )}
-                                                </Menu.Item>
-                                            </div>
-                                        </Menu.Items>
-                                    </Transition>
-                                </Menu>
-                            </div>
-                        </li>
-                    )}
+                    <MenuLayer />
                 </ul>
             </div>
         </Tab.Panel>
@@ -305,12 +353,11 @@ function CalendarPanel() {
 
 
 function Dashboard() {
-    const calendarMetadataFunctions = metadataStore((store) => store.functions)
-
+    const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
     useEffect(() => {
-        calendarMetadataFunctions.keepUpdated()
+        listenForUpdates()
         return () => {
-            calendarMetadataFunctions.stopUpdated()
+            stopListeningForUpdates()
         }
     }, [])
 

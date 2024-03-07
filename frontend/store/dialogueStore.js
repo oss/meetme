@@ -5,7 +5,6 @@ import Cookies from 'js-cookie';
 const useStore = create(subscribeWithSelector((set) => {
     const setPanel = (panel) => {
         set( state => ({
-            ...state,
             panel: panel,
             display: true
         }))
@@ -13,7 +12,6 @@ const useStore = create(subscribeWithSelector((set) => {
 
     const closePanel = () => {
         set( state => ({
-            ...state,
             display: false
         }))
     }
