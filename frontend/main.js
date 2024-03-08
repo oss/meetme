@@ -7,7 +7,7 @@ import Navbar from "./components/navigation-bar";
 const CreateMeeting = lazy(() => import("./pages/create-meeting"));
 const ErrorPage = lazy(() => import("./pages/error-page"));
 const DevDashboard = lazy(() => import("DASHBOARD_TO_REPLACE"));
-const Dashboard = lazy(() => import("./pages/dashboard2"));
+const Dashboard = lazy(() => import("./pages/dashboard"));
 const MyOrgs = lazy(() => import("./pages/my-orgs"));
 const CalendarLoader = lazy(() => import("./pages/calendar-loader"));
 const CreateOrg = lazy(() => import("./pages/create-org"));
