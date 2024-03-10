@@ -1,3 +1,4 @@
+import userStore from '../store/userStore';
 import metadataStore from '../store/dashboard/calendarMetadata';
 import dialogueStore from '../store/dialogueStore';
 import { Fragment, memo, useEffect } from 'react';
@@ -217,8 +218,8 @@ function ButtonLayer() {
                     onClick={() => {
                         setOpenMenuIdx(idx)
                     }}
-                    onKeyDown={(e)=>{
-                        if(e.key === 'Enter')
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter')
                             setOpenMenuIdx(idx)
                     }}
                     className='pointer-events-auto'
@@ -253,7 +254,7 @@ function MenuLayer() {
     const menuRef = useRef(null)
 
     function handleClick(event) {
-        if (!menuRef.current.contains(event.target)) {
+        if (menuRef.current === null || !menuRef.current.contains(event.target)) {
             setOpenMenuIdx(-1)
         }
     }
@@ -292,13 +293,13 @@ function MenuLayer() {
                             beforeEnter={() => {
                                 document.addEventListener("click", handleClick);
                             }}
-                            beforeLeave={()=>{
+                            beforeLeave={() => {
                                 document.removeEventListener("click", handleClick);
                             }}
                         >
-                            <Menu.Items onKeyDown={(e)=>{ if(e.key === 'Escape') setOpenMenuIdx(-1) }} className="pointer-events-auto absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
+                            <Menu.Items onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenuIdx(-1) }} className="pointer-events-auto absolute w-20 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none -right-5">
                                 <div className="px-1 py-1">
-                                    <div ref={(r)=>{if(idx === openMenuIdx) menuRef.current = r}}>
+                                    <div ref={(r) => { if (idx === openMenuIdx) menuRef.current = r }}>
                                         <Menu.Item>
                                             <button
                                                 autoFocus
