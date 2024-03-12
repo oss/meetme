@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  #CI_DEBUG_SERVICES: 1
+  CI_DEBUG_SERVICES: 1
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
@@ -67,6 +67,8 @@ backend-api:
     name: ${CI_REGISTRY_IMAGE}/test-suite
     entrypoint: ['']
   before_script:
+    - wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.6.1_amd64.deb
+    - dpkg -i mongodb-mongosh_1.6.1_amd64.deb
     - |
       mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
     - echo "past"
