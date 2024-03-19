@@ -9,9 +9,12 @@ import RedButton from '../components/utils/red-button';
 import { useState, useRef } from 'react';
 import { create } from 'zustand';
 
-const MeetingCalendarTile = memo(({ calendarID, calendarName, calendarOwner }) => {
+const MeetingCalendarTile = memo(({ calendarID, calendarName, calendarOwner, idx }) => {
+
+    const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
+
     return (
-        <div className='group'>
+        <div className='group relative'>
             <Tile>
                 <Link to={`/cal/${calendarID}`} >
                     <div className='bg-white grow'>
@@ -23,9 +26,37 @@ const MeetingCalendarTile = memo(({ calendarID, calendarName, calendarOwner }) =
                             <p className="text-sm font-medium break-words text-slate-500/50">
                                 {calendarOwner}
                             </p>
+                            
                         </div>
                     </div>
                 </Link>
+                <Menu as="div" className='absolute top-0 right-0'>
+                <Menu.Button
+                    onClick={() => {
+                        setOpenMenuIdx(idx)
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter')
+                            setOpenMenuIdx(idx)
+                    }}
+                    className='pointer-events-auto'
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="red"
+                        className="w-4 h-4"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                        />
+                    </svg>
+                </Menu.Button>
+                </Menu>
             </Tile>
         </div>
     )
@@ -46,11 +77,11 @@ const LoadingCalendarTile = memo(function LoadingTile({ calendarID }) {
 
 })
 
-function MeetingTileBody({ cal }) {
+function MeetingTileBody({ cal, idx}) {
     if (!cal.isLoaded)
         return <LoadingCalendarTile calendarID={cal._id} />
     else
-        return <MeetingCalendarTile calendarID={cal._id} calendarName={cal.data.name} calendarOwner={cal.data.owner._id} />
+        return <MeetingCalendarTile calendarID={cal._id} calendarName={cal.data.name} calendarOwner={cal.data.owner._id} idx={idx} />
 }
 
 const HeaderButton = memo(function HeaderButton() {
@@ -101,7 +132,7 @@ function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayErr
     )
 }
 
-function RenameDialogue({ calendarID }) {
+function RenameDialogue({ cal_id }) {
     const closeDialogue = dialogueStore((store) => store.closePanel)
     const [displayError, setDisplayError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('some error message')
@@ -114,7 +145,7 @@ function RenameDialogue({ calendarID }) {
             displayError={displayError}
             errorMessage={errorMessage}
             onClickPassthrough={({ textBarValue }) => async ({ event }) => {
-                const req = await fetch(`${process.env.API_URL}/cal/${calendarID}/name`, {
+                const req = await fetch(`${process.env.API_URL}/cal/${cal_id}/name`, {
                     credentials: 'include', method: 'PATCH', headers: {
                         'Content-Type': 'application/json',
                     },
@@ -186,7 +217,7 @@ const TileLayer = memo(function TileLayer() {
         calendarMetadata.map((cal, idx) => {
             return (
                 <li key={cal._id} className='w-full md:w-1/3'>
-                    <MeetingTileBody cal={cal} />
+                    <MeetingTileBody cal={cal} idx={idx} />
                 </li>
             )
         })
@@ -203,46 +234,7 @@ const buttonMenuBridge = create((set) => ({
     }),
 }));
 
-function ButtonLayer() {
-    const calendarMetadata = metadataStore((store) => store.calendarMetadata)
 
-    const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
-
-    return (calendarMetadata.map((cal, idx) =>
-        <li key={cal._id} className='pointer-events-none relative w-full md:w-1/3'>
-            <div className='invisible'>
-                <MeetingTileBody cal={cal} />
-            </div>
-            <Menu as="div" className='absolute top-0 right-0'>
-                <Menu.Button
-                    onClick={() => {
-                        setOpenMenuIdx(idx)
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter')
-                            setOpenMenuIdx(idx)
-                    }}
-                    className='pointer-events-auto'
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                        />
-                    </svg>
-                </Menu.Button>
-            </Menu>
-        </li>
-    ))
-}
 
 function MenuLayer() {
     const dialogueHook = dialogueStore((store) => store.setPanel)
@@ -340,9 +332,6 @@ function CalendarPanel() {
             <div className='relative grid grid-cols-1 grid-rows-1'>
                 <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
                     <TileLayer />
-                </ul>
-                <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                    <ButtonLayer />
                 </ul>
                 <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
                     <MenuLayer />

@@ -231,8 +231,7 @@ function CreateMeeting({ isOrganizationOwned = false }) {
     const [valid_name, set_name_valid] = useState(true);
     function validate_name() {
         console.log("validating");
-
-        set_name_valid(title_id.length < 20);
+        set_name_valid(document.getElementById(title_id).value.length < 20);
     }
 
     const [valid_time, set_time_valid] = useState(true);
@@ -290,6 +289,9 @@ function CreateMeeting({ isOrganizationOwned = false }) {
                                 placeholder={"untitled"}
                                 className="w-full"
                                 id={title_id}
+                                onChange={(e) => {
+                                    validate_name();
+                                }}
                             />
                             {valid_name ? (
                                 <div class="text-xs">&nbsp;</div>
