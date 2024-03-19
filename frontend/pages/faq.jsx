@@ -1,7 +1,7 @@
 import FaqCollapse from '../components/utils/faq-collapse';
 import '../index.css';
 
-export default function Faq() {
+function Faq() {
     return (
         <div
             id="faq-page"
@@ -32,3 +32,5 @@ export default function Faq() {
         </div>
     );
 }
+
+export default Faq;
