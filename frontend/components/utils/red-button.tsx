@@ -1,11 +1,15 @@
+import { forwardRef } from "react";
 import BaseButton from "./base-button";
-function RedButton({ children, onClick }) {
+function RedButton({ children, className='', ...rest }, ref) {
     return (
-        <BaseButton onClick={onClick} extracss="bg-red-500 hover:bg-red-600 text-white
-        transition-colors duration-200
-        py-1 px-1 border">
-                {children}
+        <BaseButton 
+            className={`bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 py-1 px-1 border ${className}`}
+            {...rest}
+            ref={ref}
+        >
+            {children}
         </BaseButton>
     );
 }
-export default RedButton;
+
+export default forwardRef(RedButton);

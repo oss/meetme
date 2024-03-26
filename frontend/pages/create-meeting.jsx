@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "react-date-range/dist/styles.css"; // main css file
 import "react-date-range/dist/theme/default.css"; // theme css file
 import { DateRangePicker } from "react-date-range";
-import LargeButton from "../components/utils/large-button";
-import Tile from "../components/utils/tile";
-import Button from "../components/utils/button";
+import Tile from "../components/tile";
+import RedButton from '../components/utils/red-button';
 import RutgersLogoUrl from "../assets/RU_SHIELD_BLACK.png";
 import CollaboratorsContainer from "../components/utils/collaborator-container";
-import TextField from "../components/utils/text-field"; //replace this
 import { useNavigate, useParams } from "react-router-dom";
-import uniqid from "uniqid";
 import Cookies from "js-cookie";
 const DAYS = [
     "Sunday",
@@ -24,6 +21,7 @@ const DAYS = [
 // TODO: The type for `dateRange` is *not* consistent.
 
 function CreateMeeting({ isOrganizationOwned = false }) {
+    console.log('re-render')
     const [dateRange, setDateRange] = useState(() => {
         // this function sets the default date range to be the current week
 
@@ -45,9 +43,103 @@ function CreateMeeting({ isOrganizationOwned = false }) {
         return base;
     });
 
-    let orgID = null;
-    if (isOrganizationOwned) {
-        orgID = useParams().orgID;
+    const navigate = useNavigate();
+    async function createCalendar() {
+        console.log('creating calendar')
+        const payload = {};
+
+        const startTime = startTimeRef.current.value.split(":");
+        const startHour = parseInt(startTime[0]);
+        const startMinute = parseInt(startTime[1]);
+
+        const endTime = endTimeRef.current.value.split(":");
+        // 12:00 AM next day
+        if (endTime[0] === '00' && endTime[1] === '00') {
+            endTime[0] = '24'
+        }
+
+        const endHour = parseInt(endTime[0]);
+        const endMinute = parseInt(endTime[1]);
+
+        const timeArr = [];
+
+        const endDay = dateRange[0].endDate;
+        const maxEndOfCalendar = endDay;
+        maxEndOfCalendar.setDate(endDay.getDate() + 1);
+
+        const cursor = dateRange[0].startDate;
+
+        while (cursor < maxEndOfCalendar) {
+            const start = new Date(cursor);
+            start.setHours(startHour)
+            start.setMinutes(startMinute)
+
+            const end = new Date(cursor)
+            end.setHours(endHour)
+            end.setMinutes(endMinute)
+
+            timeArr.push({
+                start: start.valueOf(),
+                end: end.valueOf()
+            });
+
+            cursor.setDate(cursor.getDate() + 1)
+        }
+
+        payload.timeblocks = timeArr
+
+        if (locationRef.current.value !== '')
+            payload.location = locationRef.current.value
+
+        if (nameInputRef.current.value !== '')
+            payload.name = nameInputRef.current.value
+
+        if (isOrganizationOwned) {
+            payload.owner = {
+                type: "organization",
+                id: useParams().orgID,
+            };
+        }
+
+        const resp1 = await fetch(process.env.API_URL + "/cal", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        })
+
+        const resp1_json = await resp1.json()
+
+        if (resp1_json.Status !== 'ok') {
+            console.log('error creating calendar')
+            return;
+        }
+
+        const pendingUsers = [];
+        for (let i = 1; i < collaborators.length; i++) {
+            pendingUsers.push(collaborators[i].netID);
+        }
+
+        if (pendingUsers.length > 0) {
+            const shareResp = await fetch(process.env.API_URL + "/cal/" + resp1_json.calendar._id + "/share",
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        new_users: pendingUsers,
+                    }),
+                }
+            )
+            const shareRespJSON = await shareResp.json()
+            if (shareRespJSON.Status !== 'ok')
+                console.log('error sharing users')
+        }
+        navigate(`/cal/${resp1_json.calendar._id}`);
     }
 
     const [collaborators, setCollaborators] = useState(() => {
@@ -56,218 +148,69 @@ function CreateMeeting({ isOrganizationOwned = false }) {
             {
                 name: userinfo.firstName + " " + userinfo.lastName,
                 netID: userinfo.uid,
-                profileColor: "red",
             },
         ];
     });
 
-    const [invite_collab_status, set_invite_collab_status] = useState({
-        status: "normal",
-        message: "",
-    });
-
-    const navigate = useNavigate();
-    function create_cal() {
-        const payload = {};
-        let start_offset = document
-            .getElementById("cal_day_start_time")
-            .value.split(":");
-        // 9:00 --> hour = 9,minute  = 0
-
-        let startHour = parseInt(start_offset[0]);
-        let startMinute = parseInt(start_offset[1]);
-        startMinute = Math.floor(startMinute / 5) * 5;
-
-        let startTime = (startHour * 60 + startMinute) * 1000 * 60;
-        // milliseconds since the beginning of the day
-
-        let end_offset = document
-            .getElementById("cal_day_end_time")
-            .value.split(":");
-
-        let endHour = parseInt(end_offset[0]);
-        let endMinute = parseInt(end_offset[1]);
-        endMinute = Math.ceil(endMinute / 5) * 5;
-
-        let endTime = (endHour * 60 + endMinute) * 1000 * 60;
-
-        const time_arr = [];
-
-        let cursor = dateRange[0].startDate.valueOf();
-        let max_end_of_calendar =
-            dateRange[0].endDate.valueOf() + 1000 * 60 * 60 * 24;
-
-        while (cursor < max_end_of_calendar) {
-            time_arr.push({
-                start: cursor + startTime,
-                end: cursor + endTime,
-            });
-
-            // have to account for hours in a day due to daylight savings
-            let currentDay = new Date(time_arr[time_arr.length - 1].start);
-            let nextDay = new Date(currentDay);
-            nextDay.setDate(currentDay.getDate() + 1);
-            cursor +=
-                1000 * 60 * 60 * 24 -
-                1000 *
-                60 *
-                (currentDay.getTimezoneOffset() -
-                    nextDay.getTimezoneOffset());
+    const collaboratorTextBoxRef = useRef(null)
+    const collaboratorButtonRef = useRef(null)
+    const [collaboratorInputEnabled, setCollaboratorInputEnabled] = useState(true)
+    const [collaboratorErrorCode, setCollaboratorErrorCode] = useState(0);
+    async function addCollaborator() {
+        setCollaboratorInputEnabled(false)
+        const netidToAdd = collaboratorTextBoxRef.current.value;
+        const netidInCollaborators = collaborators.some((collaborator) => collaborator.netID === netidToAdd)
+        if (netidInCollaborators) {
+            setCollaboratorErrorCode(1)
+            setCollaboratorInputEnabled(true)
+            return
         }
 
-        payload.timeblocks = time_arr;
-
-        /*
-        for(let i=0;i<time_arr.length;i++){
-            time_arr[i].start = new Date(time_arr[i].start);
-            time_arr[i].end = new Date(time_arr[i].end);
-        }
-        console.log(time_arr);
-        */
-
-        let cal_title = document.getElementById(title_id).value;
-        if (cal_title !== "") payload.name = cal_title;
-        let location = document.getElementById(location_id).value;
-        if (location !== "" && location.length < 20)
-            payload.location = location;
-        if (isOrganizationOwned) {
-            payload.owner = {
-                type: "organization",
-                id: orgID,
-            };
-        }
-        if (cal_title.length < 20) {
-            fetch(process.env.API_URL + "/cal", {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    let calendar_id = data.calendar._id;
-                    let pendingUsers = [];
-                    for (let i = 1; i < collaborators.length; i++) {
-                        pendingUsers.push(collaborators[i].netID);
-                    }
-                    if (pendingUsers.length > 0) {
-                        fetch(
-                            process.env.API_URL +
-                            "/cal/" +
-                            calendar_id +
-                            "/share",
-                            {
-                                method: "PATCH",
-                                credentials: "include",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    new_users: pendingUsers,
-                                }),
-                            }
-                        )
-                            .then((res) => res.json())
-                            .then((data) => {
-                                console.log(data);
-                            })
-                            .catch((err) => {
-                                console.log(err);
-                            });
-                    } else {
-                        console.log(data);
-                    }
-                    navigate(`/cal/${data.calendar._id}`);
-                });
-        }
-    }
-
-    function add_collaborator() {
-        const netid_to_add = document.getElementById(collaborator_id).value;
-        if (
-            collaborators.some((collaborator) => {
-                return collaborator.netID === netid_to_add;
-            })
-        ) {
-            set_invite_collab_status({
-                status: "error",
-                message: "User is already added",
-            });
-            return;
-        }
-
-        fetch(process.env.API_URL + "/user/" + netid_to_add, {
+        const resp = await fetch(process.env.API_URL + "/user/" + netidToAdd, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
         })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.Status === "ok") {
-                    let added_user = data.data;
-                    const new_arr = [
-                        ...collaborators,
-                        {
-                            name:
-                                added_user.name.first +
-                                " " +
-                                added_user.name.last,
-                            netID: added_user._id,
-                            profileColor: "green",
-                        },
-                    ];
-                    setCollaborators(new_arr);
-                } else {
-                    set_invite_collab_status({
-                        status: "error",
-                        message: "User does not exist",
-                    });
-                }
-            });
-    }
-    const [valid_name, set_name_valid] = useState(true);
-    function validate_name() {
-        console.log("validating");
-        set_name_valid(document.getElementById(title_id).value.length < 20);
+        const resp_json = await resp.json()
+        console.log(resp_json)
+        if (resp_json.Status !== 'ok') {
+            setCollaboratorErrorCode(2)
+            setCollaboratorInputEnabled(true)
+            return;
+        }
+        const addedUser = resp_json.data
+        const newCollaboratorList = [
+            ...collaborators,
+            {
+                name: addedUser.name.first + " " + addedUser.name.last,
+                netID: addedUser._id,
+            },
+        ];
+        setCollaborators(newCollaboratorList);
+        setCollaboratorInputEnabled(true)
     }
 
-    const [valid_time, set_time_valid] = useState(true);
-    function validate_time() {
-        console.log("validating");
-        const start = document.getElementById("cal_day_start_time").value;
-        const end = document.getElementById("cal_day_end_time").value;
-        set_time_valid(start < end);
+    const [validName, setValidName] = useState(true);
+    const nameInputRef = useRef(null);
+    function validateName() {
+        setValidName(nameInputRef.current.value.length < 20);
     }
+
+    const [validTime, setValidTime] = useState(true);
+    const startTimeRef = useRef(null);
+    const endTimeRef = useRef(null);
+    function validate_time() {
+        const start = startTimeRef.current.value;
+        const end = endTimeRef.current.value;
+        //12:00AM in ending is always ok
+        setValidTime(end === '00:00' || start < end);
+    }
+
+    const locationRef = useRef(null);
 
     const [good_to_create, set_good_to_create] = useState(true);
-    useEffect(() => {
-        //for the returns here there should be some error
-        //handeling not just like a return
-        if (!valid_time) {
-            set_good_to_create(false);
-            return;
-        }
-        if (title_id.length > 20) {
-            set_good_to_create(false);
-            return;
-        }
-        if (location_id.length > 20) {
-            set_good_to_create(false);
-            return;
-        }
-        if (title_id == null) {
-            set_good_to_create(false);
-            return;
-        }
-        set_good_to_create(true);
-    }, [valid_time]);
 
-    const title_id = uniqid();
-    const location_id = uniqid();
-    const collaborator_id = uniqid();
     return (
         <div className="w-full h-full bg-gray-100 flex flex-col items-center grow">
             <div className="w-full font-bold text-3xl text-center mb-6 mt-10">
@@ -282,47 +225,44 @@ function CreateMeeting({ isOrganizationOwned = false }) {
             >
                 <div className="flex flex-col sm:flex-row xl:flex-col">
                     <div className="sm:grow xl:grow-0 items-stretch flex flex-col">
-                        <Tile title="Name Your Meeting" grow verticallyCenter>
-                            <TextField
-                                label="standard"
-                                variant="standard"
-                                placeholder={"untitled"}
-                                className="w-full"
-                                id={title_id}
-                                onChange={(e) => {
-                                    validate_name();
-                                }}
-                            />
-                            {valid_name ? (
-                                <div class="text-xs">&nbsp;</div>
-                            ) : (
-                                <div class="text-xs text-rose-600">
+                        <Tile>
+                            <div className="bg-white p-4 w-full h-full">
+                                <label className="text-gray-600 font-bold">
+                                    Name
+                                </label>
+                                <input type="text" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                    placeholder='untitled'
+                                    onChange={validateName}
+                                    ref={nameInputRef}
+                                />
+                                <p class={`${validName ? 'invisible' : ''} text-xs text-rose-600`}>
                                     Error: Name is over 20 characters
-                                </div>
-                            )}
+                                </p>
+                            </div>
                         </Tile>
                     </div>
                     <div className="w-auto sm:w-1/2 xl:w-auto -mt-2 sm:mt-0 xl:-mt-2">
-                        <Tile title="Location">
-                            <TextField
-                                label="standard"
-                                variant="standard"
-                                className="w-full"
-                                id={location_id}
-                            />
+                        <Tile>
+                            <div className="bg-white p-4 w-full h-full">
+                                <label className="text-gray-600 font-bold">
+                                    Location
+                                </label>
+                                <input type="text" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                    ref={locationRef}
+                                />
+                            </div>
                         </Tile>
-                        <Tile title="Times">
-                            <div style={{ display: "grid" }}>
-                                <div style={{ gridColumn: 1, gridRow: 1 }}>
+                        <Tile>
+                            <div className="grid bg-white w-full h-full p-4">
+                                <p style={{ gridColumn: 1, gridRow: 1 }}>
                                     Start
-                                </div>
+                                </p>
                                 <div style={{ gridColumn: 1, gridRow: 2 }}>
                                     <input
-                                        id="cal_day_start_time"
+                                        ref={startTimeRef}
                                         type="time"
                                         defaultValue="09:00"
                                         onChange={(e) => {
-                                            e.target.value = e.target.value.split(":")[0] + ":00";
                                             validate_time();
                                         }}
                                         step="3600000"
@@ -331,98 +271,94 @@ function CreateMeeting({ isOrganizationOwned = false }) {
                                 <div style={{ gridColumn: 2 }}>End</div>
                                 <div style={{ gridColumn: 2, gridRow: 2 }}>
                                     <input
-                                        id="cal_day_end_time"
+                                        ref={endTimeRef}
                                         type="time"
                                         defaultValue="17:00"
                                         onChange={(e) => {
-                                            e.target.value = e.target.value.split(":")[0] + ":00";
                                             validate_time();
                                         }}
                                         step="3600000"
                                     />
                                 </div>
-                            </div>
-                            {valid_time ? (
-                                <div class="text-xs">&nbsp;</div>
-                            ) : (
-                                <div class="text-xs text-rose-600">
+                                <p class={`${validTime ? 'invisible' : ''} text-xs text-rose-600`}>
                                     Error: Start time occurs before end time
-                                </div>
-                            )}
+                                </p>
+                            </div>
                         </Tile>
                     </div>
                 </div>
                 <div className="lg:grow h-full flex flex-col">
-                    <Tile
-                        title="Choose Your Days"
-                        subtitle="What days would you like to make available for scheduling?"
-                        fullHeight
-                    >
-                        <div>
-                            Choose specific days for accurate availability
-                        </div>
-                        <div className="w-full flex justify-center">
-                            <DateRangePicker
-                                onChange={(item) =>
-                                    setDateRange([item.selection])
-                                }
-                                showSelectionPreview
-                                moveRangeOnFirstSelection={false}
-                                months={1}
-                                ranges={dateRange}
-                                direction="vertical"
-                            />
-                        </div>
-                        <div className="text-gray-500">
-                            Or choose days of the week for repeated
-                            availability.
-                        </div>
-                        <div
-                            className="w-full grow grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-4
-                            grid-rows-4 lg:grid-rows-2 auto-cols-max"
-                        >
-                            {DAYS.map((day) => (
-                                <div key={day} className="mr-4">
-                                    <Button text={day} key={day} fullWidth />
-                                </div>
-                            ))}
+                    <Tile>
+                        <div className="bg-white w-full h-full p-4">
+                            <p className="text-gray-600 font-bold">
+                                Choose Your Days
+                            </p>
+                            <div className="w-full flex justify-center">
+                                <DateRangePicker
+                                    onChange={(item) =>
+                                        setDateRange([item.selection])
+                                    }
+                                    showSelectionPreview
+                                    moveRangeOnFirstSelection={false}
+                                    months={1}
+                                    ranges={dateRange}
+                                    direction="vertical"
+                                />
+                            </div>
                         </div>
                     </Tile>
                 </div>
+
                 <div
-                    className="flex flex-col sm:flex-row xl:flex-col items-stretch mb-16 xl:mb-0"
+                    className="flex flex-col sm:flex-row xl:flex-col items-stretch xl:mb-0"
                     style={{
                         minWidth: "25rem",
                     }}
                 >
-                    <Tile title="Invite Your Collaborators" grow>
-                        <CollaboratorsContainer collaborators={collaborators} />
-                        <div className="flex justify-center space-x-4 items-start mt-3">
-                            <TextField
-                                label="standard"
-                                variant="standard"
-                                error_status={invite_collab_status}
-                                fullWidth
-                                id={collaborator_id}
-                                enter_shortcut={add_collaborator}
-                            />
-                            <Button
-                                text="+&nbsp;Invite"
-                                red
-                                click_passthrough={add_collaborator}
-                            />
+                    <Tile>
+                        <div className="bg-white p-4">
+                            <p className="text-gray-600 font-bold">
+                                Invite your collaborators
+                            </p>
+                            <CollaboratorsContainer collaborators={collaborators} />
+                            <div className="flex justify-center space-x-4 items-start mt-3">
+                                <div className="grow">
+                                    <input type="text" disabled={!collaboratorInputEnabled} className="disabled:bg-amber-500 w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                        ref={collaboratorTextBoxRef}
+                                        onChange={() => { if (collaboratorErrorCode !== 0) setCollaboratorErrorCode(0) }}
+                                    />
+                                    <div className="grid">
+                                        <p class={`${collaboratorErrorCode === 1 ? '' : 'invisible'} text-xs text-rose-600`} style={{ gridColumn: 1, gridRow: 1 }}>
+                                            Duplicate NetID
+                                        </p>
+                                        <p class={`${collaboratorErrorCode === 2 ? '' : 'invisible'} text-xs text-rose-600`} style={{ gridColumn: 1, gridRow: 1 }}>
+                                            Invalid NetID
+                                        </p>
+                                    </div>
+                                </div>
+                                <RedButton
+                                    onClick={addCollaborator}
+                                    ref={collaboratorButtonRef}
+                                    className="disabled:bg-amber-500 py-2"
+                                    disabled={!collaboratorInputEnabled}
+                                >
+                                    <p >+&nbsp;Invite</p>
+                                </RedButton>
+                            </div>
                         </div>
                     </Tile>
                     <div className="flex flex-col">
-                        <Tile title="Finish and Create Your Meeting">
-                            <div className="w-full flex justify-center">
-                                <LargeButton
-                                    text="Create A New Meeting"
-                                    click_passthrough={create_cal}
-                                    disabled={!good_to_create}
-                                />
-                            </div>
-                        </Tile>
+                        <div className="w-full flex justify-center">
+                            <RedButton
+                                onClick={createCalendar}
+                                disabled={false}
+                                className='disabled:bg-gray-300 text-white disabled:text-black'
+                            >
+                                <p className="text-center font-bold m-4">
+                                    Create A New Meeting
+                                </p>
+                            </RedButton>
+                        </div>
                         <div className="w-full grow justify-center items-center hidden sm:flex xl:hidden mb-8">
                             <img
                                 src={RutgersLogoUrl}
