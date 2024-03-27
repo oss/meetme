@@ -364,5 +364,25 @@ function Dashboard() {
         </div>
     )
 }
+/*
+    const innerRef = useRef(null);
+    const fetchCalendarMetadata = metadataStore((store) => store.fetchCalendarMetadata)
+    const IntersectionObserverCallback = (entries) =>{
+        console.log(entries)
+        const entry = entries[0]
+        
+        if(entry.isIntersecting)
+            fetchCalendarMetadata(calendarID)
+    }
 
+    useEffect(()=>{
+        const observer = new IntersectionObserver(IntersectionObserverCallback)
+        observer.observe(innerRef.current)
+        return () => {
+            if(innerRef.current !== null)
+                observer.unobserve(innerRef.current)
+          }
+    },[])
+
+*/
 export default Dashboard;
