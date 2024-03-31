@@ -1,5 +1,5 @@
 import userStore from '../store/userStore';
-import metadataStore from '../store/dashboard/calendarMetadata';
+import metadataStore from '../store/calendarMetadata';
 import dialogueStore from '../store/dialogueStore';
 import { Fragment, memo, useEffect } from 'react';
 import { Dialog, Menu, Tab, Transition } from '@headlessui/react';
@@ -211,18 +211,20 @@ function DeleteDialogue({ cal_id }) {
     )
 }
 
-const TileLayer = memo(function TileLayer() {
+const TileLayer = function TileLayer() {
     const calendarMetadata = metadataStore((store) => store.calendarMetadata)
+    const calendarList = userStore((store) => store.calendars)
     return (
-        calendarMetadata.map((cal, idx) => {
+        calendarList.map((cal, idx) => {
+            console.log(calendarMetadata[cal._id])
             return (
-                <li key={cal._id} className='w-full md:w-1/3'>
-                    <MeetingTileBody cal={cal} idx={idx} />
+                <li key={idx} className='w-full md:w-1/3'>
+                    <MeetingTileBody cal={calendarMetadata[cal._id]} idx={idx} />
                 </li>
             )
         })
     )
-})
+}
 
 
 const buttonMenuBridge = create((set) => ({
@@ -238,6 +240,8 @@ const buttonMenuBridge = create((set) => ({
 
 function MenuLayer() {
     const dialogueHook = dialogueStore((store) => store.setPanel)
+
+    const calendarList = userStore((store) => store.calendars)
     const calendarMetadata = metadataStore((store) => store.calendarMetadata)
 
     const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
@@ -252,10 +256,10 @@ function MenuLayer() {
     }
 
     return (
-        calendarMetadata.map((cal, idx) =>
-            <li key={cal._id} className='relative w-full md:w-1/3 group'>
+        calendarList.map((cal, idx) =>
+            <li key={idx} className='relative w-full md:w-1/3 group'>
                 <div className='invisible'>
-                    <MeetingTileBody cal={cal} />
+                    <MeetingTileBody cal={calendarMetadata[cal._id]} idx={idx} />
                 </div>
                 <div className='absolute top-0 right-0'>
                     <Menu as="div">
@@ -343,11 +347,14 @@ function CalendarPanel() {
 
 
 function Dashboard() {
-    const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
+    //const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
+    const [updateCalendarMetadataJSON] = metadataStore((store) => [store.updateCalendarJSON])
+    const [listenForUpdates] = metadataStore((store) => [store.listenForUpdates])
     useEffect(() => {
         listenForUpdates()
+        updateCalendarMetadataJSON()
         return () => {
-            stopListeningForUpdates()
+            //stopListeningForUpdates()
         }
     }, [])
 
