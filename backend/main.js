@@ -74,8 +74,8 @@ const samlStrategy = new saml.Strategy(
     identifierFormat: null,
     decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf8'),
     privateCert: fs.readFileSync('./certs/cert.pem', 'utf8'),
-    cert: fs.readFileSync('./certs/idp.pem', 'utf8'),
-    validateInResponseTo: false,
+    idpCert: fs.readFileSync('./certs/idp.pem', 'utf8'),
+//    validateInResponseTo: false,
     disableRequestedAuthnContext: true,
     wantAssertionsSigned: false
   },
