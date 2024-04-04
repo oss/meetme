@@ -14,7 +14,7 @@ module.exports = async function watch_cal_meta(socket_io_srv, mongoClient) {
   changeStream.on('change', (next) => {
     console.log(next.fullDocument);
     console.log('METADATA UPDATED');
-    socket_io_srv.local.emit(
+    socket_io_srv.local.to(next.fullDocument._id).emit(
       'calendar_metadata_updated',
       next.fullDocument._id
     );

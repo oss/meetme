@@ -214,9 +214,9 @@ function DeleteDialogue({ cal_id }) {
 const TileLayer = function TileLayer() {
     const calendarMetadata = metadataStore((store) => store.calendarMetadata)
     const calendarList = userStore((store) => store.calendars)
+
     return (
         calendarList.map((cal, idx) => {
-            console.log(calendarMetadata[cal._id])
             return (
                 <li key={idx} className='w-full md:w-1/3'>
                     <MeetingTileBody cal={calendarMetadata[cal._id]} idx={idx} />
@@ -349,12 +349,12 @@ function CalendarPanel() {
 function Dashboard() {
     //const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
     const [updateCalendarMetadataJSON] = metadataStore((store) => [store.updateCalendarJSON])
-    const [listenForUpdates] = metadataStore((store) => [store.listenForUpdates])
+    const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.listenForUpdates, store.stopListeningForUpdates])
     useEffect(() => {
         listenForUpdates()
         updateCalendarMetadataJSON()
         return () => {
-            //stopListeningForUpdates()
+            stopListeningForUpdates()
         }
     }, [])
 

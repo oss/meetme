@@ -7,13 +7,22 @@ const useStore = create(set => {
         updateCalendarJSON()
     })
 
+    const calendarMetadataUpdatedHandler = (calendarID) => {
+        fetchCalendarMetadata(calendarID)
+    }
+
     const listenForUpdates = () => {
         const current_calendars = userData.getState().calendars;
         for(let i=0;i<current_calendars.length;i++){
             socket.emit('join cal',current_calendars[i]._id)
-            socket.on('calendar_metadata_updated', (calendarID) => {
-                fetchCalendarMetadata(calendarID)
-            });
+            socket.on('calendar_metadata_updated', calendarMetadataUpdatedHandler);
+        }
+    }
+
+    const stopListeningForUpdates = () => {
+        const current_calendars = userData.getState().calendars;
+        for(let i=0;i<current_calendars.length;i++){
+            socket.off('calendar_metadata_updated', calendarMetadataUpdatedHandler);
         }
     }
 
@@ -60,7 +69,6 @@ const useStore = create(set => {
 
                 calJSON[calendarID].isLoaded = true
                 calJSON[calendarID].data = resp_json.metadata
-                console.log('loaded',calendarID)
                 return {
                     calendarMetadata: calJSON
                 }
@@ -80,6 +88,7 @@ const useStore = create(set => {
 
     return {
         listenForUpdates: listenForUpdates,
+        stopListeningForUpdates: stopListeningForUpdates,
         updateCalendarJSON: updateCalendarJSON,
         calendarMetadata: initCalenendarMetadaJSON()
     }
