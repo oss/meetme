@@ -1,5 +1,6 @@
 import userStore from '../store/userStore';
 import metadataStore from '../store/calendarMetadata';
+import orgDataStore from '../store/orgData';
 import dialogueStore from '../store/dialogueStore';
 import { Fragment, memo, useEffect } from 'react';
 import { Dialog, Menu, Tab, Transition } from '@headlessui/react';
@@ -26,36 +27,36 @@ const MeetingCalendarTile = memo(({ calendarID, calendarName, calendarOwner, idx
                             <p className="text-sm font-medium break-words text-slate-500/50">
                                 {calendarOwner}
                             </p>
-                            
+
                         </div>
                     </div>
                 </Link>
                 <Menu as="div" className='absolute top-0 right-0'>
-                <Menu.Button
-                    onClick={() => {
-                        setOpenMenuIdx(idx)
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter')
+                    <Menu.Button
+                        onClick={() => {
                             setOpenMenuIdx(idx)
-                    }}
-                    className='pointer-events-auto'
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="red"
-                        className="w-4 h-4"
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter')
+                                setOpenMenuIdx(idx)
+                        }}
+                        className='pointer-events-auto'
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                        />
-                    </svg>
-                </Menu.Button>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="red"
+                            className="w-4 h-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                    </Menu.Button>
                 </Menu>
             </Tile>
         </div>
@@ -77,7 +78,7 @@ const LoadingCalendarTile = memo(function LoadingTile({ calendarID }) {
 
 })
 
-function MeetingTileBody({ cal, idx}) {
+function MeetingTileBody({ cal, idx }) {
     if (!cal.isLoaded)
         return <LoadingCalendarTile calendarID={cal._id} />
     else
@@ -163,10 +164,58 @@ function RenameDialogue({ cal_id }) {
     )
 }
 
+
+const LoadingOrgTile = memo(function LoadingTile({ orgID }) {
+    return (
+        <div className='group'>
+            <Tile>
+                <Link to={"/org/" + orgID}>
+                    <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
+                        loading...
+                    </div>
+                </Link>
+            </Tile>
+        </div>
+    )
+
+})
+
+function OrgTile({ orgID, orgName }) {
+    return (
+        <div className='group relative'>
+            <Tile>
+                <Link to={`/org/${orgID}`} >
+                    <div className='bg-white grow'>
+                        <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
+                            <p className="text-x font-semibold break-words" >
+                                <wbr />
+                                {orgName}
+                            </p>
+                        </div>
+                    </div>
+                </Link>
+            </Tile>
+        </div>
+    )
+}
+
 function OrgPanel() {
+    const orgList = userStore((store) => store.organizations)
+    const [orgData, updateOrgJSON] = orgDataStore((store) => [store.orgData, store.updateOrgJSON])
+
+    useEffect(() => {
+        updateOrgJSON()
+    }, [])
+
     return (
         <Tab.Panel>
-            OrgStuff
+            {orgList.map((org, idx) => {
+                const orgJSON = orgData[org._id]
+                if (orgJSON.isLoaded === false)
+                    return <LoadingOrgTile orgID={org._id} />
+
+                return <OrgTile orgID={org._id} orgName={orgJSON.data.name} />
+            })}
         </Tab.Panel>
     )
 }
@@ -331,6 +380,17 @@ function MenuLayer() {
 }
 
 function CalendarPanel() {
+    //const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
+    const [updateCalendarMetadataJSON] = metadataStore((store) => [store.updateCalendarJSON])
+    const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.listenForUpdates, store.stopListeningForUpdates])
+    useEffect(() => {
+        listenForUpdates()
+        updateCalendarMetadataJSON()
+        return () => {
+            stopListeningForUpdates()
+        }
+    }, [])
+
     return (
         <Tab.Panel>
             <div className='relative grid grid-cols-1 grid-rows-1'>
@@ -347,17 +407,6 @@ function CalendarPanel() {
 
 
 function Dashboard() {
-    //const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.keepUpdated, store.stopUpdated])
-    const [updateCalendarMetadataJSON] = metadataStore((store) => [store.updateCalendarJSON])
-    const [listenForUpdates, stopListeningForUpdates] = metadataStore((store) => [store.listenForUpdates, store.stopListeningForUpdates])
-    useEffect(() => {
-        listenForUpdates()
-        updateCalendarMetadataJSON()
-        return () => {
-            stopListeningForUpdates()
-        }
-    }, [])
-
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
