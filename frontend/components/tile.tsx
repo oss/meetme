@@ -2,7 +2,7 @@ function Tile({children}) {
     return (
         <div
             className={`
-                grow
+                relative
                 rounded-md
                 overflow-x-auto
                 overflow-y-auto
