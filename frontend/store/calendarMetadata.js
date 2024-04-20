@@ -80,7 +80,7 @@ const useStore = create(set => {
         set((previous_state) => {
             const calJSON = { ...previous_state.calendarMetadata };
             if(calendarID in calJSON)
-                return
+                return previous_state
 
             calJSON[calendarID] = {}
             calJSON[calendarID].isLoaded = false
