@@ -1,13 +1,8 @@
 import userStore from '../../store/userStore';
 import metadataStore from '../../store/calendarMetadata';
 import orgDataStore from '../../store/orgData';
-import dialogueStore from '../../store/dialogueStore';
-import { Fragment, memo, useEffect } from 'react';
-import { Dialog, Menu, Tab, Transition } from '@headlessui/react';
-import Tile from '../../components/tile';
-import { Link } from 'react-router-dom';
-import RedButton from '../../components/utils/red-button';
-import { useState, useRef } from 'react';
+import { memo } from 'react';
+import { Tab } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
