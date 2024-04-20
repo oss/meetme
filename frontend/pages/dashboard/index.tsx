@@ -11,17 +11,18 @@ import { useState, useRef } from 'react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
-
+import OrgTile from './organizations/orgTile';
+import LoadingOrgTile from './organizations/loadingTile';
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
-    const [ calendarMetadata, addCalendar ] = metadataStore((store) => [ store.calendarMetadata[calendarID], store.addCalendar ])
+    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar])
 
     if (calendarInStore === false) {
         addCalendar(calendarID)
         return <LoadingCalendarTile calendarID={calendarID} />
     }
-    if(calendarMetadata.isLoaded === false)
+    if (calendarMetadata.isLoaded === false)
         return <LoadingCalendarTile calendarID={calendarID} />
 
     return <CalendarTile calendarID={calendarID} calendarName={calendarMetadata.data.name} calendarOwner={calendarMetadata.data.owner._id} idx={idx} />
@@ -45,57 +46,35 @@ const HeaderButton = memo(function HeaderButton() {
     );
 })
 
-const LoadingOrgTile = memo(function LoadingTile({ orgID }) {
-    return (
-        <div className='group'>
-            <Tile>
-                <Link to={"/org/" + orgID}>
-                    <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
-                        loading...
-                    </div>
-                </Link>
-            </Tile>
-        </div>
-    )
+function OrgTileCreator({ orgID }) {
+    const orgInStore = orgDataStore((store) => orgID in store.orgData)
+    const [orgData, addOrg] = orgDataStore((store) => [store.orgData[orgID], store.addOrg])
 
-})
+    if (orgInStore === false) {
+        addOrg(orgID)
+        return <LoadingOrgTile orgID={orgID} />
+    }
 
-function OrgTile({ orgID, orgName }) {
-    return (
-        <div className='group relative'>
-            <Tile>
-                <Link to={`/org/${orgID}`} >
-                    <div className='bg-white grow'>
-                        <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600'>
-                            <p className="text-x font-semibold break-words" >
-                                <wbr />
-                                {orgName}
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-            </Tile>
-        </div>
-    )
+    if (orgData.isLoaded === false)
+        return <LoadingOrgTile orgID={orgID} />
+
+    console.log(orgData)
+    return <OrgTile orgID={orgID} orgName={orgData.data.name} />
 }
 
 function OrgPanel() {
     const orgList = userStore((store) => store.organizations)
-    const [orgData, updateOrgJSON] = orgDataStore((store) => [store.orgData, store.updateOrgJSON])
-
-    useEffect(() => {
-        updateOrgJSON()
-    }, [])
-
     return (
         <Tab.Panel>
-            {orgList.map((org, idx) => {
-                const orgJSON = orgData[org._id]
-                if (orgJSON.isLoaded === false)
-                    return <LoadingOrgTile orgID={org._id} />
-
-                return <OrgTile orgID={org._id} orgName={orgJSON.data.name} />
-            })}
+            <ul>
+                {orgList.map((org, idx) => {
+                    return (
+                        <li key={idx}>
+                            <OrgTileCreator orgID={org._id} />
+                        </li>
+                    )
+                })}
+            </ul>
         </Tab.Panel>
     )
 }
@@ -124,7 +103,7 @@ function MenuLayer() {
                     <CalendarTileCreator cal={cal._id} idx={idx} />
                 </div>
                 <div className='absolute top-0 right-0'>
-                    <DropDownMenu calID={cal._id} idx={idx}/>
+                    <DropDownMenu calID={cal._id} idx={idx} />
                 </div>
             </li>
         ));

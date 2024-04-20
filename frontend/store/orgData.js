@@ -30,45 +30,28 @@ const useStore = create(set => {
         }
     }
 
-    const updateOrgJSON = async () => {
+
+    const addOrg = (orgID) => {
         set((previous_state) => {
-            const currentOrganizations = userData.getState().organizations;
-            const orgJSON = { ...previous_state.OrgData };
+            const orgJSON = { ...previous_state.orgData };
+            if(orgID in orgJSON)
+                return previous_state
 
-            for (let i = 0; i < currentOrganizations.length; i++) {
-                const orgID = currentOrganizations[i]._id
-
-                let downloadOrgData = false;
-                if (orgID in orgJSON === false)
-                    orgJSON[orgID] = { isLoaded: false }
-
-                if(orgJSON[orgID].isLoaded === false)
-                downloadOrgData = true
-
-                if(downloadOrgData)
-                    fetchOrgData(orgID)
-            }
-
+            orgJSON[orgID] = {}
+            orgJSON[orgID].isLoaded = false
             return {
                 orgData: orgJSON
             }
-        });
+        })
+
+        fetchOrgData(orgID)
     }
 
-    const initOrgData = () => {
-        const currentOrganizations = userData.getState().organizations;
-        const orgJSON = {}
-
-        for (let i = 0; i < currentOrganizations.length; i++) {
-            orgJSON[currentOrganizations[i]._id] = { isLoaded: false }
-        }
-        return orgJSON
-    }
 
     return {
         fetchOrgData: fetchOrgData,
-        updateOrgJSON: updateOrgJSON,
-        orgData: initOrgData()
+        addOrg: addOrg,
+        orgData: {}
     }
 })
 
