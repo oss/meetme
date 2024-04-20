@@ -27,36 +27,6 @@ function CalendarTileCreator({ calendarID, idx }) {
     return <CalendarTile calendarID={calendarID} calendarName={calendarMetadata.data.name} calendarOwner={calendarMetadata.data.owner._id} idx={idx} />
 }
 
-function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayError, errorMessage = '', placeholder = '', description = '' }) {
-    const textBarRef = useRef(null)
-
-    return (
-        <>
-            <Dialog.Title>{titleText}</Dialog.Title>
-            <Dialog.Description>
-                <p className="text-sm text-gray-500">
-                    {description}
-                </p>
-            </Dialog.Description>
-            <div className='h-1' />
-            <input type="text" className="
-                    w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
-                    focus:border-sky-500 focus:ring-1 focus:ring-sky-500" placeholder={placeholder} ref={textBarRef} />
-            <div className='h-1' />
-            <div className='inline-flex w-full'>
-                <p className="grow min-w-5 text-xs text-rose-600 inline text-clip break-words">
-                    {displayError ? errorMessage : <></>}
-                </p>
-                <div className=''>
-                    <RedButton onClick={onClickPassthrough({ textBarRef })}>
-                        {buttonText}
-                    </RedButton>
-                </div>
-            </div>
-        </>
-    )
-}
-
 const HeaderButton = memo(function HeaderButton() {
     return (
         <Tab.List className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
@@ -129,48 +99,6 @@ function OrgPanel() {
         </Tab.Panel>
     )
 }
-
-
-/*
-function DeleteDialogue({ cal_id }) {
-    const closeDialogue = dialogueStore((store) => store.closePanel)
-
-    const [displayError, setDisplayError] = useState(false)
-    const [errorMessage, setErrorMessage] = useState('some error message')
-    const confirmationString = Math.random().toString(36).slice(2)
-
-    return (
-        <TextBarDialogue
-            buttonText='Delete'
-            titleText='Delete Calendar'
-            description={`Type in the phrase ${confirmationString} to delete`}
-            displayError={displayError}
-            errorMessage={errorMessage}
-            onClickPassthrough={({ textBarValue }) => async (event) => {
-                if (textBarValue !== confirmationString) {
-                    setErrorMessage('Confirmation code incorrect')
-                    setDisplayError(true)
-                    return
-                }
-
-                const req = await fetch(`${process.env.API_URL}/cal/${cal_id}`, {
-                    credentials: 'include', method: 'DELETE', headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const resp = await req.json()
-                if (resp.Status === 'ok') {
-                    closeDialogue()
-                }
-                else {
-                    setErrorMessage(resp.error)
-                    setDisplayError(true)
-                }
-            }} />
-
-    )
-}
-*/
 
 const TileLayer = function TileLayer() {
     const calendarList = userStore((store) => store.calendars)
