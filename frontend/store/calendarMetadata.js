@@ -76,21 +76,29 @@ const useStore = create(set => {
         }
     }
 
-    const initCalenendarMetadaJSON = () => {
-        const current_calendars = userData.getState().calendars;
-        const calJSON = {}
+    const addCalendar = (calendarID) => {
+        set((previous_state) => {
+            const calJSON = { ...previous_state.calendarMetadata };
+            if(calendarID in calJSON)
+                return
 
-        for (let i = 0; i < current_calendars.length; i++) {
-            calJSON[current_calendars[i]._id] = { isLoaded: false }
-        }
-        return calJSON
+            calJSON[calendarID] = {}
+            calJSON[calendarID].isLoaded = false
+            return {
+                calendarMetadata: calJSON
+            }
+        })
+
+        fetchCalendarMetadata(calendarID)
     }
 
     return {
         listenForUpdates: listenForUpdates,
         stopListeningForUpdates: stopListeningForUpdates,
         updateCalendarJSON: updateCalendarJSON,
-        calendarMetadata: initCalenendarMetadaJSON()
+        addCalendar: addCalendar,
+        fetchCalendarMetadata: fetchCalendarMetadata,
+        calendarMetadata: {}
     }
 })
 

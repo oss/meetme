@@ -43,17 +43,6 @@ router.post('/', isAuthenticated, async function (req, res) {
   }
 
   console.log(JSON.stringify(owner));
-  if (
-    !JSON.stringify(owner).match(
-      '{"type":"(?:individual|organization)","id":"[a-zA-Z0-9]+"}'
-    )
-  ) {
-    res.json({
-      Status: 'error',
-      error: 'Invalid owner syntax',
-    });
-    return;
-  }
 
   //verify owner data is ok and able to create calendar
   if (owner.type === 'individual') {

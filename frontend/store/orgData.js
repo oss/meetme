@@ -66,6 +66,7 @@ const useStore = create(set => {
     }
 
     return {
+        fetchOrgData: fetchOrgData,
         updateOrgJSON: updateOrgJSON,
         orgData: initOrgData()
     }

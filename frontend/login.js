@@ -5,7 +5,7 @@ import Tile from '/components/utils/tile';
 import LargeButton from '/components/utils/large-button';
 import sheild_img from '/assets/RU_SHIELD_BLACK.png';
 import '/index.css';
-import Footer from '/components/footer';
+import Footer from './components/lib/ui/footer';
 import authStore from "./store/authStore";
 import userStore from "./store/userStore"
 

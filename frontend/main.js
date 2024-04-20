@@ -1,7 +1,6 @@
 // server.js
 import React from "react";
 import { lazy } from "react";
-import Footer from "./components/footer";
 import { createBrowserRouter, RouterProvider, Outlet, useParams } from "react-router-dom";
 import Navbar from "./components/navigation-bar";
 const CreateMeeting = lazy(() => import("./pages/create-meeting"));
@@ -108,14 +107,6 @@ function App() {
                         },
                         {
                             path: ":id",
-                            element: (
-                                <React.Suspense fallback={"Loading..."}>
-                                    <Meeting />
-                                </React.Suspense>
-                            ),
-                        },
-                        {
-                            path: ":id/legacy",
                             element: (
                                 <React.Suspense fallback={"Loading..."}>
                                     <CalendarLoader />

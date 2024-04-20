@@ -42,7 +42,7 @@ function CreateMeeting({ isOrganizationOwned = false }) {
         );
         return base;
     });
-
+    const {orgID} = useParams();
     const navigate = useNavigate();
     async function createCalendar() {
         console.log('creating calendar')
@@ -97,7 +97,7 @@ function CreateMeeting({ isOrganizationOwned = false }) {
         if (isOrganizationOwned) {
             payload.owner = {
                 type: "organization",
-                id: useParams().orgID,
+                id: orgID,
             };
         }
 
