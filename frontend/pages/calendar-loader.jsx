@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import calendarMaindataStore from '../store/calendarMaindata';
 import calendarMetadataStore from '../store/calendarMetadata';
 import authData from '../store/authStore';
 import orgData from '../store/orgData';
+import CalendarOwnerPage from './calendar/calendar-owner';
 
 function CalendarLoader() {
     const { id } = useParams();
@@ -12,26 +12,30 @@ function CalendarLoader() {
     const [addCalMain] = calendarMaindataStore((store) => [store.addCalendar])
     const [addCalMeta] = calendarMetadataStore((store) => [store.addCalendar])
 
-    const isLoaded = calendarMaindataStore((store) => {
+    const loadedMaindata = calendarMaindataStore((store) => {
         if (id in store.calendarData) return store.calendarData[id].isLoaded
         
         addCalMain(id)
-        addCalMeta(id)
-
-        //return false;
+        return false;
     })
+    const loadedMetadata = calendarMetadataStore((store) => {
+        if (id in store.calendarMetadata) return store.calendarMetadata[id].isLoaded
+        
+        addCalMeta(id)
+        return false;
+    })
+
+    const isLoaded = loadedMaindata && loadedMetadata;
 
     const ownerType = calendarMaindataStore((store) => isLoaded && store.calendarData[id].data.owner.owner_type || null)
     const ownerID = calendarMaindataStore((store) => isLoaded && store.calendarData[id].data.owner._id || null)
     const calendarRole = calendarMaindataStore((store) => {
 
         if (isLoaded === false) return null;
-        console.log(store.calendarData[id])
         const calendar = store.calendarData[id].data;
 
         switch (ownerType) {
             case 'individual': {
-                console.log(calendarMaindataStore.getState())
                 const isOwner = ownerID === netID;
                 if (isOwner) return 'owner'
 
@@ -64,36 +68,17 @@ function CalendarLoader() {
             </div>
         )
 
-    return (
-        <div>
-            <div>
-                owner type: {ownerType}
-            </div>
-            <div>
-                role: {calendarRole}
-            </div>
-        </div>
-    )
-
-    /*
     switch (ownerType) {
         case 'individual': {
-            return (
-                <div>
-                    <div>
-                        owner type: {ownerType}
-                    </div>
-                    <div>
-                        role: {calendarRole}
-                    </div>
-                </div>
-            )
+            switch(calendarRole) {
+                case 'owner':
+                    return <CalendarOwnerPage calID={id}/>
+            }
         }
         case 'organization': {
             return (<div>org cal</div>)
         }
     }
-    */
 }
 
 export default CalendarLoader;

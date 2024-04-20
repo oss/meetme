@@ -84,12 +84,11 @@ const useStore = create(set => {
 
             calJSON[calendarID] = {}
             calJSON[calendarID].isLoaded = false
+            fetchCalendarMetadata(calendarID)
             return {
                 calendarMetadata: calJSON
             }
         })
-
-        fetchCalendarMetadata(calendarID)
     }
 
     return {

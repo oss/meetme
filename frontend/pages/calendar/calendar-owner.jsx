@@ -1,16 +1,24 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
-import UserCalendar from '../../components/utils/calendar/user-calendar';
-import GlobalCalendar from '../../components/utils/calendar/global-calendar';
-import Tile from '../../components/utils/tile';
-import uniqid from 'uniqid';
-import TextField from '../../components/utils/text-field';
-import Button from '../../components/utils/button';
-import { getUser } from '../../utils';
-import DropdownMenu from '../../components/utils/dropdown-menu';
-import HeadlessDialogue from '../../components/utils/headless-dialogue';
-import renderCollabatorsList from '../../components/member-list';
-import CalendarTabs from '../../components/utils/calendar-tabs';
+import Tile from '../../components/tile';
+import calendarMetadata from '../../store/calendarMetadata';
+import calendarMaindata from '../../store/calendarMaindata';
 
+function CalendarOwner({ calID }) {
+    const calendarName = calendarMetadata((store)=>store.calendarMetadata[calID].data.name)
+
+    return (
+        <div className="flex flex-col items-center w-full h-full bg-gray-100 border-gray-100 grow">
+            <div className="grid grid-cols-[20%_80%] w-full">
+                <div className="col-start-1 row-span-full">
+                    <Tile className='bg-white'>
+                        {calendarName}
+                    </Tile>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+/*
 function CalendarOwner({
     metadata,
     maindata,
@@ -25,26 +33,6 @@ function CalendarOwner({
     const [display_invite_dialogue, set_invite_dialogue] = useState(false);
     const mainbody_id = uniqid();
 
-    function getScrollbarWidth() {
-    // Creating invisible container
-        const outer = document.createElement('div');
-        outer.style.visibility = 'hidden';
-        outer.style.overflow = 'scroll'; // forcing scrollbar to appear
-        outer.style.msOverflowStyle = 'scrollbar'; // needed for WinJS apps
-        document.body.appendChild(outer);
-
-        // Creating inner element and placing it in the container
-        const inner = document.createElement('div');
-        outer.appendChild(inner);
-
-        // Calculating difference between container's full width and the child width
-        const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
-
-        // Removing temporary elements from the DOM
-        outer.parentNode.removeChild(outer);
-
-        return scrollbarWidth;
-    }
     useEffect(() => {
         if (display_invite_dialogue) {
             let scroll = getScrollbarWidth();
@@ -845,5 +833,6 @@ function CalendarOwner({
         </>
     );
 }
+*/
 
 export default CalendarOwner;
