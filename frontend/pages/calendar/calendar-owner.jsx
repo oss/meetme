@@ -5,9 +5,9 @@ import dialogueStore from '../../store/dialogueStore';
 import CalendarNameTile from './content/calNameTile';
 import RedButton from '../../components/utils/red-button';
 import InviteDialogue from './dialogues/inviteDialogue';
+import CalendarLocationTile from './content/calLocationTile';
 
 function CalendarOwner({ calID }) {
-    const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
     const setPanel = dialogueStore((store)=> store.setPanel)
 
     const memberList = calendarMaindata((store) => {
@@ -53,7 +53,8 @@ function CalendarOwner({ calID }) {
 
     return (
         <div className="flex flex-col items-center w-full h-full bg-gray-100 border-gray-100 grow">
-            <CalendarNameTile calendarName={calendarName} />
+            <CalendarNameTile calID={calID} />
+            <CalendarLocationTile calID={calID} />
             <Tile>
                 <div className='bg-white w-full h-full'>
                     <RedButton onClick={()=>{setPanel(<InviteDialogue calID={calID} />) }}>
