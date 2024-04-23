@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import calendarMaindataStore from '../store/calendarMaindata';
-import calendarMetadataStore from '../store/calendarMetadata';
-import authData from '../store/authStore';
-import orgData from '../store/orgData';
-import CalendarOwnerPage from './calendar/calendar-owner';
+import calendarMaindataStore from '../../store/calendarMaindata';
+import calendarMetadataStore from '../../store/calendarMetadata';
+import authData from '../../store/authStore';
+import orgData from '../../store/orgData';
+import CalendarOwnerPage from './calendar-owner';
 
 function CalendarLoader() {
     const { id } = useParams();
