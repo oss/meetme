@@ -1,4 +1,4 @@
-function Tile({children}) {
+function TileRoot({ children }){
     return (
         <div
             className={`
@@ -16,4 +16,12 @@ function Tile({children}) {
     );
 }
 
-export default Tile;
+const Title = ({ children }) => {
+    return (
+        <p className="text-gray-600 font-bold">{children}</p>
+    )
+}
+
+export default Object.assign(TileRoot, { 
+    Title: Title 
+});
