@@ -8,6 +8,8 @@ import {
     getSortedMergedTimeblocks,
 } from "./utilities";
 
+import Stack from '../../../components/lib/primitives/stack'
+
 import calendarMaindataStore from '../../../store/calendarMaindata';
 
 import { useState } from 'react';
@@ -259,6 +261,7 @@ function MeetingGrid({ calID, rowsCount }) {
 
     return (
         <div>
+
             <div className="flex">
                 {potentialMeetings.map((x, i) => (
                     <MeetingColumnHeader

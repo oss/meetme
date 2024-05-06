@@ -85,9 +85,7 @@ function CalendarOwner({ calID }) {
                     <MemberTileList />
                 </div>
             </Tile>
-            <Tile>
-                <MeetingCalendar calID={calID} />
-            </Tile>
+            <MeetingCalendar calID={calID} />
             <UserCalendar calID={calID} />
         </div>
     )

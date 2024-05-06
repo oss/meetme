@@ -115,18 +115,20 @@ function MeetingGrid({ calID, rowsCount }) {
 
 
     return (
-        <div>
-            <div className="flex">
+        <>
+            <ol className="bg-gray-200 rounded-tl-lg">
                 {potentialMeetings.map((x, i) => (
-                    <MeetingColumnHeader
-                        month={x.getMonth()}
-                        day={x.getDate()}
-                        year={x.getFullYear()}
-                        totalColumns={columnCount}
-                        key={i}
-                    />
+                    <li className="inline-flex">
+                        <MeetingColumnHeader
+                            month={x.getMonth()}
+                            day={x.getDate()}
+                            year={x.getFullYear()}
+                            totalColumns={columnCount}
+                            key={i}
+                        />
+                    </li>
                 ))}
-            </div>
+            </ol>
             <div className="flex">
                 {meetingArray.map((day, c) => (
                     <div style={{ width: `${100 / columnCount}%` }} key={c}>
@@ -141,17 +143,16 @@ function MeetingGrid({ calID, rowsCount }) {
                                     collaborators={allMembers}
                                     selectedUsers={usersAmtGrid[r][c]}
                                     key={c * rowsCount + r}
-                                    onSelectUsers={(userArr)=>{console.log(userArr)}}
+                                    onSelectUsers={(userArr) => { console.log(userArr) }}
                                     disabled={timeBlock.start === null || timeBlock.end === null}
-                                    setSelectedUsers={(x)=>{console.log('this outputs hovered netids as an array',x)}}
+                                    setSelectedUsers={(x) => { console.log('this outputs hovered netids as an array', x) }}
                                 />
                             );
                         })}
                     </div>
                 ))}
             </div>
-
-        </div>
+        </>
     );
 }
 

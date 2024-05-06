@@ -22,6 +22,15 @@ const Title = ({ children }) => {
     )
 }
 
+const Body = ({children}) => {
+    return(
+        <div className="p-2">
+            {children}
+        </div>
+    )
+}
+
 export default Object.assign(TileRoot, { 
-    Title: Title 
+    Title: Title,
+    Body: Body
 });
