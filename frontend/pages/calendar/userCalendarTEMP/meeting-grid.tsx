@@ -285,6 +285,22 @@ function MeetingGrid({ calID, rowsCount }) {
 
                             const betweenSelectedRows = topLeftCornerRow <= r && r <= bottomRightCornerRow;
                             const betweenSelectedColumns = topLeftCornerColumn <= c && c <= bottomRightCornerColumn;
+                            const insideHighlightedRegion = betweenSelectedColumns && betweenSelectedRows;
+
+                            let available = null;
+                            if(value){
+                                if(usersAmtGrid[r][c] || insideHighlightedRegion)
+                                    available = true;
+                                else
+                                    available = false;
+                            }
+                            else{
+                                if((usersAmtGrid[r][c] === false) || insideHighlightedRegion)
+                                    available = false;
+                                else
+                                    available = true;
+                            }
+
                             return (
                                 <MeetingBlock
                                     displayHeight={displayHeight}
@@ -293,7 +309,7 @@ function MeetingGrid({ calID, rowsCount }) {
                                     start={timeBlock.start}
                                     end={timeBlock.end}
                                     key={c * rowsCount + r}
-                                    available={usersAmtGrid[r][c] || (betweenSelectedColumns && betweenSelectedRows)}
+                                    available={available}
                                     onMouseDown={selectFromHere}
                                     onMouseOver={updateDisplayGrid}
                                     onMouseUp={endSelection}

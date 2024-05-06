@@ -51,7 +51,7 @@ function MeetingBlock({
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
             //onMouseEnter={setSelectedUsers}
-        ></div>
+        />
     );
 }
 
