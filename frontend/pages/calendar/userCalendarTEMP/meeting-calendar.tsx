@@ -21,16 +21,19 @@ function MeetingCalendar({ calID }) {
     return (
         <Tile>
             <div className="bg-white">
-                <MeetingLabels
-                    displayHeight={blockHeight}
-                    rowsCount={rowsCount}
-                    startHour={new Date(startHour)}
-                    timeIntervals={timeIntervals}
-                />
-                <div>
-                    <MeetingGrid calID={calID} rowsCount={rowsCount}/>
+                <div className="flex">
+                    <div className="inline-block">
+                        <MeetingLabels
+                            displayHeight={blockHeight}
+                            rowsCount={rowsCount}
+                            startHour={new Date(startHour)}
+                            timeIntervals={timeIntervals}
+                        />
+                    </div>
+                    <div className="inline-block">
+                        <MeetingGrid calID={calID} rowsCount={rowsCount} />
+                    </div>
                 </div>
-
             </div>
         </Tile>
     );

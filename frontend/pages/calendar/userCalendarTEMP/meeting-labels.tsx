@@ -16,7 +16,7 @@ function MeetingLabels(props: IMeetingLabels) {
             className="mr-4"
             style={{ transform: `translateY(-${props.displayHeight / 2}rem)` }}
         >
-            <div className="h-16" />
+            
             <div className="h-20" />
             {[...Array(props.rowsCount + 1)].map((x, i) => {
                 let displayHour = currentHour;

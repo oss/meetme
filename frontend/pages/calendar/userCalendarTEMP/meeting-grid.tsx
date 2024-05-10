@@ -260,19 +260,21 @@ function MeetingGrid({ calID, rowsCount }) {
 
 
     return (
-        <div>
+        <>
 
-            <div className="flex">
+            <ol className="bg-gray-200 rounded-tl-lg">
                 {potentialMeetings.map((x, i) => (
-                    <MeetingColumnHeader
-                        month={x.getMonth()}
-                        day={x.getDate()}
-                        year={x.getFullYear()}
-                        totalColumns={columnCount}
-                        key={i}
-                    />
+                    <li className="inline-flex">
+                        <MeetingColumnHeader
+                            month={x.getMonth()}
+                            day={x.getDate()}
+                            year={x.getFullYear()}
+                            totalColumns={columnCount}
+                            key={i}
+                        />
+                    </li>
                 ))}
-            </div>
+            </ol>
             <div className="flex" onMouseLeave={() => {
                 if (isSelectMode) {
                     saveSelection();
@@ -288,14 +290,14 @@ function MeetingGrid({ calID, rowsCount }) {
                             const insideHighlightedRegion = betweenSelectedColumns && betweenSelectedRows;
 
                             let available = null;
-                            if(value){
-                                if(usersAmtGrid[r][c] || insideHighlightedRegion)
+                            if (value) {
+                                if (usersAmtGrid[r][c] || insideHighlightedRegion)
                                     available = true;
                                 else
                                     available = false;
                             }
-                            else{
-                                if((usersAmtGrid[r][c] === false) || insideHighlightedRegion)
+                            else {
+                                if ((usersAmtGrid[r][c] === false) || insideHighlightedRegion)
                                     available = false;
                                 else
                                     available = true;
@@ -320,7 +322,7 @@ function MeetingGrid({ calID, rowsCount }) {
                 ))}
             </div>
 
-        </div>
+        </>
     );
 }
 
