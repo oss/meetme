@@ -5,8 +5,10 @@ function CalendarLocationTile({ calID }) {
     return (
         <Tile>
             <div className='bg-white'>
-                <Tile.Title>Location</Tile.Title>
-                {location || 'No location has been set'}
+                <Tile.Body>
+                    <Tile.Title>Location</Tile.Title>
+                    {location || 'No location has been set'}
+                </Tile.Body>
             </div>
         </Tile>
 

@@ -6,8 +6,10 @@ function CalendarNameTile({ calID }) {
     return (
         <Tile>
             <div className='bg-white'>
-                <Tile.Title>Name</Tile.Title>
-                {calendarName}
+                <Tile.Body>
+                    <Tile.Title>Name</Tile.Title>
+                    {calendarName}
+                </Tile.Body>
             </div>
         </Tile>
 
