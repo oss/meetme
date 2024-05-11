@@ -22,11 +22,9 @@ function MeetingBlock({
     onMouseDown,
     onMouseUp,
     onMouseOver,
-    selectedUsers,
     start,
     end,
     available = false,
-    setSelectedUsers,
 }: IMeetingBlock) {
     const displayHeight: number = 0.9;
     const bgRGB = 'rgb(252,165,165)'

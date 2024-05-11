@@ -144,7 +144,6 @@ function MeetingGrid({ calID, rowsCount }) {
                                     selectedUsers={usersAmtGrid[r][c]}
                                     key={c * rowsCount + r}
                                     onSelectUsers={(userArr) => { console.log(userArr) }}
-                                    disabled={timeBlock.start === null || timeBlock.end === null}
                                     setSelectedUsers={(x) => { console.log('this outputs hovered netids as an array', x) }}
                                 />
                             );

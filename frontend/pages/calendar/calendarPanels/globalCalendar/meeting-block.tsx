@@ -23,11 +23,11 @@ function MeetingBlock({
     selectedUsers,
     start,
     end,
-    disabled = false,
     setSelectedUsers,
 }: IMeetingBlock) {
     const displayHeight: number = 0.9;
     const colorBrightness: number = selectedUsers.length / collaborators.size;
+    const disabled = start === null || end === null;
 
     function getColorValue(value: number) {
         return value + Math.floor((255 - value) * (1 - colorBrightness));
@@ -46,11 +46,11 @@ function MeetingBlock({
                 setSelectedUsers(selectedUsers);
             }}
             className={`${
-                disabled ? "border-transparent" : "border-slate-200"
+                disabled ? "bg-gray-600 border-transparent" : "border-slate-200"
             } border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
             style={{
                 height: `${displayHeight}rem`,
-                backgroundColor: disabled ? 'gray' : blockColor,
+                backgroundColor: !disabled && blockColor,
             }}
             data-row={row}
             data-col={column}
