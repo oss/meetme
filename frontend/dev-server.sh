@@ -1,5 +1,9 @@
 tmpfile="/tmp/$(date | sha1sum | cut -d " " -f 1 )"
-npm outdated --json | jq -r '. | to_entries | map( { (.key): .value.latest } ) | add // {} | { "dependencies": . }' | jq -s '.[0] * .[1]' package.json - > "$tmpfile"
+npm outdated --json | \
+    jq -r '. | to_entries | map( { (.key): .value.latest } ) | add // {} | { "dependencies": . }' | \
+    jq --argjson ignorelist '[]' '.dependencies | with_entries(select([.key] | inside($ignorelist) | not)) | {dependencies: .}' | \
+    jq -s '.[0] * .[1]' package.json - > "$tmpfile"
+
 mv "$tmpfile" package.json
 
 npm install .
