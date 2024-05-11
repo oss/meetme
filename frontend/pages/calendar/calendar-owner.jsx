@@ -8,8 +8,8 @@ import InviteDialogue from './dialogues/inviteDialogue';
 import CalendarLocationTile from './content/calLocationTile';
 import CalendarMeetingTimeTile from './content/calMeetingTimeTile';
 
-import MeetingCalendar from './calendarPanels/meeting-calendar'
-import UserCalendar from './userCalendarTEMP/meeting-calendar';
+import GlobalCalendar from './calendarPanels/globalCalendar';
+import UserCalendar from './calendarPanels/userCalendar';
 
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
@@ -85,7 +85,7 @@ function CalendarOwner({ calID }) {
                     <MemberTileList />
                 </div>
             </Tile>
-            <MeetingCalendar calID={calID} />
+            <GlobalCalendar calID={calID} />
             <UserCalendar calID={calID} />
         </div>
     )

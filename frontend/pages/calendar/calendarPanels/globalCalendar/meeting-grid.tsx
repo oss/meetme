@@ -1,12 +1,12 @@
-import MeetingColumnHeader from "./meeting-column-header";
+import MeetingColumnHeader from "../components/meeting-column-header";
 import MeetingBlock from "./meeting-block";
 import {
     getGridFromBlocks,
     createMeetingArray,
     UserTimes,
-} from "./utilities";
+} from "../utilities";
 
-import calendarMaindataStore from '../../../store/calendarMaindata';
+import calendarMaindataStore from '../../../../store/calendarMaindata';
 
 interface IMeetingGrid {
     potentialMeetings: Date[];

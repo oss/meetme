@@ -1,4 +1,4 @@
-import MeetingColumnHeader from "./meeting-column-header";
+import MeetingColumnHeader from "../components/meeting-column-header";
 import MeetingBlock from "./meeting-block";
 import {
     getGridFromBlocks,
@@ -6,11 +6,9 @@ import {
     UserTimes,
     getRemovedTimeline,
     getSortedMergedTimeblocks,
-} from "./utilities";
+} from "../utilities";
 
-import Stack from '../../../components/lib/primitives/stack'
-
-import calendarMaindataStore from '../../../store/calendarMaindata';
+import calendarMaindataStore from '../../../../store/calendarMaindata';
 
 import { useState } from 'react';
 
