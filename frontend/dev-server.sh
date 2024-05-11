@@ -1,3 +1,7 @@
+tmpfile="/tmp/$(date | sha1sum | cut -d " " -f 1 )"
+npm outdated --json | jq -r '. | to_entries | map( { (.key): .value.latest } ) | add // {} | { "dependencies": . }' | jq -s '.[0] * .[1]' package.json - > "$tmpfile"
+mv "$tmpfile" package.json
+
 npm install .
 
 npx tailwindcss -i ./input.css -o index.css
