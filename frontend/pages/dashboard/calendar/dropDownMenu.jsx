@@ -73,7 +73,6 @@ function dropDownMenu({ calID, idx }) {
                 </MenuItems>
             </Transition>
         </Menu>
-
     )
 }
 

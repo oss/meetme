@@ -96,7 +96,7 @@ function MenuLayer() {
         calendarList.map((cal, idx) =>
             <li key={idx} className='relative w-full md:w-1/3 group'>
                 <div className='invisible'>
-                    <CalendarTileCreator cal={cal._id} idx={idx} />
+                    <CalendarTileCreator calendarID={cal._id} idx={idx} />
                 </div>
                 <div className='absolute top-0 right-0'>
                     <DropDownMenu calID={cal._id} idx={idx} />
@@ -108,15 +108,19 @@ function MenuLayer() {
 function CalendarPanel() {
     return (
         <TabPanel>
-            <div className='relative grid grid-cols-1 grid-rows-1'>
-                <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
-                    <TileLayer />
-                </ul>
-                <ul className='flex flex-wrap pointer-events-none' style={{ gridColumn: 1, gridRow: 1 }}>
-                    <MenuLayer />
-                </ul>
-            </div>
-        </TabPanel>
+            <Stack>
+                <Stack.Item>
+                    <ul className='relative flex flex-wrap'>
+                        <TileLayer />
+                    </ul>
+                </Stack.Item>
+                <Stack.Item>
+                    <ul className='relative flex flex-wrap pointer-events-none'>
+                        <MenuLayer />
+                    </ul>
+                </Stack.Item>
+            </Stack>
+        </TabPanel >
     );
 }
 
