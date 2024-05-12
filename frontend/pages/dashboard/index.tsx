@@ -2,12 +2,13 @@ import userStore from '../../store/userStore';
 import metadataStore from '../../store/calendarMetadata';
 import orgDataStore from '../../store/orgData';
 import { memo } from 'react';
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
 import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
+import Stack from '../../components/lib/primitives/stack'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
@@ -25,7 +26,7 @@ function CalendarTileCreator({ calendarID, idx }) {
 
 const HeaderButton = memo(function HeaderButton() {
     return (
-        <Tab.List className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
+        <TabList className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
             {['Calendars', 'Organizations'].map((category) =>
                 <Tab
                     key={category}
@@ -37,7 +38,7 @@ const HeaderButton = memo(function HeaderButton() {
                     {category}
                 </Tab>
             )}
-        </Tab.List>
+        </TabList>
     );
 })
 
@@ -60,7 +61,7 @@ function OrgTileCreator({ orgID }) {
 function OrgPanel() {
     const orgList = userStore((store) => store.organizations)
     return (
-        <Tab.Panel>
+        <TabPanel>
             <ul>
                 {orgList.map((org, idx) => {
                     return (
@@ -70,18 +71,15 @@ function OrgPanel() {
                     )
                 })}
             </ul>
-        </Tab.Panel>
+        </TabPanel>
     )
 }
 
 const TileLayer = function TileLayer() {
-    const calendarList = userStore((store) => store.calendars);
-
-    const calendarList2 = calendarList.toReversed();
-
+    const calendarList = userStore((store) => store.calendars.toReversed());
 
     return (
-        calendarList2.map((cal, idx) => {
+        calendarList.map((cal, idx) => {
             return (
                 <li key={idx} className='w-full md:w-1/3'>
                     <CalendarTileCreator calendarID={cal._id} idx={idx} />
@@ -92,7 +90,7 @@ const TileLayer = function TileLayer() {
 }
 
 function MenuLayer() {
-    const calendarList = userStore((store) => store.calendars)
+    const calendarList = userStore((store) => store.calendars.toReversed());
 
     return (
         calendarList.map((cal, idx) =>
@@ -109,7 +107,7 @@ function MenuLayer() {
 
 function CalendarPanel() {
     return (
-        <Tab.Panel>
+        <TabPanel>
             <div className='relative grid grid-cols-1 grid-rows-1'>
                 <ul className='flex flex-wrap' style={{ gridColumn: 1, gridRow: 1 }}>
                     <TileLayer />
@@ -118,7 +116,7 @@ function CalendarPanel() {
                     <MenuLayer />
                 </ul>
             </div>
-        </Tab.Panel>
+        </TabPanel>
     );
 }
 
@@ -126,13 +124,13 @@ function CalendarPanel() {
 function Dashboard() {
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
-            <Tab.Group>
+            <TabGroup>
                 <HeaderButton />
-                <Tab.Panels>
+                <TabPanels>
                     <CalendarPanel />
                     <OrgPanel />
-                </Tab.Panels>
-            </Tab.Group>
+                </TabPanels>
+            </TabGroup>
         </div>
     )
 }

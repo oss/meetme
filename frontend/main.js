@@ -19,7 +19,7 @@ const MyInvitations = lazy(() => import("./pages/my-invitations"));
 const Logout = lazy(() => import("./pages/logout"));
 import { useShallow } from 'zustand/react/shallow';
 import dialogueStore from './store/dialogueStore';
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, TransitionChild, DialogPanel } from "@headlessui/react";
 import { Fragment } from "react";
 
 import userStore from "./store/userStore";
@@ -27,6 +27,7 @@ import userStore from "./store/userStore";
 function App() {
     const notificationNumber = userStore(useShallow((store) => store.pendingCalendars.length + store.pendingOrganizations.length));
     const dialogueStatus = dialogueStore((store) => store)
+    console.log(dialogueStatus)
 
     const router = createBrowserRouter([
         {
@@ -43,7 +44,7 @@ function App() {
                         <div className="relative">
                             <Transition appear show={dialogueStatus.display} as={Fragment}>
                                 <Dialog onClose={dialogueStatus.closePanel}>
-                                    <Transition.Child
+                                    <TransitionChild
                                         as={Fragment}
                                         enter="ease-out duration-300"
                                         enterFrom="opacity-0"
@@ -53,11 +54,11 @@ function App() {
                                         leaveTo="opacity-0"
                                     >
                                         <div className="fixed inset-0 bg-black/25" />
-                                    </Transition.Child>
+                                    </TransitionChild>
 
                                     <div className="fixed inset-0 overflow-y-auto">
                                         <div className="flex min-h-full items-center justify-center p-4 text-center">
-                                            <Transition.Child
+                                            <TransitionChild
                                                 as={Fragment}
                                                 enter="ease-out duration-300"
                                                 enterFrom="opacity-0 scale-95"
@@ -66,10 +67,10 @@ function App() {
                                                 leaveFrom="opacity-100 scale-100"
                                                 leaveTo="opacity-0 scale-95"
                                             >
-                                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                                     {dialogueStatus.panel}
-                                                </Dialog.Panel>
-                                            </Transition.Child>
+                                                </DialogPanel>
+                                            </TransitionChild>
                                         </div>
                                     </div>
                                 </Dialog>
