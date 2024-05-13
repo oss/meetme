@@ -1,6 +1,7 @@
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
 module.exports = env = {
     entry: {
@@ -13,6 +14,11 @@ module.exports = env = {
     },
     resolve: {
         extensions: ['.*', '.js', '.jsx', '.tsx', '.ts'],
+        alias: {
+            "@primitives": path.resolve(__dirname, './components/lib/primitives'),
+            "@ui": path.resolve(__dirname, './components/lib/ui'),
+            "@store": path.resolve(__dirname, './store'),
+        },
     },
     module: {
         rules: [

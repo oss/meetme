@@ -8,7 +8,7 @@ import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
 import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
-import Stack from '../../components/lib/primitives/stack'
+import Stack from '@primitives/stack'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
