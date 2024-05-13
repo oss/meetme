@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import Tile from '../../../components/tile'
+import Tile from '@primitives/tile'
 
 const LoadingTile = memo(function LoadingTile({ calendarID }) {
     return (

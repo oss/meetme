@@ -2,7 +2,7 @@ import { Dialog } from "@headlessui/react";
 import { useRef, useState } from "react";
 import RedButton from "../../../components/utils/red-button";
 import { create } from 'zustand';
-import Tile from "../../../components/tile";
+import Tile from "../../../components/lib/primitives/tile";
 import { useEffect } from "react";
 import dialogueStore from '../../../store/dialogueStore';
 import BaseButton from "../../../components/utils/base-button";

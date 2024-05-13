@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import "react-date-range/dist/styles.css"; // main css file
 import "react-date-range/dist/theme/default.css"; // theme css file
 import { DateRangePicker } from "react-date-range";
-import Tile from "../components/tile";
-import RedButton from '../components/utils/red-button';
+import Tile from "@primitives/tile";
+import RedButton from '@components/utils/red-button';
 import RutgersLogoUrl from "../assets/RU_SHIELD_BLACK.png";
-import CollaboratorsContainer from "../components/utils/collaborator-container";
+import CollaboratorsContainer from "@components/utils/collaborator-container";
 import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
 const DAYS = [

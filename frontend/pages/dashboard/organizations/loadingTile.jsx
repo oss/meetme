@@ -1,5 +1,5 @@
 import { memo } from "react";
-import Tile from "../../../components/tile";
+import Tile from "@primitives/tile";
 import { Link } from "react-router-dom";
 
 const LoadingTile = memo(function LoadingTile({ orgID }) {

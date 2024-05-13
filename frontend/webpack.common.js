@@ -18,6 +18,7 @@ module.exports = env = {
             "@primitives": path.resolve(__dirname, './components/lib/primitives'),
             "@ui": path.resolve(__dirname, './components/lib/ui'),
             "@store": path.resolve(__dirname, './store'),
+            "@components": path.resolve(__dirname, './components'),
         },
     },
     module: {

@@ -1,4 +1,4 @@
-import Tile from "../../../components/tile";
+import Tile from "../../../components/lib/primitives/tile";
 import calendarMetadata from '../../../store/calendarMetadata'
 
 function CalendarNameTile({ calID }) {

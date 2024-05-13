@@ -1,14 +1,13 @@
 import { useState, useRef } from "react";
-import Tile from "../../components/utils/tile";
+import Tile from "@components/utils/tile";
 import { Link } from "react-router-dom";
-import { Dialogue } from "../../components/utils/popup-dialogue";
+import { Dialogue } from "@components/utils/popup-dialogue";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../socket";
-import DropdownMenu from "../../components/utils/dropdown-menu";
-import HeadlessDialogue from "../../components/utils/headless-dialogue";
-import TextField from "../../components/utils/text-field";
-import uniqid from "uniqid";
-import Button from "../../components/utils/button";
+import DropdownMenu from "@components/utils/dropdown-menu";
+import HeadlessDialogue from "@components/utils/headless-dialogue";
+import TextField from "@components/utils/text-field";
+import Button from "@components/utils/button";
 
 function OrgOwner({
     calendars,
@@ -246,7 +245,6 @@ function OrgOwner({
                                                 }
                                             >
                                                 <TextField
-                                                    key={uniqid()}
                                                     enter_shortcut={() => {
                                                         renameCalendar(
                                                             calendar._id,

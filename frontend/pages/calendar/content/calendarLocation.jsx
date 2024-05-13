@@ -1,4 +1,4 @@
-import Tile from "../../../components/tile";
+import Tile from "../../../components/lib/primitives/tile";
 import calendarMetadata from '../../../store/calendarMetadata'
 function CalendarLocationTile({ calID }) {
     const location = calendarMetadata((store) => store.calendarMetadata[calID].data.location)

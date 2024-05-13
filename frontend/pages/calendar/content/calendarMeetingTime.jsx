@@ -1,4 +1,4 @@
-import Tile from '../../../components/tile'
+import Tile from '../../../components/lib/primitives/tile'
 import calendarMaindataStore from '../../../store/calendarMaindata'
 function MeetingTimeTile({ calID }) {
     const [start, end] = calendarMaindataStore((store) => [store.calendarData[calID].data.meetingTime.start, store.calendarData[calID].data.meetingTime.end])

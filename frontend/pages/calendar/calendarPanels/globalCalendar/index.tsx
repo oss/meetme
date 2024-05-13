@@ -1,6 +1,6 @@
 import MeetingLabels from "../components/meeting-labels";
 import mainDataStore from '../../../../store/calendarMaindata.js';
-import Tile from '../../../../components/tile';
+import Tile from '../../../../components/lib/primitives/tile';
 import MeetingGrid from "./meeting-grid";
 
 function MeetingCalendar({ calID }) {

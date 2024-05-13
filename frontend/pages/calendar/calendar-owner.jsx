@@ -1,12 +1,14 @@
-import Tile from '../../components/tile';
-import calendarMetadata from '../../store/calendarMetadata';
-import calendarMaindata from '../../store/calendarMaindata';
-import dialogueStore from '../../store/dialogueStore';
-import CalendarNameTile from './content/calNameTile';
-import RedButton from '../../components/utils/red-button';
+import Tile from '@primitives/tile';
+import calendarMaindata from '@store/calendarMaindata';
+import dialogueStore from '@store/dialogueStore';
+
+import RedButton from '@components/utils/red-button';
+
+import CalendarNameContent from './content/calendarName';
+import CalendarLocationContent from './content/calendarLocation';
+import CalendarMeetingTimeContent from './content/calendarMeetingTime';
+
 import InviteDialogue from './dialogues/inviteDialogue';
-import CalendarLocationTile from './content/calLocationTile';
-import CalendarMeetingTimeTile from './content/calMeetingTimeTile';
 
 import GlobalCalendar from './calendarPanels/globalCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
@@ -57,7 +59,12 @@ function CalendarOwner({ calID }) {
 
     return (
         <div className="flex flex-col items-center w-full h-full bg-gray-100 border-gray-100 grow">
-            <CalendarNameTile calID={calID} />
+            <Tile>
+                <div className='bg-white'>
+                    <CalendarNameContent calID={calID} />
+                </div>
+            </Tile>
+
             <CalendarLocationTile calID={calID} />
             <CalendarMeetingTimeTile calID={calID} />
             <Tile>
