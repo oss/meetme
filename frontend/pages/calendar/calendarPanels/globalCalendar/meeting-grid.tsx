@@ -1,4 +1,4 @@
-import MeetingColumnHeader from "../components/meeting-column-header";
+import MeetingColumnHeader from "../common/meeting-column-header";
 import MeetingBlock from "./meeting-block";
 import {
     getGridFromBlocks,

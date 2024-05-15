@@ -1,6 +1,6 @@
-import dialogueStore from '../../../store/dialogueStore';
+import dialogueStore from '@store/dialogueStore';
 import { useState } from 'react';
-import TextBarDialogue from '../../lib/ui/TextBarDialogue';
+import TextBarDialogue from '@ui/TextBarDialogue';
 
 function DeleteDialogue({ calID }) {
     const closeDialogue = dialogueStore((store) => store.closePanel)

@@ -1,9 +1,12 @@
 import { useParams } from 'react-router-dom';
-import calendarMaindataStore from '../../store/calendarMaindata';
-import calendarMetadataStore from '../../store/calendarMetadata';
-import authData from '../../store/authStore';
-import orgData from '../../store/orgData';
+
+import calendarMaindataStore from '@store/calendarMaindata';
+import calendarMetadataStore from '@store/calendarMetadata';
+import authData from '@store/authStore';
+import orgData from '@store/orgData';
+
 import CalendarOwnerPage from './calendar-owner';
+import CalendarUserPage from './calendar-user';
 
 function CalendarLoader() {
     const { id } = useParams();
@@ -73,11 +76,17 @@ function CalendarLoader() {
             switch(calendarRole) {
                 case 'owner':
                     return <CalendarOwnerPage calID={id}/>
+                case 'user':
+                    return <CalendarUserPage calID={id} />
             }
         }
         case 'organization': {
             return (<div>org cal</div>)
         }
+        default:
+            return(
+                <div>error</div>
+            )
     }
 }
 

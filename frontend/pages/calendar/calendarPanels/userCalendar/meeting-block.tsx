@@ -28,7 +28,7 @@ function MeetingBlock({
 }: IMeetingBlock) {
     const displayHeight: number = 0.9;
     const bgRGB = 'rgb(252,165,165)'
-    const disabled = start === null || end === null;
+    const disabled = (start === null || end === null);
 
     return (
         <div
@@ -37,7 +37,7 @@ function MeetingBlock({
             } border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
             style={{
                 height: `${displayHeight}rem`,
-                backgroundColor: !disabled && available && bgRGB
+                backgroundColor: !disabled && (available && bgRGB)
             }}
             data-row={row}
             data-col={column}

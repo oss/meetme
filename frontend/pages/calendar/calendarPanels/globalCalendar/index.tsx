@@ -1,4 +1,4 @@
-import MeetingLabels from "../components/meeting-labels";
+import MeetingLabels from "../common/meeting-labels";
 import mainDataStore from '@store/calendarMaindata.js';
 import MeetingGrid from "./meeting-grid";
 

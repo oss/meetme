@@ -1,4 +1,4 @@
-import MeetingColumnHeader from "../components/meeting-column-header";
+import MeetingColumnHeader from "../common/meeting-column-header";
 import MeetingBlock from "./meeting-block";
 import {
     getGridFromBlocks,
@@ -9,6 +9,7 @@ import {
 } from "../utilities";
 
 import calendarMaindataStore from '../../../../store/calendarMaindata';
+import authStore from '@store/authStore';
 
 import { useState } from 'react';
 
@@ -33,6 +34,7 @@ export type TimeBlock = {
 
 function MeetingGrid({ calID, rowsCount }) {
     const displayHeight: number = 0.9;
+    const netid = authStore((store)=>store.userData.user.uid)
 
     const columnCount = calendarMaindataStore((store) => {
         return store.calendarData[calID].data.blocks.length
@@ -92,16 +94,15 @@ function MeetingGrid({ calID, rowsCount }) {
 
 
     const usersAmtGrid = (() => {
-        const userTimeIdx = userTimes.findIndex(function (t) { return t._id === "netid1" });
+        const userTimeIdx = userTimes.findIndex(function (t) { return t._id === netid });
         const userTimeline = userTimes[userTimeIdx]
 
         const userGrid: boolean[][] = getGridFromBlocks(userTimeline.times, meetingArray);
-
         return userGrid;
     })()
 
     const userTimeline = (() => {
-        const userTimeIdx = userTimes.findIndex(function (t) { return t._id === "netid1" });
+        const userTimeIdx = userTimes.findIndex(function (t) { return t._id === netid });
         const userTimeline = userTimes[userTimeIdx].times
 
         return userTimeline;
@@ -229,8 +230,6 @@ function MeetingGrid({ calID, rowsCount }) {
                 end,
             });
         }
-
-        console.log(times, userTimeline)
 
         let newTimeLine: TimeBlock[] = null;
 
