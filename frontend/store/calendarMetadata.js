@@ -3,9 +3,6 @@ import socket from '../socket';
 import userData from './userStore';
 
 const useStore = create(set => {
-    const unsub1 = userData.subscribe((state) => state.calendars, (arr) => {
-        updateCalendarJSON()
-    })
 
     const calendarMetadataUpdatedHandler = (calendarID) => {
         fetchCalendarMetadata(calendarID)
@@ -24,33 +21,6 @@ const useStore = create(set => {
         for(let i=0;i<current_calendars.length;i++){
             socket.off('calendar_metadata_updated', calendarMetadataUpdatedHandler);
         }
-    }
-
-    //make array accesses easier, stores calid: index inside array
-
-    const updateCalendarJSON = async () => {
-        set((previous_state) => {
-            const current_calendars = userData.getState().calendars;
-            const calJSON = { ...previous_state.calendarMetadata };
-
-            for (let i = 0; i < current_calendars.length; i++) {
-                const cal_id = current_calendars[i]._id
-
-                let downloadMetadata = false;
-                if (cal_id in calJSON === false)
-                    calJSON[cal_id] = { isLoaded: false }
-
-                if(calJSON[cal_id].isLoaded === false)
-                    downloadMetadata = true
-
-                if(downloadMetadata)
-                    fetchCalendarMetadata(cal_id)
-            }
-
-            return {
-                calendarMetadata: calJSON
-            }
-        });
     }
 
     const fetchCalendarMetadata = async (calendarID) => {
@@ -94,7 +64,6 @@ const useStore = create(set => {
     return {
         listenForUpdates: listenForUpdates,
         stopListeningForUpdates: stopListeningForUpdates,
-        updateCalendarJSON: updateCalendarJSON,
         addCalendar: addCalendar,
         fetchCalendarMetadata: fetchCalendarMetadata,
         calendarMetadata: {}

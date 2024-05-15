@@ -2,9 +2,6 @@ import { create } from 'zustand';
 import userData from './userStore';
 
 const useStore = create(set => {
-    const unsub1 = userData.subscribe((state) => state.organizations, (arr) => {
-        updateOrgJSON()
-    })
 
     const fetchOrgData = async (orgID) => {
         const resp = await fetch(process.env.API_URL + `/org/${orgID}`, {

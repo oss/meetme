@@ -3,9 +3,6 @@ import socket from '../socket';
 import userData from './userStore';
 
 const useStore = create(set => {
-    const unsub1 = userData.subscribe((state) => state.calendars, (arr) => {
-        updateCalendarJSON()
-    })
 
     const fetchCalendarMaindata = async (calendarID) => {
 
