@@ -43,7 +43,7 @@ function MeetingBlock({
     return (
         <div
             onMouseEnter={() => {
-                setSelectedUsers(selectedUsers);
+                setSelectedUsers(new Set(selectedUsers));
             }}
             className={`${
                 disabled ? "bg-gray-600 border-transparent" : "border-slate-200"

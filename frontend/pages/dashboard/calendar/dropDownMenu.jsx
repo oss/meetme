@@ -1,16 +1,12 @@
-import dialogueStore from '../../../store/dialogueStore';
+import dialogueStore from '@store/dialogueStore';
 import { buttonMenuBridge } from './state';
 import { useRef, Fragment } from 'react';
 import { Menu, Transition, MenuItem, MenuItems, MenuButton } from '@headlessui/react';
-import RenameDialogue from './dialogues/RenameDialogue';
-import DeleteDialogue from './dialogues/DeleteDialogue';
+import RenameDialogue from '@components/stateful/dialogues/RenameDialogue';
+import DeleteDialogue from '@components/stateful/dialogues/deleteDialogue';
 
 function dropDownMenu({ calID, idx }) {
     const dialogueHook = dialogueStore((store) => store.setPanel)
-
-    const setOpenMenuIdx = buttonMenuBridge((store) => store.setOpenMenuIdx)
-    const openMenuIdx = buttonMenuBridge((store) => store.openMenuIdx)
-
 
     return (
         <Menu>

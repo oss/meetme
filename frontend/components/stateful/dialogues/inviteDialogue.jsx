@@ -1,12 +1,12 @@
 import { Dialog } from "@headlessui/react";
 import { useRef, useState } from "react";
-import RedButton from "../../../components/utils/red-button";
+import RedButton from "../../utils/red-button";
 import { create } from 'zustand';
-import Tile from "../../../components/lib/primitives/tile";
+import Tile from "../../lib/primitives/tile";
 import { useEffect } from "react";
 import dialogueStore from '../../../store/dialogueStore';
-import BaseButton from "../../../components/utils/base-button";
-import TextBarWithEnter from '../../../components/lib/primitives/textInputWithEnter'
+import BaseButton from "../../utils/base-button";
+import TextBarWithEnter from '../../lib/primitives/textInputWithEnter'
 
 const inviteDialogueStore = create((set) => {
     const validateNetID = async (netid) => {

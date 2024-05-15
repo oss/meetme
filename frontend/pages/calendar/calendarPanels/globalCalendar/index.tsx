@@ -1,6 +1,5 @@
 import MeetingLabels from "../components/meeting-labels";
-import mainDataStore from '../../../../store/calendarMaindata.js';
-import Tile from '../../../../components/lib/primitives/tile';
+import mainDataStore from '@store/calendarMaindata.js';
 import MeetingGrid from "./meeting-grid";
 
 function MeetingCalendar({ calID }) {
@@ -19,23 +18,19 @@ function MeetingCalendar({ calID }) {
     const rowsCount: number = Math.ceil((endHour - startHour) / (60 * 1000 * timeIntervals));
 
     return (
-        <Tile>
-            <div className="bg-white">
-                <div className="flex">
-                    <div className="inline-block">
-                        <MeetingLabels
-                            displayHeight={blockHeight}
-                            rowsCount={rowsCount}
-                            startHour={new Date(startHour)}
-                            timeIntervals={timeIntervals}
-                        />
-                    </div>
-                    <div className="inline-block">
-                        <MeetingGrid calID={calID} rowsCount={rowsCount} />
-                    </div>
-                </div>
+        <div className="flex overflow-scroll">
+            <div className="inline-block">
+                <MeetingLabels
+                    displayHeight={blockHeight}
+                    rowsCount={rowsCount}
+                    startHour={new Date(startHour)}
+                    timeIntervals={timeIntervals}
+                />
             </div>
-        </Tile>
+            <div className="inline-block">
+                <MeetingGrid calID={calID} rowsCount={rowsCount} />
+            </div>
+        </div>
     );
 }
 

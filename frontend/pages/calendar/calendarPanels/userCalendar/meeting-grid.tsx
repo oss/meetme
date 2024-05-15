@@ -258,9 +258,8 @@ function MeetingGrid({ calID, rowsCount }) {
 
 
     return (
-        <>
-
-            <ol className="bg-gray-200 rounded-tl-lg">
+        <div>
+            <ol className="bg-gray-200 rounded-tl-lg flex">
                 {potentialMeetings.map((x, i) => (
                     <li className="inline-flex">
                         <MeetingColumnHeader
@@ -320,7 +319,7 @@ function MeetingGrid({ calID, rowsCount }) {
                 ))}
             </div>
 
-        </>
+        </div>
     );
 }
 

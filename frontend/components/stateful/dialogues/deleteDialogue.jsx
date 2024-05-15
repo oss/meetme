@@ -1,29 +1,35 @@
-import dialogueStore from '../../../../store/dialogueStore';
+import dialogueStore from '../../../store/dialogueStore';
 import { useState } from 'react';
-import TextBarDialogue from '../../../../components/lib/ui/TextBarDialogue';
+import TextBarDialogue from '../../lib/ui/TextBarDialogue';
 
-function RenameDialogue({ calID }) {
+function DeleteDialogue({ calID }) {
     const closeDialogue = dialogueStore((store) => store.closePanel)
+
     const [displayError, setDisplayError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('some error message')
+    const confirmationString = Math.random().toString(36).slice(2)
 
     return (
         <TextBarDialogue
-            buttonText='Rename'
-            titleText='Rename Calendar'
-            placeholder='untitled'
+            buttonText='Delete'
+            titleText='Delete Calendar'
+            description={`Type in the phrase ${confirmationString} to delete`}
             displayError={displayError}
             errorMessage={errorMessage}
             onClickPassthrough={async ({ event, textBarValue }) => {
-                const req = await fetch(`${process.env.API_URL}/cal/${calID}/name`, {
-                    credentials: 'include', method: 'PATCH', headers: {
+                if (textBarValue !== confirmationString) {
+                    setErrorMessage('Confirmation code incorrect')
+                    setDisplayError(true)
+                    return
+                }
+
+                const req = await fetch(`${process.env.API_URL}/cal/${calID}`, {
+                    credentials: 'include', method: 'DELETE', headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ new_name: textBarValue })
                 });
                 const resp = await req.json()
                 if (resp.Status === 'ok') {
-                    console.log(resp)
                     closeDialogue()
                 }
                 else {
@@ -31,7 +37,8 @@ function RenameDialogue({ calID }) {
                     setDisplayError(true)
                 }
             }} />
+
     )
 }
 
-export default RenameDialogue;
+export default DeleteDialogue;

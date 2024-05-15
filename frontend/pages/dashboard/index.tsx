@@ -1,6 +1,6 @@
-import userStore from '../../store/userStore';
-import metadataStore from '../../store/calendarMetadata';
-import orgDataStore from '../../store/orgData';
+import userStore from '@store/userStore';
+import metadataStore from '@store/calendarMetadata';
+import orgDataStore from '@store/orgData';
 import { memo } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';

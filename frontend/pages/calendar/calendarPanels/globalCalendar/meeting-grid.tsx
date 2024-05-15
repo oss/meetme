@@ -6,7 +6,8 @@ import {
     UserTimes,
 } from "../utilities";
 
-import calendarMaindataStore from '../../../../store/calendarMaindata';
+import calendarMaindataStore from '@store/calendarMaindata';
+import { hoveredUsersStore } from './state.js';
 
 interface IMeetingGrid {
     potentialMeetings: Date[];
@@ -28,6 +29,7 @@ export type TimeBlock = {
 };
 
 function MeetingGrid({ calID, rowsCount }) {
+    const setHoveredUsers = hoveredUsersStore((store) => store.setHoveredUsers)
     const displayHeight: number = 0.9;
 
     const columnCount = calendarMaindataStore((store) => {
@@ -111,14 +113,11 @@ function MeetingGrid({ calID, rowsCount }) {
         return arr;
     })()
 
-    console.log(meetingArray)
-
-
     return (
-        <>
-            <ol className="bg-gray-200 rounded-tl-lg">
+        <div>
+            <ol className="bg-gray-200 rounded-tl-lg flex">
                 {potentialMeetings.map((x, i) => (
-                    <li className="inline-flex">
+                    <li>
                         <MeetingColumnHeader
                             month={x.getMonth()}
                             day={x.getDate()}
@@ -143,15 +142,14 @@ function MeetingGrid({ calID, rowsCount }) {
                                     collaborators={allMembers}
                                     selectedUsers={usersAmtGrid[r][c]}
                                     key={c * rowsCount + r}
-                                    onSelectUsers={(userArr) => { console.log(userArr) }}
-                                    setSelectedUsers={(x) => { console.log('this outputs hovered netids as an array', x) }}
+                                    setSelectedUsers={setHoveredUsers}
                                 />
                             );
                         })}
                     </div>
                 ))}
             </div>
-        </>
+        </div>
     );
 }
 
