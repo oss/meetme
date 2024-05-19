@@ -1,9 +1,22 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { buttonMenuBridge } from "./state";
 import Tile from '@primitives/tile';
 import { Link } from "react-router-dom";
+import calendarMetadata from "@store/calendarMetadata";
 
-const calendarTile = memo(({ calendarID, calendarName, calendarOwner, idx }) => {
+const calendarTile = ({ calendarID }) => {
+    const [startListeningToUpdates, stopListeningToUpdates] = calendarMetadata((store)=>[store.listenForUpdates, store.stopListenForUpdates])
+    const [calendarName, calendarOwner] = calendarMetadata((store) => [
+        store.calendarMetadata[calendarID].data.name, 
+        store.calendarMetadata[calendarID].data.owner._id, 
+    ])
+
+    useEffect(()=>{
+        startListeningToUpdates(calendarID)
+        return ()=>{
+            stopListeningToUpdates(calendarID)
+        }
+    },[])
 
     return (
         <Tile>
@@ -23,6 +36,6 @@ const calendarTile = memo(({ calendarID, calendarName, calendarOwner, idx }) => 
             </Link>
         </Tile>
     )
-})
+}
 
 export default calendarTile;

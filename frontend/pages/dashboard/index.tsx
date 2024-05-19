@@ -1,7 +1,7 @@
 import userStore from '@store/userStore';
 import metadataStore from '@store/calendarMetadata';
 import orgDataStore from '@store/orgData';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
@@ -12,8 +12,8 @@ import Stack from '@primitives/stack'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
-    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar])
-
+    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar,store.listenForUpdates])
+    
     if (calendarInStore === false) {
         addCalendar(calendarID)
         return <LoadingCalendarTile calendarID={calendarID} />
@@ -21,7 +21,7 @@ function CalendarTileCreator({ calendarID, idx }) {
     if (calendarMetadata.isLoaded === false)
         return <LoadingCalendarTile calendarID={calendarID} />
 
-    return <CalendarTile calendarID={calendarID} calendarName={calendarMetadata.data.name} calendarOwner={calendarMetadata.data.owner._id} idx={idx} />
+    return <CalendarTile calendarID={calendarID} />
 }
 
 const HeaderButton = memo(function HeaderButton() {

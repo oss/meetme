@@ -2,7 +2,30 @@ import { create } from 'zustand';
 import socket from '../socket';
 import userData from './userStore';
 
+const listenJSON = {}
 const useStore = create(set => {
+
+    const listenForUpdates = (calendarID) => {
+        const waitForListen = (listenerID) =>{
+            if(listenerID === calendarID){
+                if( calendarID in listenJSON === false)
+                    listenJSON[calendarID] = 0
+
+                listenJSON[calendarID] += 1
+
+                socket.off('listen',waitForListen)
+            }
+        }
+        
+        socket.emit('join cal',calendarID)
+        socket.on('listen',waitForListen)
+    }
+
+    const stopListenForUpdates = (calendarID) => {
+        listenJSON[calendarID] -= 1;
+        if(listenJSON[calendarID] === 0)
+            socket.emit('leave',calendarID);
+    }
 
     const fetchCalendarMaindata = async (calendarID) => {
 
@@ -44,8 +67,16 @@ const useStore = create(set => {
         
     }
 
+    socket.on('user_time_updated', (calendarID)=>{
+        console.log(calendarID,'bbb')
+        console.log('updating '+calendarID)
+        fetchCalendarMaindata(calendarID)
+    });
+
     return {
         fetchCalendarMaindata: fetchCalendarMaindata,
+        listenForUpdates: listenForUpdates,
+        stopListenForUpdates: stopListenForUpdates,
         addCalendar: addCalendar,
         calendarData: {}
     }

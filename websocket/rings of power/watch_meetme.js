@@ -14,7 +14,7 @@ module.exports = async function meetme_socket(socket_io_srv, mongoClient) {
     console.log('meetme update for cal ' + next.documentKey._id);
     socket_io_srv.local
       .to(next.documentKey._id)
-      .emit(next.documentKey._id, 'update', 'meetme');
+      .emit('user_time_updated',next.documentKey._id);
   });
 };
 

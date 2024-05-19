@@ -1,6 +1,7 @@
 import MeetingLabels from "../common/meeting-labels";
 import mainDataStore from '@store/calendarMaindata.js';
 import MeetingGrid from "./meeting-grid";
+import { useEffect } from "react";
 
 function MeetingCalendar({ calID }) {
     const timeIntervals: number = 10;
@@ -16,6 +17,14 @@ function MeetingCalendar({ calID }) {
     })
 
     const rowsCount: number = Math.ceil((endHour - startHour) / (60 * 1000 * timeIntervals));
+    const [keepTimesUpdated, stopTimesUpdated] = mainDataStore((store)=>[
+        store.listenForUpdates,
+        store.stopListenForUpdates
+    ])
+
+    useEffect(()=>{
+        keepTimesUpdated(calID)
+    },[])
 
     return (
         <div className="flex overflow-scroll">

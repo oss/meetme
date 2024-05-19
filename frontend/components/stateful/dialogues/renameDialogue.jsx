@@ -1,11 +1,13 @@
 import dialogueStore from '@store/dialogueStore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TextBarDialogue from '@ui/TextBarDialogue';
 
 function RenameDialogue({ calID }) {
     const closeDialogue = dialogueStore((store) => store.closePanel)
     const [displayError, setDisplayError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('some error message')
+
+    console.log('rename dialogue re-render')
 
     return (
         <TextBarDialogue
