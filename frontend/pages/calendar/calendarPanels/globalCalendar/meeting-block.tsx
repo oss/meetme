@@ -45,6 +45,9 @@ function MeetingBlock({
             onMouseEnter={() => {
                 setSelectedUsers(new Set(selectedUsers));
             }}
+            onMouseLeave={()=>{
+                setSelectedUsers(new Set());
+            }}
             className={`${
                 disabled ? "bg-gray-600 border-transparent" : "border-slate-200"
             } border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
