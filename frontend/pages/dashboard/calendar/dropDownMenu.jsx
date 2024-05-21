@@ -36,7 +36,7 @@ function dropDownMenu({ calID, idx }) {
             >
                 <MenuItems
                     anchor="bottom end"
-                    className="absolute w-52 origin-top-right rounded-xl border bg-white"
+                    className="w-52 origin-top-right rounded-xl border bg-white"
                 >
                     <MenuItem>
                         <button

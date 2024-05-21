@@ -17,17 +17,13 @@ const Faq = lazy(() => import("./pages/faq"));
 const OrgLoader = lazy(() => import("./components/org-loader"));
 const MyInvitations = lazy(() => import("./pages/my-invitations"));
 const Logout = lazy(() => import("./pages/logout"));
-import { useShallow } from 'zustand/react/shallow';
 import dialogueStore from './store/dialogueStore';
 import { Dialog, Transition, TransitionChild, DialogPanel } from "@headlessui/react";
 import { Fragment } from "react";
 
-import userStore from "./store/userStore";
-
 function App() {
-    const notificationNumber = userStore(useShallow((store) => store.pendingCalendars.length + store.pendingOrganizations.length));
+    
     const dialogueStatus = dialogueStore((store) => store)
-    console.log(dialogueStatus)
 
     const router = createBrowserRouter([
         {
@@ -35,7 +31,7 @@ function App() {
             element: (
                 <>
                     <div className="relative">
-                        <Navbar numInvites={notificationNumber} />
+                        <Navbar />
                     </div>
                     <div className="relative grow">
                         <Outlet />

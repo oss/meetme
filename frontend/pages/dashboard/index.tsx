@@ -26,7 +26,7 @@ function CalendarTileCreator({ calendarID, idx }) {
 
 const HeaderButton = memo(function HeaderButton() {
     return (
-        <TabList className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
+        <TabList className="my-2 w-fit flex gap-x-3 rounded-xl bg-white p-2">
             {['Calendars', 'Organizations'].map((category) =>
                 <Tab
                     key={category}
