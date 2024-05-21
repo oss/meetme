@@ -10,14 +10,13 @@ function dropDownMenu({ calID, idx }) {
 
     return (
         <Menu>
-            <MenuButton className='pointer-events-auto'>
+            <MenuButton className='pointer-events-auto '>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-4 h-4"
+                    className='w-4 h-4 stroke-current hover:stroke-red-400'
                 >
                     <path
                         strokeLinecap="round"

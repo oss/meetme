@@ -81,7 +81,7 @@ const TileLayer = function TileLayer() {
     return (
         calendarList.map((cal, idx) => {
             return (
-                <li key={idx} className='w-full md:w-1/3'>
+                <li key={idx} className='h-fit m-1 w-full md:w-[30%]'>
                     <CalendarTileCreator calendarID={cal._id} idx={idx} />
                 </li>
             )
@@ -94,21 +94,21 @@ function MenuLayer() {
 
     return (
         calendarList.map((cal, idx) =>
-            <li key={idx} className='relative w-full md:w-1/3 group'>
+            <li key={idx} className='relative h-fit m-1 w-full md:w-[30%] group'>
                 <div className='invisible'>
                     <CalendarTileCreator calendarID={cal._id} idx={idx} />
                 </div>
-                <div className='absolute top-0 right-0'>
+                <div className='absolute top-0 right-0 p-2'>
                     <DropDownMenu calID={cal._id} idx={idx} />
                 </div>
             </li>
         ));
 }
 
-function CalendarPanel() {
+function CalendarPanel() { 
     return (
         <TabPanel>
-            <Stack>
+            <Stack className = "">
                 <Stack.Item>
                     <ul className='relative flex flex-wrap'>
                         <TileLayer />
