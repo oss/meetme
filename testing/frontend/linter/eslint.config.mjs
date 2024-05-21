@@ -1,18 +1,23 @@
-module.exports = {
-    env: {
-        browser: true,
-        es2021: true,
-    },
-    extends: [],
-    overrides: [],
-    parserOptions: {
+import globals from "globals";
+import react from 'eslint-plugin-react';
+
+export default [{
+    files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
+    languageOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        ecmaFeatures: {
-            jsx: true,
+        globals: {
+            ...globals.browser,
         },
+        parserOptions: {
+            ecmaFeatures: {
+                jsx: true
+            }
+        }
     },
-    plugins: ["react"],
+    plugins: {
+        react,
+    },
     rules: {
         "semi": ["error", "always"],
         "for-direction": "error",
@@ -34,5 +39,6 @@ module.exports = {
         "no-duplicate-imports": ["error"],
         "jsx-quotes": ["error", "prefer-double"],
         "no-ex-assign": ["error"],
+        "react/jsx-key": ["error"]
     },
-};
+}]
