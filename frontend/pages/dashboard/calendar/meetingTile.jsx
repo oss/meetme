@@ -30,7 +30,7 @@ const calendarTile = ({ calendarID }) => {
                         <p className="text-sm font-medium break-words text-slate-500/50">
                             {calendarOwner}
                         </p>
-                        <p className="text-xs overflow-hidden text-slate-500/50 overflow-ellipsis border-r-8 border-transparent">
+                        <p className="text-xs overflow-hidden text-nowrap text-slate-500/50 overflow-ellipsis border-r-8 border-transparent">
                             {calendarID}
                         </p>
                     </div>
