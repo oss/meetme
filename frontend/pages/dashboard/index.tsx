@@ -62,10 +62,10 @@ function OrgPanel() {
     const orgList = userStore((store) => store.organizations)
     return (
         <TabPanel>
-            <ul>
+            <ul className='flex flex-wrap'>
                 {orgList.map((org, idx) => {
                     return (
-                        <li key={idx}>
+                        <li key={idx} className='w-full md:w-1/3'>
                             <OrgTileCreator orgID={org._id} />
                         </li>
                     )
