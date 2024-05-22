@@ -21,10 +21,7 @@ const calendarTile = ({ calendarID }) => {
 
     return (
         <Tile 
-            title={""} 
-            default_margin={false}
-            default_padding={"relative"}
-            fullHeight={true}
+
 >
             <Link to={`/cal/${calendarID}`} >
                 <div className='bg-white grow group '>
