@@ -116,17 +116,17 @@ function MeetingGrid({ calID, rowsCount }) {
     return (
         <div>
             <ol className="bg-gray-200 rounded-tl-lg flex">
-                {potentialMeetings.map((x, i) => (
-                    <li>
-                        <MeetingColumnHeader
-                            month={x.getMonth()}
-                            day={x.getDate()}
-                            year={x.getFullYear()}
-                            totalColumns={columnCount}
-                            key={i}
-                        />
-                    </li>
-                ))}
+                    {potentialMeetings.map((x, i) => (
+                        <li style={{ width: `${100 / columnCount}%` }}>
+                            <MeetingColumnHeader
+                                month={x.getMonth()}
+                                day={x.getDate()}
+                                year={x.getFullYear()}
+                                totalColumns={columnCount}
+                                key={i}
+                            />
+                        </li>
+                    ))}
             </ol>
             <div className="flex">
                 {meetingArray.map((day, c) => (

@@ -27,7 +27,7 @@ function MeetingCalendar({ calID }) {
                     timeIntervals={timeIntervals}
                 />
             </div>
-            <div className="inline-block">
+            <div className="inline-block grow p-4">
                 <MeetingGrid calID={calID} rowsCount={rowsCount} />
             </div>
         </div>

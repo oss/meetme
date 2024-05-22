@@ -260,7 +260,7 @@ function MeetingGrid({ calID, rowsCount }) {
         <div>
             <ol className="bg-gray-200 rounded-tl-lg flex">
                 {potentialMeetings.map((x, i) => (
-                    <li className="inline-flex">
+                    <li style={{ width: `${100 / columnCount}%` }}>
                         <MeetingColumnHeader
                             month={x.getMonth()}
                             day={x.getDate()}

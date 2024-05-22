@@ -192,7 +192,7 @@ function CalendarOwner({ calID }) {
                     <Tile>
                         <div className='bg-white'>
                             <TabGroup>
-                                <div className='flex justify-end'>
+                                <div className='flex justify-end pt-2 pr-2'>
                                     <TabList>
                                         <Tab className={tabClassString}>Everyone's times</Tab>
                                         <Tab className={tabClassString}>My times</Tab>
