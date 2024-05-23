@@ -1,5 +1,6 @@
 import globals from "globals";
 import react from 'eslint-plugin-react';
+import reactCompiler from 'eslint-plugin-react-compiler'
 
 export default [{
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
@@ -17,6 +18,7 @@ export default [{
     },
     plugins: {
         react,
+        reactCompiler
     },
     rules: {
         "semi": ["error", "always"],
@@ -39,6 +41,7 @@ export default [{
         "no-duplicate-imports": ["error"],
         "jsx-quotes": ["error", "prefer-double"],
         "no-ex-assign": ["error"],
-        "react/jsx-key": ["error"]
+        "react/jsx-key": ["error"],
+        "reactCompiler/react-compiler": ["error"]
     },
 }]
