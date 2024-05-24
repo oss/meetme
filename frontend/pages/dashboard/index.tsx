@@ -1,11 +1,13 @@
 import userStore from '@store/userStore';
 import metadataStore from '@store/calendarMetadata';
 import orgDataStore from '@store/orgData';
+import filterStore from '@store/filterStore';
 import { memo, useEffect } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
+import FilterDropDown from './calendar/filterDropDown';
 import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
 import Stack from '@primitives/stack'
@@ -75,8 +77,38 @@ function OrgPanel() {
     )
 }
 
+function SortMethod(filter, ascending){
+    if (filter === "Name" && ascending === false){
+        return (function (a, b) {return ('' + a.data.name).localeCompare(b.data.name)})
+    }
+    else if (filter === "Name" && ascending === true){
+        return (function (b, a) {return ('' + a.data.name).localeCompare(b.data.name);})
+    }
+    if (filter === "TimeCreated" && ascending === false){
+        return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})
+    }
+    else if (filter === "TimeCreated" && ascending === true){
+        return (function (b, a) {return ('' + a.data._id).localeCompare(b.data._id);})
+    }
+    else{
+        return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})
+    }
+
+}
+
 const TileLayer = function TileLayer() {
-    const calendarList = userStore((store) => store.calendars.toReversed());
+    let calendarList = userStore((store) => store.calendars.toReversed());
+
+    const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
+    const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
+
+    console.log(calendarMetadata)
+
+    if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
+        const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
+        calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+    }
+
 
     return (
         calendarList.map((cal, idx) => {
@@ -90,7 +122,18 @@ const TileLayer = function TileLayer() {
 }
 
 function MenuLayer() {
-    const calendarList = userStore((store) => store.calendars.toReversed());
+    let calendarList = userStore((store) => store.calendars.toReversed());
+
+    const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
+    const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
+
+    console.log(calendarMetadata)
+
+    if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
+        const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
+        calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+    }
+
 
     return (
         calendarList.map((cal, idx) =>
@@ -129,6 +172,7 @@ function Dashboard() {
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
             <TabGroup>
+                <FilterDropDown  />
                 <HeaderButton />
                 <TabPanels>
                     <CalendarPanel />
