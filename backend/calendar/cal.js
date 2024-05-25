@@ -318,17 +318,6 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
   }
 });
 
-/*
-
-router.get('/:calendar_id/dump', isAuthenticated, async function (req, res) {
-
-    MEANT TO DO BOTH /meta and /main in 1 call
-    implement later not required
-
-});
-
-*/
-
 router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
   //individual cal or made time in org cal
   const cal_meta = await Calendar_schema_meta.findOne(
