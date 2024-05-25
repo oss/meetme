@@ -97,7 +97,7 @@ function SortMethod(filter, ascending){
 }
 
 const TileLayer = function TileLayer() {
-    let calendarList = userStore((store) => store.calendars.toReversed());
+    const calendarList = userStore((store) => store.calendars.toReversed());
 
     const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
