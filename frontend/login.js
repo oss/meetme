@@ -26,9 +26,9 @@ function Login() {
 
     //set this up so we can redirect to custom pages
     const login = () => {
-        let current_url = window.location.href;
-        let dest = current_url.replace(/https:\/\/localhost.edu/, '');
-        window.location.href = 'https://api.localhost.edu/login?dest=' + dest;
+        const current_url = window.location.href;
+        const dest = current_url.replace(process.env.WEBSITE_URL, '');
+        window.location.assign(process.env.API_URL+'/login?dest=' + dest);
     };
 
     if (isLoggedIn) {

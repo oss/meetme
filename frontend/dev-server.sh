@@ -12,4 +12,4 @@ npx tailwindcss -i ./input.css -o index.css --watch=always &
 
 echo "BALL"
 
-API_URL="https://api.localhost.edu" BUILD="dev" npx webpack serve --allowed-hosts all --port 80 --config webpack.dev.js --history-api-fallback
+API_URL="https://api.localhost.edu" WEBSITE_URL='https://localhost.edu' BUILD="dev" npx webpack serve --allowed-hosts all --port 80 --config webpack.dev.js --history-api-fallback

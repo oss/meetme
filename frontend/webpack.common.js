@@ -49,6 +49,7 @@ module.exports = env = {
     plugins: [
         new HTMLWebpackPlugin({ template: './public/index.html' }),
         new webpack.EnvironmentPlugin(['API_URL']),
+        new webpack.EnvironmentPlugin(['WEBSITE_URL']),
         new webpack.ProvidePlugin({
             React: 'react',
         }),

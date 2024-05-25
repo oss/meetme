@@ -12,12 +12,14 @@ case $BUILD in
         params="$params--stats verbose "
         export BUILD='dev'
         export API_URL='https://api.localhost.edu'
+        export WEBSITE_URL='https://localhost.edu'
     ;;
     prod|PROD)
         params="$params--mode production "
         params="$params--config webpack.dev.js "
         export BUILD='prod'
         export API_URL='https://api.localhost.edu'
+        export WEBSITE_URL='https://localhost.edu'
     ;;
     *)
         echo 'invalid build env'
