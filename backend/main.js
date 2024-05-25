@@ -174,21 +174,6 @@ router.get('/', function (req, res) {
 
 app.use('/', router);
 
-if (process.env.DEV === 'true') {
-    router.get('/clear_db', async function (req, res) {
-        //comment here to change a git hash
-      const User_schema = require('./user/user_schema');
-      const Calendar_schema_main = require('./calendar/calendar_schema_main');
-      const Calendar_schema_meta = require('./calendar/calendar_schema_meta');
-      const Org_schema = require('./organizations/organization_schema');
-      await User_schema.deleteMany({});
-      await Calendar_schema_main.deleteMany({});
-      await Calendar_schema_meta.deleteMany({});
-      await Org_schema.deleteMany({});
-      res.json({ Status: 'ok' });
-    });
-}  
-
 // Starting server using listen function
 app.listen(port, function (err) {
   if (err) {
