@@ -16,7 +16,7 @@ function MeetingCalendar({ calID }) {
         ]
     })
 
-    const rowsCount: number = Math.ceil((endHour - startHour) / (60 * 1000 * timeIntervals));
+    const rowsCount: number = Math.ceil((endHour - startHour) / (60 * 1000 * timeIntervals)); //bad calculation, assumes 1 timeblock per day, can be multiple. this is scuffed
     const [keepTimesUpdated, stopTimesUpdated] = mainDataStore((store)=>[
         store.listenForUpdates,
         store.stopListenForUpdates

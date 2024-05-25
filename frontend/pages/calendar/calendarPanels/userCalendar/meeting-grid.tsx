@@ -34,7 +34,7 @@ export type TimeBlock = {
 
 function MeetingGrid({ calID, rowsCount }) {
     const displayHeight: number = 0.9;
-    const netid = authStore((store)=>store.userData.user.uid)
+    const netid = authStore((store) => store.userData.user.uid)
 
     const columnCount = calendarMaindataStore((store) => {
         return store.calendarData[calID].data.blocks.length
@@ -76,36 +76,18 @@ function MeetingGrid({ calID, rowsCount }) {
         timeIntervals
     );
 
-    const allMembers = calendarMaindataStore((store) => {
-        const calendar = store.calendarData[calID].data;
-        const members = new Set();
-        switch (calendar.owner.owner_type) {
-            case 'individual':
-                members.add(calendar.owner._id)
-
-                calendar.users.forEach((member, index) => {
-                    members.add(member._id)
-                });
-
-                return members;
-        }
-
-    })
-
-
-    const usersAmtGrid = (() => {
-        const userTimeIdx = userTimes.findIndex(function (t) { return t._id === netid });
-        const userTimeline = userTimes[userTimeIdx]
-
-        const userGrid: boolean[][] = getGridFromBlocks(userTimeline.times, meetingArray);
-        return userGrid;
-    })()
-
     const userTimeline = (() => {
         const userTimeIdx = userTimes.findIndex(function (t) { return t._id === netid });
-        const userTimeline = userTimes[userTimeIdx].times
+        if (userTimeIdx === -1)
+            return [];
 
+        const userTimeline = userTimes[userTimeIdx].times
         return userTimeline;
+    })()
+
+    const usersAmtGrid = (() => {
+        const userGrid: boolean[][] = getGridFromBlocks(userTimeline, meetingArray);
+        return userGrid;
     })()
 
     const [fromColumn, setFromColumn] = useState(-1);

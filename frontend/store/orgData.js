@@ -21,7 +21,7 @@ const useStore = create(set => {
                 orgJSON[orgID].isLoaded = true
                 orgJSON[orgID].data = resp_json.organization
                 return {
-                    orgJSON: orgJSON
+                    orgData: orgJSON
                 }
             })
         }

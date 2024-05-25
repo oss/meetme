@@ -8,6 +8,7 @@ import {
 
 import calendarMaindataStore from '@store/calendarMaindata';
 import { hoveredUsersStore } from './state.js';
+import calendarPageStore from '../../store.js';
 
 interface IMeetingGrid {
     potentialMeetings: Date[];
@@ -72,22 +73,7 @@ function MeetingGrid({ calID, rowsCount }) {
         timeIntervals
     );
 
-    const allMembers = calendarMaindataStore((store) => {
-        const calendar = store.calendarData[calID].data;
-        const members = new Set();
-        switch (calendar.owner.owner_type) {
-            case 'individual':
-                members.add(calendar.owner._id)
-
-                calendar.users.forEach((member, index) => {
-                    members.add(member._id)
-                });
-
-                return members;
-        }
-
-    })
-
+    const allMembers = calendarPageStore((store)=>store.memberSet)
 
     const usersAmtGrid = (() => {
         const arr = Array.from({ length: rowsCount }, () =>

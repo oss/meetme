@@ -13,6 +13,7 @@ import calendarMetadata from '@store/calendarMetadata';
 import calendarMaindata from '@store/calendarMaindata';
 import dialogueStore from '@store/dialogueStore';
 import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
+import memberListStore from './store';
 
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
@@ -21,26 +22,7 @@ function CalendarOwner({ calID }) {
     const location = calendarMaindata((store) => store.calendarData[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
-    const memberList = calendarMaindata((store) => {
-        const calendar = store.calendarData[calID].data;
-        const memberListArr = []
-        switch (calendar.owner.owner_type) {
-
-            case 'individual':
-                memberListArr.push({ role: 'owner', IDs: [calendar.owner._id] })
-
-                memberListArr.push({ role: 'users', IDs: [] })
-                calendar.users.forEach((member, index) => {
-                    if (calendar.owner._id !== member._id)
-                        memberListArr[1]['IDs'].push(member._id)
-                });
-
-                break;
-        }
-
-        return memberListArr;
-
-    })
+    const memberList = memberListStore((store)=>store.memberList)
 
 
     const MemberTileList = () => {
