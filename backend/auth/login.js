@@ -1,52 +1,55 @@
-const mongoose = require('mongoose');
 const User_schema = require('../user/user_schema');
 const {
-  create_user,
-  update_last_login,
+    create_user,
+    update_last_login,
 } = require('../user/helpers/modify_user');
 
-module.exports = async function (router, passport) {
-  router.post('/login',
+const passport = require('passport');
+
+const express = require('express');
+const router = express.Router();
+
+router.post('/login',
     async function (req, res, next) {
-      console.log('-----------------------------');
-      console.log('/Start login callback ');
-      next();
+        console.log('-----------------------------');
+        console.log('/Start login callback ');
+        next();
     },
     passport.authenticate('samlStrategy', { failureRedirect: '/login' }),
     async function (req, res) {
-      console.log('post');
-      console.log(JSON.stringify(req.user));
+        console.log('post');
+        console.log(JSON.stringify(req.user));
 
-      const user = await User_schema.findOne({ _id: req.user.uid });
-      //create a new user account if user doesnt exist
-      if (user === null) {
-        const create_usr_resp = await create_user(req.user.uid);
-        console.log('finished creating new user');
-        if (create_usr_resp.Status === 'Error') {
-          res.json({
-            create_usr_resp,
-          });
-          return;
+        const user = await User_schema.findOne({ _id: req.user.uid });
+        //create a new user account if user doesnt exist
+        if (user === null) {
+            const create_usr_resp = await create_user(req.user.uid);
+            console.log('finished creating new user');
+            if (create_usr_resp.Status === 'Error') {
+                res.json({
+                    create_usr_resp,
+                });
+                return;
+            }
         }
-      }
-      await update_last_login(req.user.uid);
-      req.session.time = Math.floor( Date.now() / (1000 * 10));
-      res.redirect('https://localhost.edu' + (req.body.RelayState || ''));
+        await update_last_login(req.user.uid);
+        req.session.time = Math.floor(Date.now() / (1000 * 10));
+        res.redirect('https://localhost.edu' + (req.body.RelayState || ''));
     }
-  );
+);
 
-  router.get('/login',
+router.get('/login',
     async function (req, res, next) {
-      console.log('-----------------------------');
-      console.log('/Start login handler for get');
-      console.log('(');
-      req.query.RelayState = req.query.dest;
-      next();
+        console.log('-----------------------------');
+        console.log('/Start login handler for get');
+        console.log('(');
+        req.query.RelayState = req.query.dest;
+        next();
     },
     passport.authenticate('samlStrategy')
-  );
-};
+);
 
+module.exports = router;
 /*
 
 Sample req.user output:

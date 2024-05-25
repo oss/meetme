@@ -94,30 +94,6 @@ app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
-//set up authentication paths, need to pass passport functions w/ special param
-const auth_files = fs.readdirSync('./auth');
-const auth_router = express.Router();
-for (let i = 0; i < auth_files.length; i++) {
-  let auth_file = auth_files[i];
-  if (auth_file.endsWith('.js')) {
-    console.log('loading --> ' + auth_file);
-    require('./auth/' + auth_file)(auth_router, passport);
-  }
-}
-
-if (process.env.DEV === 'true') {
-  if (fs.existsSync('./auth/testing')) {
-    const testing_files = fs.readdirSync('./auth/testing');
-    for (let j = 0; j < testing_files.length; j++) {
-      console.log('loading test file ---> ' + testing_files[j]);
-      if (testing_files[j].endsWith('.js'))
-        router.use('/test', require('./auth/testing/' + testing_files[j]));
-    }
-  }
-}
-
-router.use('/', auth_router);
-
 //set up paths
 const router_config = require('./router_config.json');
 for (let i = 0; i < router_config.length; i++) {
