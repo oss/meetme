@@ -167,15 +167,79 @@ verify_frontend(){
     diagram_uptodate
 }
 
+get_latest_git_hash_in_range(){
+    start_of_endpoint_code_line="$1"
+    end_of_endpoint_code_line="$2"
+    target_file="$3"
+
+    GIT_HASHES=$(git -C "$PROJECT_DIR" --no-pager blame --date=raw -l -L "$start_of_endpoint_code_line,$end_of_endpoint_code_line" "$target_file" | grep -Eo "^[a-f0-9]+" | uniq )
+    local soonest_hash=""
+    local soonest_hash_time=0
+    for hash in $GIT_HASHES; do
+        TIME=$(git -C "$PROJECT_DIR" --no-pager show --no-patch --no-notes --pretty='%at' "$hash")
+        if [[ $TIME -gt $soonest_hash_time ]];then
+            soonest_hash="$hash"
+            soonest_hash_time="$TIME"
+        fi
+    done
+    echo -n "$soonest_hash"
+}
+
+summary_hash_latest_new(){
+    local FILE_TO_TEST="$1"
+    local START_OF_ENDPOINTS=$(grep -En 'router.(get|post|patch|delete)' "$FILE_TO_TEST" | awk '{print $1}' FS=":")
+
+    for start in $START_OF_ENDPOINTS; do
+        local end=$(sed -n "$start,\$p" "$FILE_TO_TEST" | grep -n -m 1 -E '^\}?\);$' | awk '{print $1}' FS=":" )
+        end=$(($start + $end - 1))
+        local soonest_hash=$(get_latest_git_hash_in_range "$start" "$end" "$FILE_TO_TEST")
+
+        local method=$(sed -r "$start!d" "$FILE_TO_TEST" | sed -r 's/router.(get|post|patch|delete).*/\1/' | xargs | awk '{ print toupper($0) }' )
+        local route=$(sed -r "$start!d" "$FILE_TO_TEST" | sed -r "s/router.(get|post|patch|delete)\('(.*)'.*/\\2/g" | xargs )
+        route=$(sed -r 's/\/$//g' <<< "$route" )
+
+        if ! [[ $method =~ GET|POST|PATCH|DELETE ]] || [[ $route =~ .*route.* ]]; then
+            echo "error extracting route and/or method from source code"
+            echo "method: $method"
+            echo "route: $route"
+            echo "method or route is not found in range $start and $end of file $FILE_TO_TEST"
+            #return 1
+            continue;
+        fi
+
+        local backend_folder=$( sed -r 's/^\/project\/backend\/(.*)\/.*.js$/\1/g' <<< "$FILE_TO_TEST" )
+        local route_prefix=$(jq -r ".[] | select(.dir == \"$backend_folder\") | .route " "${PROJECT_DIR}/backend/router_config.json")
+        local endpoint=$(sed -r 's\^//\/\'<<< "${route_prefix}${route}") #edge case for any router loader which start with /
+        
+
+        local summary_hash=$(grep -Eo "^\| $endpoint \| $method \|.*hash=[a-f0-9]+$" "${PROJECT_DIR}/docs/docs/api/api-summary.md" | sed -r 's/.*hash=//' )
+        if [ -z $summary_hash ]; then
+            echo "$endpoint does not appear in the documentation"
+            continue
+        fi
+
+        if ! [[ $summary_hash =~ $soonest_hash ]]; then
+            echo "hash mismatch for $method $endpoint"
+            echo "docs hash: $summary_hash"
+            echo "real hash: $soonest_hash"
+            #return 1
+            continue
+        fi
+    done
+}
+
 main(){
+    #summary_has_all_endpoints && echo "summary has all endpoints..." || exit 1
     #cd /project
     #set -x
-    verify_backend
+    #verify_backend
     #verify_frontend
     #summary_hash_latest "backend/main.js" || exit 1
     #git --no-pager blame --date=raw -l backend/main.js
     #stuff
     #get_router_ranges "backend/main.js"
+    summary_hash_latest_new "/project/backend/auth/login.js"
+    #summary_hash_latest_new "/project/backend/calendar/cal.js"
 }
 
 main
