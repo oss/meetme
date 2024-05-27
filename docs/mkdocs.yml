@@ -3,11 +3,13 @@ site_url: https://oss.rutgers.edu
 nav:
     - About: index.md
     - Quick Start: about.md
-    - Backend: backend.md
-    - Endpoints: api-summary.md
     - API:
       - Overview: api/api-overview.md
       - Summary: api/api-summary.md
+      - Authentication:
+        - auth/login.md
+        - auth/login-callback.md
+        - auth/logout.md
       - Calendar:
         - Calendars:
           - api/calendar/calendar/post.md
