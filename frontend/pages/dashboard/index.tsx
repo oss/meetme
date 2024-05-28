@@ -82,13 +82,19 @@ function SortMethod(filter, ascending){
         return (function (a, b) {return ('' + a.data.name).localeCompare(b.data.name)})
     }
     else if (filter === "Name" && ascending === true){
-        return (function (b, a) {return ('' + a.data.name).localeCompare(b.data.name);})
+        return (function (b, a) {return ('' + a.data.name).localeCompare(b.data.name)})
     }
-    if (filter === "TimeCreated" && ascending === false){
-        return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})
+    else if (filter === "Time Created" && ascending === false){
+        return (function (a, b) {return a.data.created < b.data.created})
     }
-    else if (filter === "TimeCreated" && ascending === true){
-        return (function (b, a) {return ('' + a.data._id).localeCompare(b.data._id);})
+    else if (filter === "Time Created" && ascending === true){
+        return (function (b, a) {return b.data.created < a.data.created})
+    }
+    else if (filter === "Time Modified" && ascending === false){
+        return (function (a, b) {return a.data.created < b.data.created})
+    }
+    else if (filter === "Time Modified" && ascending === true){
+        return (function (b, a) {return b.data.created < a.data.created})
     }
     else{
         return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})

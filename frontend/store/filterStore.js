@@ -19,7 +19,7 @@ const useStore = create(subscribeWithSelector((set) => {
     return {
         setFilter: setFilter,
         setAscending:setAscending,
-        filter: "TimeCreated",
+        filter: "Time Created",
         ascending: false,
     }
 }))

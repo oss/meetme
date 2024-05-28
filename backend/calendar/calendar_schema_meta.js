@@ -6,6 +6,8 @@ let calendar = new Schema({
   _id: String,
   name: String,
   location: String,
+  created:Number,
+  modified:Number,
   owner: {
     owner_type: String,
     _id: String,

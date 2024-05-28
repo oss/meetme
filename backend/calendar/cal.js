@@ -157,6 +157,8 @@ router.post('/', isAuthenticated, async function (req, res) {
 
     calendar_metadata.name = req.body.name || 'untitled';
     calendar_metadata.location = req.body.location || null;
+    calendar_metadata.created = new Date().getTime();
+    calendar_metadata.modified = new Date().getTime();
     calendar_metadata.description = [];
     calendar_maindata.links = [];
     calendar_metadata.public = req.body.public || false; //false by default
