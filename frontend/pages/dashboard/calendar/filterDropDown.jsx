@@ -12,8 +12,8 @@ function filterDropDown() {
     const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
 
     return (
-        <Popover className="relative group ">
-            <PopoverButton className="my-2 w-fit flex rounded-xl bg-white p-2 group-data-[open]:bg-gray-200">Filter</PopoverButton>
+        <Popover className="group w-fit content-center mx-5">
+            <PopoverButton className="outline-none my-2 w-fit flex rounded-xl bg-white p-2 text-red-700 hover:shadow-md group-data-[open]:bg-red-400 group-data-[open]:shadow group-data-[open]:text-white">Filter</PopoverButton>
             <Transition
                 enter="transition ease-out duration-75"
                 enterFrom="opacity-0 scale-95"
@@ -22,7 +22,7 @@ function filterDropDown() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
             >
-                <PopoverPanel anchor="bottom end" className="origin-top-right rounded-xl border bg-white p-4">
+                <PopoverPanel anchor="bottom start" className="origin-top-right rounded-xl border bg-white p-4">
                     <Fieldset className="space-y-8">
                         <Field>
                             <Label className="block">Sort By</Label>

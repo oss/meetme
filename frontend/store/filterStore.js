@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware'
-import Cookies from 'js-cookie';
 
 const useStore = create(subscribeWithSelector((set) => {
     const setFilter = (filter) => {
