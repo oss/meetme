@@ -91,10 +91,10 @@ function SortMethod(filter, ascending){
         return (function (b, a) {return a.data.created < b.data.created})
     }
     else if (filter === "Time Modified" && ascending === false){
-        return (function (a, b) {return a.data.created < b.data.created})
+        return (function (a, b) {return a.data.modified < b.data.modified})
     }
     else if (filter === "Time Modified" && ascending === true){
-        return (function (b, a) {return a.data.created < b.data.created})
+        return (function (b, a) {return a.data.modified < b.data.modified})
     }
     else{
         return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})

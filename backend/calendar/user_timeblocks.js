@@ -128,6 +128,15 @@ async function repmode(netid, calendar_id, res, timeblocks) {
       { _id: calendar_id, 'users._id': netid },
       { $set: { 'users.$.times': timeblocks } }
     );
+    
+    const current_time = new Date().getTime()
+
+    //update modified time in the metadata
+    await Calendar_schema_meta.updateOne(
+        { _id: calendar_id },
+        { $set: { modified: current_time} }
+    );
+
 
     return res.json({
       Status: 'ok',
@@ -165,6 +174,15 @@ async function repmode(netid, calendar_id, res, timeblocks) {
           { $set: { 'users.$.times': timeblocks } }
         );
       }
+
+      const current_time = new Date().getTime()
+
+      //update modified time in the metadata
+      await Calendar_schema_meta.updateOne(
+          { _id: calendar_id },
+          { $set: { modified: current_time} }
+      );
+
       return res.json({
         Status: 'ok',
       });
