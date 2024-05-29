@@ -90,7 +90,7 @@ summary_hash_latest(){
         fi
 
         if ! [[ $summary_hash =~ $soonest_hash ]]; then
-            echo "invalid hash                   $method $endpoint: $summary_hash $soonest_hash"
+            echo "invalid hash                   $method $endpoint $summary_hash $soonest_hash"
             #return 1
             continue
         fi
@@ -135,7 +135,6 @@ docs_subset_of_code(){
         #local sed_regex=$(echo "^| $endpoint | $method |.*hash=$hash$" | sed -r 's/\//\\\//g')
         #echo "$sed_regex"
         if ! grep -Eo "^\| $endpoint \| $method \|.*hash=$hash$" "/tmp/api-summary.copy" > /dev/null; then
-            echo "missing something $endpoint $method $hash"
             printf "%s %s\n" "| $endpoint | $method | ...." >> /tmp/api-summary.missing
         else
             grep -v "| $endpoint | $method |" "/tmp/api-summary.copy" | sponge "/tmp/api-summary.copy"
@@ -160,6 +159,53 @@ docs_subset_of_code(){
     fi
 }
 
+validate_md_documentation(){
+    DOCS_ROOT="${PROJECT_DIR}/docs/docs"
+
+    all_md_files_string=$(yq '.nav | .. | select(. | type == "!!str")' ${PROJECT_DIR}/docs/mkdocs.yml)
+    IFS=$'\n' read -d '' -a all_md_files_array <<< "$all_md_files_string"
+
+    cp "${DOCS_ROOT}/api/api-summary.md" /tmp/api-summary.copy
+    sed -i -e "1,6d" /tmp/api-summary.copy
+
+    for file in "${all_md_files_array[@]}"; do
+        FILE_TO_TEST="${DOCS_ROOT}/${file}"
+        x=$(grep -m 2 -noE -e '^---$' "$FILE_TO_TEST" | awk '{print $1}' FS=":")
+        IFS=$'\n' read -d '' -r start end <<< "$x"
+        if [ -z ${end} ] || [ "$start" -ne 1 ] ; then
+            continue
+        fi
+
+        #add 1 to strip the --- 
+        #metadata is yaml format
+        metadata=$(sed -n "$((start + 1)),$((end - 1))p" "$FILE_TO_TEST")
+        yq -e 'has("properties")' <<< "$metadata" 2> /dev/null 1> /dev/null || continue
+        yq -e '.properties | has("api-endpoint")' <<< "$metadata" 2> /dev/null 1> /dev/null || continue
+        method=$(yq '.endpoint-info.http-method' <<< "$metadata")
+        endpoint=$(yq '.endpoint-info.url' <<< "$metadata")
+        hash=$(yq '.endpoint-info.latest-hash' <<< "$metadata") #not needed?
+
+        if ! grep -Eo "^\| $endpoint \| $method \|" "${DOCS_ROOT}/api/api-summary.md" > /dev/null; then
+            printf "%s %s\n" "extra endpoint docs found     " "$method $endpoint $hash" >> /tmp/api-summary.notinsummary
+            continue
+        fi
+
+        if ! grep -Eo "^\| $endpoint \| $method \|.*hash=$hash" "${DOCS_ROOT}/api/api-summary.md" > /dev/null; then
+            printf "%s %s\n" "md docs hash not updated      " "$method $endpoint $hash" >> /tmp/api-summary.notinsummary
+            grep -v "| $endpoint | $method |" "/tmp/api-summary.copy" | sponge "/tmp/api-summary.copy"
+            continue
+        fi
+
+    done
+
+    if [ -s "/tmp/api-summary.notinsummary" ]; then
+        cat /tmp/api-summary.notinsummary
+    fi
+
+    if [ -s "/tmp/api-summary.copy" ]; then
+        sed -rE 's@^\| ([^ ]+) \| ([^ ]+) \|.*@endpoints missing md files     \2 \1@' /tmp/api-summary.copy
+    fi
+}
 main(){
     #summary_has_all_endpoints && echo "summary has all endpoints..." || exit 1
     #cd /project
@@ -176,6 +222,7 @@ main(){
     #summary_hash_latest "/project/backend/calendar/cal.js"
     code_subset_of_docs
     docs_subset_of_code
+    validate_md_documentation
     #cat /tmp/api-summary.copy
     #summary_hash_latest_new "/project/backend/calendar/cal.js"
 }
