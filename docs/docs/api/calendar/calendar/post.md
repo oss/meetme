@@ -1,5 +1,10 @@
 ---
-last_updated_hash: abc
+properties: !!set
+    ? api-endpoint
+endpoint-info:
+    http-method: POST
+    url: '/cal'
+    latest-hash: abcbd
 ---
 
 # Create

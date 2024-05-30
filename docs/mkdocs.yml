@@ -17,6 +17,9 @@ nav:
         - Locations:
           - api/calendar/location/get.md
           - api/calendar/location/patch.md
+    - Testing:
+      - testing/backend-test.md
+      - testing/testing-docs.md
     - Architecture: 
       - Philosophy: architecture/index.md
       - Diagrams: architecture/systems.md

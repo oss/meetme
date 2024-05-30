@@ -36,7 +36,7 @@ get_latest_git_hash_in_range(){
     end_of_endpoint_code_line="$2"
     target_file="$3"
 
-    GIT_HASHES=$(git -C "$PROJECT_DIR" --no-pager blame --date=raw -l -L "$start_of_endpoint_code_line,$end_of_endpoint_code_line" "$target_file" | grep -Eo "^[a-f0-9]+" | uniq )
+    GIT_HASHES=$(git -C "$PROJECT_DIR" --no-pager blame --date=raw -l -L "$start_of_endpoint_code_line,$end_of_endpoint_code_line" "$target_file" | sed 's/^\^//' | grep -Eo "^[a-f0-9]+" | uniq )
     local soonest_hash=""
     local soonest_hash_time=0
     for hash in $GIT_HASHES; do
@@ -49,63 +49,12 @@ get_latest_git_hash_in_range(){
     echo -n "$soonest_hash"
 }
 
-# code is a subset of endpoints in docs
-summary_hash_latest(){
-    local FILE_TO_TEST="$1"
-    local START_OF_ENDPOINTS=$(grep -En 'router.(get|post|patch|delete)' "$FILE_TO_TEST" | awk '{print $1}' FS=":")
-
-    for start in $START_OF_ENDPOINTS; do
-        local end=$(sed -n "$start,\$p" "$FILE_TO_TEST" | grep -n -m 1 -E '^\}?\);$' | awk '{print $1}' FS=":" )
-        end=$(($start + $end - 1))
-        local soonest_hash=$(get_latest_git_hash_in_range "$start" "$end" "$FILE_TO_TEST")
-
-        local method=$(sed -r "$start!d" "$FILE_TO_TEST" | sed -r 's/router.(get|post|patch|delete).*/\1/' | xargs | awk '{ print toupper($0) }' )
-        local route=$(sed -r "$start!d" "$FILE_TO_TEST" | sed -r "s/router.(get|post|patch|delete)\('(.*)'.*/\\2/g" | xargs )
-        route=$(sed -r 's/\/$//g' <<< "$route" )
-        
-
-        if ! [[ $method =~ GET|POST|PATCH|DELETE ]] || [[ $route =~ .*route.* ]]; then
-            echo "error extracting route and/or method from source code"
-            echo "method: $method"
-            echo "route: $route"
-            echo "method or route is not found in range $start and $end of file $FILE_TO_TEST"
-            #return 1
-            continue;
-        fi
-
-        local backend_folder=$( sed -r 's/^\/project\/backend\/(.*)\/.*.js$/\1/g' <<< "$FILE_TO_TEST" )
-        local route_prefix=$(jq -r ".[] | select(.dir == \"$backend_folder\") | .route " "${PROJECT_DIR}/backend/router_config.json")
-
-        if [ -z $route_prefix ]; then
-            route_prefix='/'
-        fi
-
-        local endpoint=$(sed -r 's\^//\/\'<<< "${route_prefix}${route}") #edge case for any router loader which start with /
-        local summary_hash=$(grep -Eo "^\| $endpoint \| $method \|.*hash=[a-f0-9]+$" "${PROJECT_DIR}/docs/docs/api/api-summary.md" | sed -r 's/.*hash=//' )
-        echo "$endpoint $method $summary_hash" >> /tmp/api-summary.found
-
-        if [ -z $summary_hash ]; then
-            echo "$endpoint does not appear in the documentation"
-            continue
-        fi
-
-        if ! [[ $summary_hash =~ $soonest_hash ]]; then
-            echo "invalid hash                   $method $endpoint $summary_hash $soonest_hash"
-            #return 1
-            continue
-        fi
-    done
-}
-
-# find all methods in code and then make sure they are in docs
-# also preform a hash check
-code_subset_of_docs(){
+get_all_endpoints_in_code(){
     #summary_hash_latest "backend/calendar/cal.js" || exit 1
 
     files_to_check=()
     for file in $(find "${PROJECT_DIR}/backend" -name '*.js'); do
         # add all js files
-        #echo "$file"
         if ! [[ "$file" =~ ".*_schema.js" ]]; then
             files_to_check+=("$file")
             #echo "check file $file"
@@ -114,60 +63,47 @@ code_subset_of_docs(){
     done
 
     for file in "${files_to_check[@]}"; do
-        summary_hash_latest "$file" >> /tmp/hash_check.log
+        local START_OF_ENDPOINTS=$(grep -En 'router.(get|post|patch|delete)' "$file" | awk '{print $1}' FS=":")
+
+        for start in $START_OF_ENDPOINTS; do
+            local end=$(sed -n "$start,\$p" "$file" | grep -n -m 1 -E '^\}?\);$' | awk '{print $1}' FS=":" )
+            end=$(($start + $end - 1))
+            local soonest_hash=$(get_latest_git_hash_in_range "$start" "$end" "$file")
+
+            local method=$(sed -r "$start!d" "$file" | sed -r 's/router.(get|post|patch|delete).*/\1/' | xargs | awk '{ print toupper($0) }' )
+            local route=$(sed -r "$start!d" "$file" | sed -r "s/router.(get|post|patch|delete)\('(.*)'.*/\\2/g" | xargs )
+            route=$(sed -r 's/\/$//g' <<< "$route" )
+            
+            if ! [[ $method =~ GET|POST|PATCH|DELETE ]] || [[ $route =~ .*route.* ]]; then
+                echo "error extracting route and/or method from source code"
+                echo "method: $method"
+                echo "route: $route"
+                echo "method or route is not found in range $start and $end of file $file"
+                #return 1
+                continue;
+            fi
+
+            local backend_folder=$( sed -r 's/^\/project\/backend\/(.*)\/.*.js$/\1/g' <<< "$file" )
+            local route_prefix=$(jq -r ".[] | select(.dir == \"$backend_folder\") | .route " "${PROJECT_DIR}/backend/router_config.json")
+
+            if [ -z $route_prefix ]; then
+                route_prefix='/'
+            fi
+
+            local endpoint=$(sed -r 's\^//\/\'<<< "${route_prefix}${route}") #edge case for any router loader which start with /
+            jq -cn --arg endpoint "$endpoint" --arg method "$method" --arg hash "$soonest_hash" '{endpoint: $endpoint, method: $method, hash: $hash}' >> /tmp/api-summary.code #put endpoint first so we sort by endpoint at the end
+
+        done
     done
-
-    if [ -s "/tmp/hash_check.log" ]; then
-        cat /tmp/hash_check.log
-        return 1
-    fi
+    sort -o /tmp/api-summary.code /tmp/api-summary.code
 }
 
-# endpoints in docs are all found in the analyze code step
-docs_subset_of_code(){
-    local REAL_DOCS="${PROJECT_DIR}/docs/docs/api/api-summary.md"
-    local FOUND_ENDPOINTS="/tmp/api-summary.found"
-
-    cp "$REAL_DOCS" /tmp/api-summary.copy
-    sed -i -e "1,6d" /tmp/api-summary.copy
-
-    while read endpoint method hash; do
-        #local sed_regex=$(echo "^| $endpoint | $method |.*hash=$hash$" | sed -r 's/\//\\\//g')
-        #echo "$sed_regex"
-        if ! grep -Eo "^\| $endpoint \| $method \|.*hash=$hash$" "/tmp/api-summary.copy" > /dev/null; then
-            printf "%s %s\n" "| $endpoint | $method | ...." >> /tmp/api-summary.missing
-        else
-            grep -v "| $endpoint | $method |" "/tmp/api-summary.copy" | sponge "/tmp/api-summary.copy"
-        fi
-
-        #sed -i "/$sed_regex/d" "/tmp/api-summary.copy"
-    done <$FOUND_ENDPOINTS
-    
-    local invalid_summary="false"
-    if [[ -s "/tmp/api-summary.copy" ]] ; then
-        sed -r 's/(.*)/extra endpoints in docs        \1/g' "/tmp/api-summary.copy"
-        invalid_summary="true"
-    fi
-
-    if [[ -s "/tmp/api-summary.missing" ]]; then
-        sed -r 's/(.*)/missing endpoints from docs    \1/g' "/tmp/api-summary.missing"
-        invalid_summary="true"
-    fi
-
-    if [[ $invalid_summary =~ "true" ]]; then
-        return 1
-    fi
-}
-
-validate_md_documentation(){
+get_all_endpoints_in_md(){
     DOCS_ROOT="${PROJECT_DIR}/docs/docs"
 
     all_md_files_string=$(yq '.nav | .. | select(. | type == "!!str")' ${PROJECT_DIR}/docs/mkdocs.yml)
     IFS=$'\n' read -d '' -a all_md_files_array <<< "$all_md_files_string"
-
-    cp "${DOCS_ROOT}/api/api-summary.md" /tmp/api-summary.copy
-    sed -i -e "1,6d" /tmp/api-summary.copy
-
+    
     for file in "${all_md_files_array[@]}"; do
         FILE_TO_TEST="${DOCS_ROOT}/${file}"
         x=$(grep -m 2 -noE -e '^---$' "$FILE_TO_TEST" | awk '{print $1}' FS=":")
@@ -185,33 +121,60 @@ validate_md_documentation(){
         endpoint=$(yq '.endpoint-info.url' <<< "$metadata")
         hash=$(yq '.endpoint-info.latest-hash' <<< "$metadata") #not needed?
 
-        if ! grep -Eo "^\| $endpoint \| $method \|" "${DOCS_ROOT}/api/api-summary.md" > /dev/null; then
-            printf "%s %s\n" "extra endpoint docs found     " "$method $endpoint $hash" >> /tmp/api-summary.notinsummary
-            continue
-        fi
-
-        if ! grep -Eo "^\| $endpoint \| $method \|.*hash=$hash" "${DOCS_ROOT}/api/api-summary.md" > /dev/null; then
-            printf "%s %s\n" "md docs hash not updated      " "$method $endpoint $hash" >> /tmp/api-summary.notinsummary
-            grep -v "| $endpoint | $method |" "/tmp/api-summary.copy" | sponge "/tmp/api-summary.copy"
-            continue
-        fi
-
+        jq -cn --arg endpoint "$endpoint" --arg method "$method" --arg hash "$hash" '{endpoint: $endpoint, method: $method, hash: $hash}' >> /tmp/api-summary.md #put endpoint first so we sort by endpoint at the end
     done
 
-    if [ -s "/tmp/api-summary.notinsummary" ]; then
-        cat /tmp/api-summary.notinsummary
-    fi
-
-    if [ -s "/tmp/api-summary.copy" ]; then
-        sed -rE 's@^\| ([^ ]+) \| ([^ ]+) \|.*@endpoints missing md files     \2 \1@' /tmp/api-summary.copy
-    fi
+    sort -o /tmp/api-summary.md /tmp/api-summary.md
 }
+
 main(){
     #summary_has_all_endpoints && echo "summary has all endpoints..." || exit 1
     #cd /project
     #set -x
     #summary_hash_latest '/project/backend/main.js'
     backend_has_no_changes || { echo "uncommited changes found in backend..." && exit 1; }
+
+    get_all_endpoints_in_code
+    get_all_endpoints_in_md
+    only_code=$(jq -rn --slurpfile code /tmp/api-summary.code --slurpfile md /tmp/api-summary.md '$code - $md')
+    only_md=$(jq -rn --slurpfile code /tmp/api-summary.code --slurpfile md /tmp/api-summary.md '$md - $code')
+    both=$(jq -rn --slurpfile code /tmp/api-summary.code --slurpfile md /tmp/api-summary.md '($md + $code) - ($md - $code) - ($code - $md) | unique ')
+    diff_list=$(jq -rn --argjson c "$only_code" --argjson m "$only_md" '(($c | map(. + {source: "code"})) + ($m | map(. + {source: "markdown"}))) | group_by(.endpoint, .method) ')
+    for diff_pair_b64 in $(jq -rnc --argjson d "$diff_list" '$d[] | @base64'); do
+        
+        local diff_pair=$(echo "${diff_pair_b64}" | base64 --decode)
+        local len=$(jq -rn --argjson x "$diff_pair" '$x | length')
+        local endpoint=$(jq -rn --argjson x "$diff_pair" '$x[0].endpoint')
+        local method=$(jq -rn --argjson x "$diff_pair" '$x[0].method')
+
+        if [ "$len" -eq 2 ]; then
+            
+
+            local first_hash=$(jq -rn --argjson x "$diff_pair" '$x[0].hash')
+            local first_source=$(jq -rn --argjson x "$diff_pair" '$x[0].source')
+
+            local second_hash=$(jq -rn --argjson x "$diff_pair" '$x[1].hash')
+            local second_source=$(jq -rn --argjson x "$diff_pair" '$x[1].source')
+
+            echo "hash mismatch                                 $endpoint $method $first_source=$first_hash $second_source=$second_hash"
+
+            continue;
+        fi
+        
+        local available_hash=$(jq -rn --argjson x "$diff_pair" '$x[0].hash')
+        local available_source=$(jq -rn --argjson x "$diff_pair" '$x[0].source')
+
+        if [ "$available_source" = markdown ]; then
+            echo "extra endpoint found in markdown docs         $endpoint $method git hash: $available_hash"
+            continue
+        fi
+
+        if [ "$available_source" = code ]; then
+            echo "markdown docs missing endpoint                $endpoint $method git hash: $available_hash"
+            continue
+        fi
+
+    done
     
     #verify_frontend
     #summary_hash_latest "backend/main.js" || exit 1
@@ -220,9 +183,9 @@ main(){
     #get_router_ranges "backend/main.js"
     #summary_hash_latest "/project/backend/auth/login.js"
     #summary_hash_latest "/project/backend/calendar/cal.js"
-    code_subset_of_docs
-    docs_subset_of_code
-    validate_md_documentation
+    #code_subset_of_docs
+    #docs_subset_of_code
+    #validate_md_documentation
     #cat /tmp/api-summary.copy
     #summary_hash_latest_new "/project/backend/calendar/cal.js"
 }
