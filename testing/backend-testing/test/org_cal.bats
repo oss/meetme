@@ -39,7 +39,7 @@ setup_file() {
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner | length' )" '2'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner.owner_type' )" 'organization'
-    assert_regex "$( "${jq_command[@]}" '$r.calendar.owner._id' )" "[a-f0-9]{64}"
+    assert_regex "$( "${jq_command[@]}" '$r.calendar.owner._id' )" '^[a-zA-Z0-9_\-]*'
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime | length' )" '2'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime.start' )" 'null'

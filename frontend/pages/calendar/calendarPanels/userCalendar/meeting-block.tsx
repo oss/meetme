@@ -32,9 +32,10 @@ function MeetingBlock({
 
     return (
         <div
-            className={`${
-                disabled ? "border-transparent bg-gray-600" : "border-slate-200"
-            } border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
+            className={`
+            ${disabled ? "bg-gray-600 border-transparent" : "border-slate-200"}
+            ${new Date(start).getMinutes() === 0 ? "border-t-red-600" : ""} 
+            border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
             style={{
                 height: `${displayHeight}rem`,
                 backgroundColor: !disabled && (available && bgRGB)
