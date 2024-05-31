@@ -7,7 +7,7 @@ interface IMeetingLabels {
 
 function MeetingLabels(props: IMeetingLabels) {
     let currentHour = props.startHour.getHours();
-    let currentMinute = 0;
+    let currentMinute = props.startHour.getMinutes();
 
     const displayMinuteInterval: number = 0;
 

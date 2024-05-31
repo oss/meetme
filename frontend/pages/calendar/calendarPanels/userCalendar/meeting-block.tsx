@@ -35,6 +35,7 @@ function MeetingBlock({
             className={`
             ${disabled ? "bg-gray-600 border-transparent" : "border-slate-200"}
             ${new Date(start).getMinutes() === 0 ? "border-t-red-600" : ""} 
+            ${new Date(start).getMinutes() === 50 ? "border-b-red-600" : ""} 
             border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
             style={{
                 height: `${displayHeight}rem`,
