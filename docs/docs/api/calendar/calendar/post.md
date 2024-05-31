@@ -4,7 +4,7 @@ properties: !!set
 endpoint-info:
     http-method: POST
     url: '/cal'
-    latest-hash: abcbd
+    latest-hash: aada5a3d2337bec5e0d706601206fc2fc6fa35cd
 ---
 
 # Create
