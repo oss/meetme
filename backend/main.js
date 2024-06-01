@@ -10,6 +10,7 @@ const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
 const logger = require('./logging');
 const crypto =  require("crypto");
+const Keygrip = require("keygrip");
 mongoose.connect(process.env.MONGO_URL);
 const random_ip_list = require("./random_ip_list.json");
 
@@ -38,7 +39,7 @@ app.use((error, req, res, next) => {
 
 app.use(
   cookieSession({
-    keys: ['secret1',"secret2"],
+    keys: new Keygrip(['secret1',"secret2"],'sha512'),
     resave: true,
     saveUninitialized: false,
     domain: 'localhost.edu',
