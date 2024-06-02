@@ -4,8 +4,12 @@ const router = express.Router();
 
 router.get('/logout', isAuthenticated, function (req, res, next) {
     req.logout(function (err) {
-        if (err) { return next(err); }
-        res.redirect('/');
+        if (err) { 
+            res.json({
+                Status: 'error',
+                error: error
+            }); 
+        }
     });
 
     res.json({
