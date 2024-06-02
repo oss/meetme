@@ -1,5 +1,10 @@
 ---
-last_updated_hash: abc
+properties: !!set
+    ? api-endpoint
+endpoint-info:
+    http-method: GET
+    url: /cal/:calendar_id/location
+    latest-hash: cc1ca67906c54dbe6603abc20f52da0b5b87be3c
 ---
 
 # Get
@@ -40,7 +45,7 @@ fetch('https://api.localhost.edu/cal/42a7027d4bd9cbda8a27fe8f321b74bd70328b20d23
 
 - If the calendar is owned by an individual, the individual must either be a owner, editor, member, or view of the calendar to get the location
 
-- If the calendar is owned by an organization, the individual must either be part of the organization, or individually shared to the calendar.
+- If the calendar is owned by an organization, the individual must be part of the organization to access the location.
 
 ## Other behaviors
 
