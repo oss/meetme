@@ -7,6 +7,7 @@ import RedButton from '@components/utils/red-button';
 import RutgersLogoUrl from "../assets/RU_SHIELD_BLACK.png";
 import CollaboratorsContainer from "@components/utils/collaborator-container";
 import { useNavigate, useParams } from "react-router-dom";
+import userStore from '@store/userStore';
 import Cookies from "js-cookie";
 const DAYS = [
     "Sunday",
@@ -42,6 +43,7 @@ function CreateMeeting({ isOrganizationOwned = false }) {
         );
         return base;
     });
+    const userHook = userStore((store) => store.getUserData);
     const {orgID} = useParams();
     const navigate = useNavigate();
     async function createCalendar() {
@@ -139,6 +141,8 @@ function CreateMeeting({ isOrganizationOwned = false }) {
             if (shareRespJSON.Status !== 'ok')
                 console.log('error sharing users')
         }
+        userHook();
+        console.log("CAL CREATED");
         navigate(`/cal/${resp1_json.calendar._id}`);
     }
 

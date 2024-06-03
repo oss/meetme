@@ -108,8 +108,6 @@ const TileLayer = function TileLayer() {
     const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
-    console.log(calendarMetadata)
-
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
         const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
         calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
@@ -132,8 +130,6 @@ function MenuLayer() {
 
     const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
-
-    console.log(calendarMetadata)
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
         const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
@@ -180,6 +176,7 @@ function Dashboard() {
             <TabGroup  className= "flex flex-wrap">
                 <HeaderButton />
                 <FilterDropDown  />
+                <div className = "w-full"></div>
                 <TabPanels>
                     <CalendarPanel />
                     <OrgPanel />

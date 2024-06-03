@@ -1,4 +1,5 @@
 import filterStore from '@store/filterStore';
+import userStore from '@store/userStore';
 
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
@@ -12,7 +13,7 @@ function filterDropDown() {
     const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
 
     return (
-        <Popover className="group w-fit content-center mx-5">
+        <Popover className="group content-center mx-5">
             <PopoverButton className="outline-none my-2 w-fit flex rounded-xl bg-white p-2 text-red-700 hover:shadow-md group-data-[open]:bg-red-400 group-data-[open]:shadow group-data-[open]:text-white">Filter</PopoverButton>
             <Transition
                 enter="transition ease-out duration-75"

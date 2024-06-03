@@ -6,6 +6,7 @@ import authStore from './authStore';
 const useStore = create(subscribeWithSelector((set) => {
 
     const getUserData = async () => {
+        console.log("DOING USERSTORE")
         const resp = await fetch(process.env.API_URL + '/user/me', {
             method: 'GET',
             credentials: 'include',
@@ -21,10 +22,13 @@ const useStore = create(subscribeWithSelector((set) => {
         }
     }
 
-    getUserData()
+    getUserData();
     socket.on("pending_invitation_update", getUserData);
+    //socket.on("users_updated", getUserData);
+    return {
+        getUserData:getUserData
 
-    return {}
+    }
 }))
 
 export default useStore;
