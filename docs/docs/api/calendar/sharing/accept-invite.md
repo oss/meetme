@@ -25,8 +25,16 @@ Accepts an invite to a specific calendar with ID `:calendar_id`
 ### Success
 ```typescript
 {
-    (string) Status: 'ok'
-    (string) calendar: 'calendar id'
+    (string) "Status": 'ok'
+    (string) "calendar": 'calendar id'
+}
+```
+
+### Failure
+```typescript
+{
+    (string) "Status": 'error'
+    (string) "error": 'error description'
 }
 ```
 
