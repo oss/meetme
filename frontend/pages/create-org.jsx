@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Tile from "../components/utils/tile";
 import LargeButton from "../components/utils/large-button";
 import { OrganizationAPI } from "../api/organization-api";
+import userStore from '@store/userStore';
+import { useNavigate } from "react-router-dom";
 
 function CreateOrg() {
     let [organizationName, setOrganizationName] = useState(null);
@@ -10,6 +12,9 @@ function CreateOrg() {
     const [displayAlertFailureDuplicate, setAlertFailureDuplicate] =
         useState(false);
     let orgNameRef = useRef(null);
+
+    const userHook = userStore((store) => store.getUserData);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchCurrOrgNames();
@@ -115,6 +120,8 @@ function CreateOrg() {
                 setCurrentOrgNames([...currentOrgNames, organizationName]);
                 setAlertSuccess(true);
                 setAlertFailureDuplicate(false);
+                userHook();
+                navigate(`/org/${data.organization._id}`);
             } else {
                 alert("Issue sending request");
             }

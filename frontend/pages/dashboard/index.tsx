@@ -177,7 +177,7 @@ function Dashboard() {
                 <HeaderButton />
                 <FilterDropDown  />
                 <div className = "w-full"></div>
-                <TabPanels>
+                <TabPanels className = "w-full">
                     <CalendarPanel />
                     <OrgPanel />
                 </TabPanels>

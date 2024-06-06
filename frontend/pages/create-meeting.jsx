@@ -142,7 +142,6 @@ function CreateMeeting({ isOrganizationOwned = false }) {
                 console.log('error sharing users')
         }
         userHook();
-        console.log("CAL CREATED");
         navigate(`/cal/${resp1_json.calendar._id}`);
     }
 
