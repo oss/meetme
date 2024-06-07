@@ -148,6 +148,8 @@ function CalendarOwner({ calID }) {
                     <NameTile />
                     <div className='p-1' />
                     <CollaboratorTile />
+                    <FinalMeetingTile/>
+                    <LocationTile/>
                 </div>
 
                 <div className='p-1' />

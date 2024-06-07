@@ -5,6 +5,8 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 
 import InviteDialogue from '@components/stateful/dialogues/inviteDialogue';
 import RenameDialogue from '@components/stateful/dialogues/renameDialogue';
+import LocationDialogue from '@components/stateful/dialogues/locationDialogue';
+import MeetingTimeDialogue from '@components/stateful/dialogues/meetingTimeDialogue';
 
 import GlobalCalendar from './calendarPanels/globalCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
@@ -19,7 +21,7 @@ function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
     const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
     const [start, end] = calendarMaindata((store) => [store.calendarData[calID].data.meetingTime.start, store.calendarData[calID].data.meetingTime.end])
-    const location = calendarMaindata((store) => store.calendarData[calID].data.location)
+    const location = calendarMetadata((store) => store.calendarMetadata[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
     const memberList = memberListStore((store)=>store.memberList)
@@ -100,7 +102,7 @@ function CalendarOwner({ calID }) {
         const getTextValue = () => {
             if (start === null || end === null)
                 return ('Meeting time has not been set.')
-            return `${start} ${end}`
+            return `${new Date(start)} ${new Date(end)}`
         }
 
         return (
@@ -113,7 +115,7 @@ function CalendarOwner({ calID }) {
                             </Tile.Title>
                             <Button
                                 className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
-                                onClick={() => { }}
+                                onClick={() => {setPanel(<MeetingTimeDialogue calID={calID} />)}}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -139,7 +141,7 @@ function CalendarOwner({ calID }) {
                             </Tile.Title>
                             <Button
                                 className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
-                                onClick={() => { }}
+                                onClick={() => {setPanel(<LocationDialogue calID={calID} />) }}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -147,7 +149,7 @@ function CalendarOwner({ calID }) {
                                 </svg>
                             </Button>
                         </div>
-                        {location || 'No location set'}
+                        {location|| 'No location set'}
                     </Tile.Body>
                 </div>
             </Tile>
@@ -167,6 +169,8 @@ function CalendarOwner({ calID }) {
                     <NameTile />
                     <div className='p-1' />
                     <CollaboratorTile />
+                    <FinalMeetingTile/>
+                    <LocationTile/>
                 </div>
 
                 <div className='p-1' />

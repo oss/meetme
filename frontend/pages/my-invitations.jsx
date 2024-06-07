@@ -7,9 +7,14 @@ import { OrganizationAPI } from "../api/organization-api";
 import Tabs from "../components/tabs";
 import InvitationTile from "../components/my-invitations/invitation-tile";
 
+import userStore from '@store/userStore';
+import metadataStore from '@store/calendarMetadata';
+
 function MyInvitations() {
     const [pendingCalendars, setPendingCalendars] = useState(null);
     const [pendingOrganizations, setPendingOrganizations] = useState(null);
+
+    const userHook = userStore((store) => store.getUserData);
 
     useEffect(() => {
         fetch(process.env.API_URL + "/user/me", {
@@ -30,6 +35,8 @@ function MyInvitations() {
         let calendarData = await CalendarAPI.getAllMetadata(
             data.data.pendingCalendars.map((calendar) => calendar._id)
         );
+        console.log("CALDATA");
+        console.log(calendarData);
         setPendingCalendars(calendarData.map((calendar) => calendar.metadata));
     }
     async function getPendingOrganizationData(data) {
@@ -49,6 +56,7 @@ function MyInvitations() {
                 )
             );
         }
+        userHook();
         console.log(JSON.stringify(data));
     }
     async function declineOrgInvite(organizationID) {
@@ -70,6 +78,7 @@ function MyInvitations() {
                 [...pendingCalendars].filter((cal) => cal._id !== calendarID)
             );
         }
+        userHook();
         console.log(JSON.stringify(data));
     }
 
