@@ -102,7 +102,7 @@ function CalendarOwner({ calID }) {
         const getTextValue = () => {
             if (start === null || end === null)
                 return ('Meeting time has not been set.')
-            return `${new Date(start)} ${new Date(end)}`
+            return `Start: ${new Date(start).toDateString() + " " + new Date(start).toTimeString().substring(0,8)} End: ${new Date(end).toDateString() + " " + new Date(end).toTimeString().substring(0,8)}`
         }
 
         return (
