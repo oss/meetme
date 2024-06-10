@@ -2,24 +2,49 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware'
 
 const useStore = create(subscribeWithSelector((set) => {
-    const setFilter = (filter) => {
+    const setOrgFilter = (orgFilter) => {
         set( state => ({
-            filter: filter,
+            orgFilter: orgFilter,
         }))
     }
 
-    const setAscending = (ascending) => {
+    const setOrgAscending = (orgAscending) => {
         set( state => ({
-            ascending: ascending,
+            orgAscending: orgAscending,
+        }))
+    }
+
+    const setCalFilter = (calFilter) => {
+        set( state => ({
+            calFilter: calFilter,
+        }))
+    }
+
+    const setCalAscending = (calAscending) => {
+        set( state => ({
+            calAscending: calAscending,
+        }))
+    }
+
+    const setSelectedIndex = (selectedIndex) => {
+        set( state => ({
+            selectedIndex: selectedIndex,
         }))
     }
 
 
     return {
-        setFilter: setFilter,
-        setAscending:setAscending,
-        filter: "Time Created",
-        ascending: false,
+        setOrgFilter: setOrgFilter,
+        setOrgAscending:setOrgAscending,
+        setCalFilter: setCalFilter,
+        setCalAscending:setCalAscending,
+        setSelectedIndex:setSelectedIndex,
+
+        calFilter: "Time Created",
+        calAscending: false,
+        orgFilter: "Time Created",
+        orgAscending: false,
+        selectedIndex: 0,
     }
 }))
 

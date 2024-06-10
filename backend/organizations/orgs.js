@@ -24,6 +24,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     Organization._id = createHash('sha512')
       .update(new Date().getTime().toString() + req.user.uid + Math.random())
       .digest('base64url');
+    Organization.created = new Date().getTime();
     Organization.calendars = [];
     Organization.admins = [];
     Organization.editors = [];

@@ -14,7 +14,7 @@ import Stack from '@primitives/stack'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
-    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar,store.listenForUpdates])
+    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar])
     
     if (calendarInStore === false) {
         addCalendar(calendarID)
@@ -56,25 +56,8 @@ function OrgTileCreator({ orgID }) {
     if (orgData.isLoaded === false)
         return <LoadingOrgTile orgID={orgID} />
 
-    console.log(orgData)
+    //console.log(orgData)
     return <OrgTile orgID={orgID} orgName={orgData.data.name} />
-}
-
-function OrgPanel() {
-    const orgList = userStore((store) => store.organizations)
-    return (
-        <TabPanel>
-            <ul className='flex flex-wrap'>
-                {orgList.map((org, idx) => {
-                    return (
-                        <li key={idx} className='w-full md:w-1/3'>
-                            <OrgTileCreator orgID={org._id} />
-                        </li>
-                    )
-                })}
-            </ul>
-        </TabPanel>
-    )
 }
 
 function SortMethod(filter, ascending){
@@ -102,14 +85,47 @@ function SortMethod(filter, ascending){
 
 }
 
+function OrgPanel() {
+    const orgList = userStore((store) => store.organizations);
+
+    
+    const [orgFilter, orgAscending] = filterStore((store) => [store.orgFilter, store.orgAscending]);
+
+    
+    const orgMetaData = orgDataStore((store) => orgList.map((x)=> store.orgData[x._id]));
+
+
+    
+    if (orgMetaData.every(x => x != undefined) && (orgMetaData.map((x)=>x.isLoaded)).every(x => x === true)){
+        const sorted = orgMetaData.toSorted(SortMethod(orgFilter, orgAscending)).map(x => x.data._id)
+        orgList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+    }
+    
+
+    return (
+        <TabPanel>
+            <ul className='flex flex-wrap'>
+                {orgList.map((org, idx) => {
+                    return (
+                        <li key={idx} className='w-full md:w-1/3'>
+                            <OrgTileCreator orgID={org._id} />
+                        </li>
+                    )
+                })}
+            </ul>
+        </TabPanel>
+    )
+}
+
+
 const TileLayer = function TileLayer() {
     const calendarList = userStore((store) => store.calendars.toReversed());
 
-    const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
+    const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
+        const sorted = calendarMetadata.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
         calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
     }
 
@@ -128,11 +144,11 @@ const TileLayer = function TileLayer() {
 function MenuLayer() {
     let calendarList = userStore((store) => store.calendars.toReversed());
 
-    const [filter, ascending] = filterStore((store) => [store.filter, store.ascending])
+    const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const sorted = calendarMetadata.toSorted(SortMethod(filter, ascending)).map(x => x.data._id)
+        const sorted = calendarMetadata.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
         calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
     }
 
@@ -171,9 +187,11 @@ function CalendarPanel() {
 
 
 function Dashboard() {
+    const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
+
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
-            <TabGroup  className= "flex flex-wrap">
+            <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
                 <FilterDropDown  />
                 <div className = "w-full"></div>
