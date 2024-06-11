@@ -15,7 +15,7 @@ function renderCollabatorListElement(data) {
         });
     return (
         <li className="flex items-center">
-            <div className="rounded-full w-8 h-8 inline-flex bg-red-400 mr-2 text-gray-600 items-center justify-center">
+            <div className="rounded-full w-8 h-8 inline-flex bg-rutgers_red mr-2 text-gray-600 items-center justify-center">
                 {data._id.charAt(0)}
             </div>
             <div className="inline-block">

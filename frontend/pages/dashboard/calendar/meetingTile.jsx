@@ -25,7 +25,7 @@ const calendarTile = ({ calendarID }) => {
 >
             <Link to={`/cal/${calendarID}`} >
                 <div className='bg-white grow group '>
-                    <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-red-600 '>
+                    <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-rutgers_red '>
                         <div className = "w-full p-4 bg-white rounded cursor-pointer">
                         <p className="w-full mr-20 text-xl h-fit font-semibold break-words col-span-2" >
                             <wbr />

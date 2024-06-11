@@ -40,7 +40,7 @@ function dropDownMenu({ calID, idx }) {
                     <MenuItem>
                         <button
                             className='
-                                data-[active]:bg-red-400 data-[active]:text-white 
+                                data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none
                             '
@@ -54,7 +54,7 @@ function dropDownMenu({ calID, idx }) {
                     <MenuItem>
                         <button
                             className='
-                                data-[active]:bg-red-400 data-[active]:text-white 
+                                data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none
                             '

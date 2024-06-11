@@ -96,7 +96,7 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                         <p className="text-xl mb-2">Are you sure?</p>
                         <div className={"flex "}>
                             <button
-                                className="px-4 mr-7 text-white  rounded bg-rose-600 
+                                className="px-4 mr-7 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95"
                                 onClick={() => {
                                     setShowConfirm(true);
@@ -110,7 +110,7 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                                 Yes
                             </button>
                             <button
-                                className="px-4 text-white  rounded bg-rose-600 
+                                className="px-4 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95"
                                 onClick={onClickNo}
                             >
@@ -143,14 +143,14 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                                 type="textfield"
                             />
                             <button
-                                className="px-4 py-1.5 mr-7 text-white  rounded bg-rose-600 
+                                className="px-4 py-1.5 mr-7 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95"
                                 onClick={confirmDelete}
                             >
                                 Confirm
                             </button>
                             <button
-                                className="px-4 text-white  rounded bg-rose-600 
+                                className="px-4 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95"
                                 onClick={() => {
                                     setShowConfirm(false);

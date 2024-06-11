@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 const App = lazy(() => import('./main'));
 import Tile from '/components/utils/tile';
 import LargeButton from '/components/utils/large-button';
-import sheild_img from '/assets/RU_SHIELD_BLACK.png';
+import rutgersR from '/assets/RUTGERS_H_RED_BLACK_RGB.png'
 import '/index.css';
 import Footer from './components/lib/ui/footer';
 import authStore from "./store/authStore";
@@ -13,7 +13,7 @@ function NavbarLogin() {
     return (
         <div className="w-full h-14 flex bg-white border-white" id="navbar_wrapper">
             <div className="ml-10 flex items-center">
-                <img className="w-8 h-8 items-center" src={sheild_img}></img>
+                <img className="h-9 m-4 items-center" src={rutgersR}></img>
                 <span className="font-semibold text-xl">meetMe</span>
             </div>
         </div>

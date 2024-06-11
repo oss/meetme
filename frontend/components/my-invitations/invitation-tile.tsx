@@ -36,13 +36,13 @@ export default function InvitationTile({
                         </p>
                         <div className="flex justify-end mt-2">
                             <button
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
                                 onClick={() => acceptInvite()}
                             >
                                 Accept
                             </button>
                             <button
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
                                 onClick={() => declineInvite()}
                             >
                                 Decline

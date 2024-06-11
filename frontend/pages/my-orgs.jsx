@@ -95,14 +95,14 @@ export default function MyOrgs() {
                                 <div className="h-5/6 flex flex-col">
                                     <p
                                         className="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-105 
-                                        hover:bg-rose-700 duration-300 text-lg text-white break-words rounded text-center bg-rose-600"
+                                        hover:bg-red-600 duration-300 text-lg text-white break-words rounded text-center bg-rutgers_red"
                                         onClick={() => {
                                             navigate('/org/' + org._id);
                                         }}
                                     >
                                         {org.name}
                                     </p>
-                                    {/* <p className='text-lg text-white break-words rounded text-center bg-rose-600'>{org._id}</p> */}
+                                    {/* <p className='text-lg text-white break-words rounded text-center bg-rutgers_red'>{org._id}</p> */}
                                     <p className="text-base font-bold text-gray-700/50 mt-3">
                     Members
                                     </p>

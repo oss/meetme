@@ -23,7 +23,7 @@ function TextBarDialogue({ buttonText, titleText, onClickPassthrough, displayErr
                     focus:border-sky-500 focus:ring-1 focus:ring-sky-500" placeholder={placeholder} ref={textBarRef} />
             <div className='h-1' />
             <div className='inline-flex w-full'>
-                <p className="grow min-w-5 text-xs text-rose-600 inline text-clip break-words">
+                <p className="grow min-w-5 text-xs text-rutgers_red inline text-clip break-words">
                     {displayError ? errorMessage : <></>}
                 </p>
                 <div className=''>

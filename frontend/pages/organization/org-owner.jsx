@@ -133,8 +133,8 @@ function OrgOwner({
                         onClick={() => {
                             toggleConfirmDelete(true);
                         }}
-                        className="bg-rose-600 rounded px-3 py-2 text-white transition-all 
-                                                    duration-100 ease-in-out hover:bg-rose-700 hover:scale-95"
+                        className="bg-rutgers_red rounded px-3 py-2 text-white transition-all 
+                                                    duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
                     >
                         {" "}
                         Delete Organization
@@ -169,8 +169,8 @@ function OrgOwner({
                                     placeholder="NetID"
                                 />
                                 <button
-                                    className="bg-rose-600 rounded px-5 h-9 text-white transition-all 
-                                                duration-100 ease-in-out hover:bg-rose-700 hover:scale-95"
+                                    className="bg-rutgers_red rounded px-5 h-9 text-white transition-all 
+                                                duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
                                     onClick={inviteNetID}
                                 >
                                     Invite
@@ -199,8 +199,8 @@ function OrgOwner({
                         <Tile title="Calendars" fullHeight={true}>
                             <div className="flex">
                                 <button
-                                    className="bg-rose-600 rounded px-5 h-9 text-white transition-all 
-                                                duration-100 ease-in-out hover:bg-rose-700 hover:scale-95"
+                                    className="bg-rutgers_red rounded px-5 h-9 text-white transition-all 
+                                                duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
                                     onClick={() => {
                                         navigate(
                                             `/org/${orgData.organization._id}/add_meeting`
@@ -337,7 +337,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                         <p className="text-xl mb-2">Are you sure?</p>
                         <div className={"flex "}>
                             <button
-                                className="px-4 mr-7 text-white  rounded bg-rose-600 
+                                className="px-4 mr-7 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95 text-lg"
                                 onClick={() => {
                                     setShowConfirm(true);
@@ -351,7 +351,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                                 Yes
                             </button>
                             <button
-                                className="px-4 text-white  rounded bg-rose-600 
+                                className="px-4 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95 text-lg"
                                 onClick={onClickNo}
                             >
@@ -384,7 +384,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                                 type="textfield"
                             />
                             <button
-                                className="px-4 py-1.5 mr-7 text-white  rounded bg-rose-600 
+                                className="px-4 py-1.5 mr-7 text-white  rounded bg-rutgers_red
 							transition-all duration-100 ease-linear hover:scale-95"
                                 onClick={confirmDelete}
                             >

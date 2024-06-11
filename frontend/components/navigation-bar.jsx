@@ -7,7 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 function NotificationIcon() {
     const notificationNumber = userStore(useShallow((store) => store.pendingCalendars.length + store.pendingOrganizations.length));
     return (
-        <Link className={`${notificationNumber === 0 && 'hidden'} absolute -right-1 -top-1 flex items-center justify-center w-4 h-4 text-sm text-white rounded-full bg-rose-500`} to='/invites'>
+        <Link className={`${notificationNumber === 0 && 'hidden'} absolute -right-1 -top-1 flex items-center justify-center w-4 h-4 text-sm text-white rounded-full bg-rutgers_red`} to='/invites'>
             {notificationNumber}
         </Link>
     )
@@ -46,7 +46,7 @@ function Navbar() {
                     </Link>
                 </div>
                 <Menu>
-                    <MenuButton className='bg-gradient-to-r from-red-500 to-red-700 rounded p-1'>
+                    <MenuButton className='bg-rutgers_red hover:bg-red-600 rounded p-1'>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -86,14 +86,14 @@ function Navbar() {
                     >
                         <MenuItems className='bg-white rounded-lg outline outline-slate-50' anchor="bottom end">
                             <MenuItem>
-                                <Link className="data-[active]:bg-red-400 data-[active]:text-white 
+                                <Link className="data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none" to="/cal/create">
                                     New Meeting
                                 </Link>
                             </MenuItem>
                             <MenuItem>
-                                <Link className="data-[active]:bg-red-400 data-[active]:text-white 
+                                <Link className="data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none" to="/org/create">
                                     New Organization
@@ -129,14 +129,14 @@ function Navbar() {
                     >
                         <MenuItems className='bg-white rounded-lg outline outline-slate-50' anchor="bottom end">
                             <MenuItem>
-                                <Link className="data-[active]:bg-red-400 data-[active]:text-white 
+                                <Link className="data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none" to="/faq">
                                     FAQ
                                 </Link>
                             </MenuItem>
                             <MenuItem>
-                                <Link className="data-[active]:bg-red-400 data-[active]:text-white 
+                                <Link className="data-[active]:bg-rutgers_red data-[active]:text-white 
                                  text-gray-900 
                                 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none" to="/logout">
                                     Logout

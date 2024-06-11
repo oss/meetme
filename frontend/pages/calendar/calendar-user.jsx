@@ -48,7 +48,7 @@ function CalendarOwner({ calID }) {
                         <p className="font-bold text-xs text-slate-400/70">{roleEntry.role.toUpperCase()}</p>
                         <ul>
                             {roleEntry.IDs.map((netid, idx) =>
-                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rose-400'}`}>
+                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rutgers_red'}`}>
                                     {netid}
                                 </li>
                             )}
@@ -140,7 +140,7 @@ function CalendarOwner({ calID }) {
             <CalendarMeetingTimeTile calID={calID} />
 
     */
-    const tabClassString = 'rounded-full py-1 px-3 text-sm/6 font-semibold focus:outline-none data-[selected]:bg-rose-500'
+    const tabClassString = 'rounded-full py-1 px-3 text-sm/6 font-semibold focus:outline-none data-[selected]:bg-rutgers_red hover:shadow-md'
     return (
         <div className="flex flex-col items-center w-full h-full bg-gray-100 border-gray-100 grow">
             <div className="grid grid-cols-[40%_60%] w-full p-2 space-x-2">
