@@ -8,6 +8,7 @@ let calendar = new Schema({
   location: String,
   created:Number,
   modified:Number,
+  shareLink:Boolean,
   owner: {
     owner_type: String,
     _id: String,

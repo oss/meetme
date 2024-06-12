@@ -162,6 +162,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     calendar_metadata.description = [];
     calendar_maindata.links = [];
     calendar_metadata.public = req.body.public || false; //false by default
+    calendar_metadata.shareLink = req.body.public || true; //true by default
 
     //TODO: doubel check that owner and org id match
     calendar_maindata.owner = {

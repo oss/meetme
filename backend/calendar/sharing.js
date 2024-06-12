@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Calendar_schema_main = require('./calendar_schema_main');
+const Calendar_schema_meta = require('./calendar_schema_meta');
 const User_schema = require('../user/user_schema');
 const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
@@ -258,6 +259,60 @@ router.patch('/:calendar_id/accept', isAuthenticated, async function (req, res) 
         });
         return;
     }
+
+    await Calendar_schema_main.updateOne(
+        { _id: req.params.calendar_id },
+        {
+            $pull: { pendingUsers: { _id: req.user.uid } },
+            $push: { users: { _id: req.user.uid, times: [] } },
+        }
+    );
+
+    await User_schema.updateOne(
+        { _id: req.user.uid },
+        {
+            $pull: { pendingCalendars: { _id: req.params.calendar_id } },
+            $push: { calendars: { _id: req.params.calendar_id } },
+        }
+    );
+
+    res.json({
+        Status: 'ok',
+        calendar: req.params.calendar_id,
+    });
+}
+);
+
+//sharing by link
+router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (req, res) {
+    const calendar = await Calendar_schema_meta.findOne({
+        _id: req.params.calendar_id,
+        shareLink: true,
+
+    });
+
+    //individual check
+    if (calendar === null) {
+        res.json({
+            Status: 'error',
+            error:
+                'Calendar does not exist or has link sharing disabled',
+        });
+        return;
+    }
+
+    const usr = await User_schema.findOne({
+        _id: req.user.uid,
+        'calendars._id': req.params.calendar_id,
+      });
+      if (usr != null) {
+        res.json({
+          Status: 'error',
+          error:
+            'User already has the calendar',
+        });
+        return;
+      }
 
     await Calendar_schema_main.updateOne(
         { _id: req.params.calendar_id },

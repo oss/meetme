@@ -56,6 +56,24 @@ const useStore = create(set => {
                 }
             })
         }
+        else{
+            //check to see if the cal can be joined becuase link sharing is on
+            const data = await fetch(
+                `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            ).then((res) => res.json());
+
+            if(data.Status === 'ok'){
+                //share_with_link should only return ok once
+                return fetchCalendarMetadata(calendarID);
+            }
+        }
     }
 
     const addCalendar = (calendarID) => {
