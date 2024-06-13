@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import dialogueStore from '../../../store/dialogueStore';
 import BaseButton from "../../utils/base-button";
 import TextBarWithEnter from '../../lib/primitives/textInputWithEnter'
+import { Tab, TabGroup, TabList } from '@headlessui/react'
+import calendarMetadata from '@store/calendarMetadata';
 
 const inviteDialogueStore = create((set) => {
     const validateNetID = async (netid) => {
@@ -159,6 +161,8 @@ function InviteDialogue({ calID }) {
 
     const closeDialogue = dialogueStore((store) => store.closePanel);
 
+    const shareLinkState = calendarMetadata((store) => store.calendarMetadata[calID].data.shareLink)
+
     useEffect(() => {
         clearStore()
 
@@ -179,6 +183,19 @@ function InviteDialogue({ calID }) {
             }),
         })
     }
+    const setShareLinkStatus = async (status) => {
+        await fetch(`${process.env.API_URL}/cal/${calID}/shareLink`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                shareLink: status,
+            }),
+        })
+    }
+
 
     return (
         <>
@@ -247,6 +264,24 @@ function InviteDialogue({ calID }) {
                     <p>Close</p>
                 </BaseButton>
             </div>
+            <TabGroup defaultIndex={shareLinkState ? 0 : 1} onChange={(index) => {
+            setShareLinkStatus(index === 0);
+            }}>
+            <p>Link Sharing</p>
+            <TabList className="my-2 w-fit flex gap-x-3 rounded-xl bg-white p-2">
+            {['Enabled', 'Disabled'].map((category) =>
+                <Tab
+                    key={category}
+                    className={({ selected }) =>
+                        `transition-all ease-linear duration-75 w-full rounded-lg p-2.5 text-base font-medium leading-5 text-red-700 outline-none
+                        ${selected ? "bg-rutgers_red shadow text-white" : "text-rutgers_red hover:shadow-md"}`
+                    }
+                >
+                    {category}
+                </Tab>
+            )}
+            </TabList>
+            </TabGroup>
         </>
     )
 }
