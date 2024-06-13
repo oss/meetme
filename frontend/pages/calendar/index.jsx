@@ -104,6 +104,22 @@ function OrganizationCalendarLoader(){
     }
 }
 
+//DO THE THING USEEFFECt
+async function sharelink(calendarID){
+    const data = await fetch(
+        `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
+        {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    ).then((res) => res.json());
+
+    return data.Status
+}
+
 function CalendarLoader() {
     const { id } = useParams();
     const netID = authData((store) => store.userData.user.uid)
@@ -125,6 +141,8 @@ function CalendarLoader() {
 
     const ownerType = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner.owner_type)
     const ownerID = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner._id)
+
+    const error = calendarMetadataStore((store) =>  store.calendarMetadata[id].error)
 
     const [orgInit ,orgLoaded, addOrg] = orgData((store)=>{
         if(ownerType !== 'organization')
@@ -148,6 +166,9 @@ function CalendarLoader() {
                 }
                 return orgLoaded;
             }
+            default:{
+                return error;
+            }
         }
     })()
 
@@ -161,6 +182,17 @@ function CalendarLoader() {
             return <OrganizationCalendarLoader />
         }
     }
+
+    console.log(error)
+    console.log(loadedMaindata)
+    console.log(loadedMetadata)
+    console.log(ownerType)
+    console.log(ownerID)
+    console.log("REACHED");
+    sharelink(id);
+    console.log("Past");
+
+    return <p className='text-center m-4 text-rutgers_red'>The calendar does not exist or you do not have access to this calendar</p>
 }
 
 export default CalendarLoader;

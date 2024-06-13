@@ -332,7 +332,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
     res.json({
       Status: 'error',
       error:
-        'This calendar does not exist or you do not have access to this calendar',
+        'This calendar does not exist',
     });
     return;
   }
@@ -349,7 +349,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
       res.json({
         Status: 'error',
         error:
-          'This calendar does not exist or you do not have access to this calendar',
+          'You do not have access to this calendar',
       });
       return;
     }
@@ -380,7 +380,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
         res.json({
           Status: 'error',
           error:
-            'The calendar does not exist or you do not have access to this calendar',
+            'You do not have access to this calendar',
         });
       else
         res.json({
@@ -403,7 +403,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
     res.json({
       Status: 'error',
       error:
-        'The calendar does not exist or you do not have access to this calendar',
+        'The calendar does not exist',
     });
 
     return;
@@ -418,7 +418,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
       res.json({
         Status: 'error',
         error:
-          'Calendar does not exist or you do not ave access to this calendar',
+          'You do not have access to this calendar',
       });
       return;
     }
@@ -447,7 +447,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
         res.json({
           Status: 'error',
           error:
-            'The calendar does not exist or you do not have access to this calendar',
+            'You do not have access to this calendar',
         });
       else
         res.json({

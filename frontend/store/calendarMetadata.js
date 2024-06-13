@@ -57,22 +57,14 @@ const useStore = create(set => {
             })
         }
         else{
-            //check to see if the cal can be joined becuase link sharing is on
-            const data = await fetch(
-                `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            ).then((res) => res.json());
+            set((previous_state) => {
+                const calJSON = previous_state.calendarMetadata;
 
-            if(data.Status === 'ok'){
-                //share_with_link should only return ok once
-                return fetchCalendarMetadata(calendarID);
-            }
+                calJSON[calendarID].error = true
+                return {
+                    calendarMetadata: calJSON
+                }
+            })
         }
     }
 
@@ -84,6 +76,7 @@ const useStore = create(set => {
 
             calJSON[calendarID] = {}
             calJSON[calendarID].isLoaded = false
+            calJSON[calendarID].error = false
             fetchCalendarMetadata(calendarID)
             return {
                 calendarMetadata: calJSON
