@@ -305,7 +305,7 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
         _id: req.user.uid,
         'calendars._id': req.params.calendar_id,
       });
-      if (usr != null) {
+    if (usr != null) {
         res.json({
           Status: 'error',
           error:
@@ -318,7 +318,7 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
         { _id: req.params.calendar_id },
         {
             $pull: { pendingUsers: { _id: req.user.uid } },
-            $push: { users: { _id: req.user.uid, times: [] } },
+            $addToSet: { users: { _id: req.user.uid, times: [] } },
         }
     );
 
@@ -326,7 +326,7 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
         { _id: req.user.uid },
         {
             $pull: { pendingCalendars: { _id: req.params.calendar_id } },
-            $push: { calendars: { _id: req.params.calendar_id } },
+            $addToSet: { calendars: { _id: req.params.calendar_id } },
         }
     );
 

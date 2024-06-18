@@ -10,7 +10,7 @@ import CalendarUserPage from './calendar-user';
 
 import { individualMemberListHook, individualMemberSetHook, organizationMemberListHook, organizationMemberSetHook } from './hooks';
 import calendarPageStore from './store';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 function LoadingPage() {
     return (<div>Loading...</div>)
@@ -104,25 +104,33 @@ function OrganizationCalendarLoader(){
     }
 }
 
-//DO THE THING USEEFFECt
-async function sharelink(calendarID){
-    const data = await fetch(
-        `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
-        {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }
-    ).then((res) => res.json());
-
-    return data.Status
-}
 
 function CalendarLoader() {
     const { id } = useParams();
     const netID = authData((store) => store.userData.user.uid)
+
+    const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
+    const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
+        
+    useEffect(() => {
+        async function sharelink(calendarID){
+            const data = await fetch(
+                `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            ).then((res) => res.json());
+            fetchCalendarMaindata(id);
+            fetchCalendarMetadata(id);
+            return data.Status
+        }
+        sharelink(id);
+
+    }, [])
 
     const loadedMaindata = calendarMaindataStore((store) => {
         if (id in store.calendarData) return store.calendarData[id].isLoaded
@@ -183,16 +191,9 @@ function CalendarLoader() {
         }
     }
 
-    console.log(error)
-    console.log(loadedMaindata)
-    console.log(loadedMetadata)
-    console.log(ownerType)
-    console.log(ownerID)
-    console.log("REACHED");
-    sharelink(id);
-    console.log("Past");
 
-    return <p className='text-center m-4 text-rutgers_red'>The calendar does not exist or you do not have access to this calendar</p>
+
+    return <p className={`text-center m-4 text-rutgers_red `}>The calendar does not exist or you do not have access to this calendar</p>
 }
 
 export default CalendarLoader;
