@@ -174,7 +174,7 @@ router.post('/', isAuthenticated, async function (req, res) {
       _id: owner.id,
     };
     calendar_maindata.blocks = timeblocks;
-    calendar_maindata.meetingTime = {
+    calendar_metadata.meetingTime = {
       start: null,
       end: null,
     };

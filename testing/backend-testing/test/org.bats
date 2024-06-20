@@ -24,7 +24,7 @@ setup_file() {
 
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '2'
 
-    assert_equal "$( "${jq_command[@]}" '$r.organization | length' )" '10'
+    assert_equal "$( "${jq_command[@]}" '$r.organization | length' )" '11'
 
     assert_regex "$( "${jq_command[@]}" '$r.organization._id' )" '[a-z0-9]+'
 
@@ -54,7 +54,7 @@ setup_file() {
 
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '2'
 
-    assert_equal "$( "${jq_command[@]}" '$r.organization | length' )" '10'
+    assert_equal "$( "${jq_command[@]}" '$r.organization | length' )" '11'
 
     assert_regex "$( "${jq_command[@]}" '$r.organization._id' )" '[a-z0-9]+'
 

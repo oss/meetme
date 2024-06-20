@@ -50,10 +50,6 @@ fetch('https://api.localhost.edu/cal', {
       "owner_type": "individual",
       "_id": "netid1"
     },
-    "meetingTime": {
-      "start": null,
-      "end": null
-    },
     "deleted": {
       "isDeleted": false
     },

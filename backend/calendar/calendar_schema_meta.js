@@ -9,6 +9,10 @@ let calendar = new Schema({
   created:Number,
   modified:Number,
   shareLink:Boolean,
+  meetingTime: {
+    start: Number,
+    end: Number,
+  },
   owner: {
     owner_type: String,
     _id: String,

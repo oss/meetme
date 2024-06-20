@@ -35,7 +35,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       return;
     }
 
-    const cal = await Calendar_schema_main.findOne({
+    const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
         { 'owner.owner_type': 'organization' },
@@ -71,7 +71,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       }
     }
 
-    await Calendar_schema_main.updateOne(
+    await Calendar_schema_meta.updateOne(
       { _id: calendar_id },
       { $set: { meetingTime: meeting_time } }
     );
