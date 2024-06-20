@@ -20,7 +20,7 @@ import memberListStore from './store';
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
     const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
-    const [start, end] = calendarMaindata((store) => [store.calendarData[calID].data.meetingTime.start, store.calendarData[calID].data.meetingTime.end])
+    const [start, end] = calendarMetadata((store) => [store.calendarMetadata[calID].data.meetingTime.start, store.calendarMetadata[calID].data.meetingTime.end])
     const location = calendarMetadata((store) => store.calendarMetadata[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
