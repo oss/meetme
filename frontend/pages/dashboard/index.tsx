@@ -2,12 +2,13 @@ import userStore from '@store/userStore';
 import metadataStore from '@store/calendarMetadata';
 import orgDataStore from '@store/orgData';
 import filterStore from '@store/filterStore';
-import { memo, useEffect } from 'react';
+import { memo, } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
 import DropDownMenu from './calendar/dropDownMenu';
 import FilterDropDown from './calendar/filterDropDown';
+import SearchBar from './calendar/searchBar'
 import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
 import Stack from '@primitives/stack'
@@ -86,10 +87,12 @@ function SortMethod(filter, ascending){
 }
 
 function OrgPanel() {
-    const orgList = userStore((store) => store.organizations);
+    let orgList = userStore((store) => store.organizations);
 
     
     const [orgFilter, orgAscending] = filterStore((store) => [store.orgFilter, store.orgAscending]);
+
+    const search = filterStore((store) => store.orgSearch)
 
     
     const orgMetaData = orgDataStore((store) => orgList.map((x)=> store.orgData[x._id]));
@@ -97,8 +100,9 @@ function OrgPanel() {
 
     
     if (orgMetaData.every(x => x != undefined) && (orgMetaData.map((x)=>x.isLoaded)).every(x => x === true)){
-        const sorted = orgMetaData.toSorted(SortMethod(orgFilter, orgAscending)).map(x => x.data._id)
-        orgList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+        const searchFilter = orgMetaData.filter(meta => meta.data.name.toLowerCase().includes(search))
+        const sorted = searchFilter.toSorted(SortMethod(orgFilter, orgAscending)).map(x => x.data._id)
+        orgList = orgList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }
     
 
@@ -119,14 +123,16 @@ function OrgPanel() {
 
 
 const TileLayer = function TileLayer() {
-    const calendarList = userStore((store) => store.calendars.toReversed());
+    let calendarList = userStore((store) => store.calendars.toReversed());
 
     const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
+    const search = filterStore((store) => store.calSearch)
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const sorted = calendarMetadata.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
-        calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search))
+        const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
+        calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }
 
 
@@ -145,11 +151,13 @@ function MenuLayer() {
     let calendarList = userStore((store) => store.calendars.toReversed());
 
     const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
+    const search = filterStore((store) => store.calSearch)
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const sorted = calendarMetadata.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
-        calendarList.sort(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);});
+        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search))
+        const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
+        calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }
 
 
@@ -189,11 +197,13 @@ function CalendarPanel() {
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
 
+
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
                 <FilterDropDown  />
+                <SearchBar />
                 <div className = "w-full"></div>
                 <TabPanels className = "w-full">
                     <CalendarPanel />

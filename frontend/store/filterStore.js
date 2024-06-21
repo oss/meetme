@@ -32,6 +32,18 @@ const useStore = create(subscribeWithSelector((set) => {
         }))
     }
 
+    const setCalSearch = (calSearch) => {
+        set( state => ({
+            calSearch: calSearch,
+        }))
+    }
+
+    const setOrgSearch = (orgSearch) => {
+        set( state => ({
+            orgSearch: orgSearch,
+        }))
+    }
+
 
     return {
         setOrgFilter: setOrgFilter,
@@ -39,12 +51,16 @@ const useStore = create(subscribeWithSelector((set) => {
         setCalFilter: setCalFilter,
         setCalAscending:setCalAscending,
         setSelectedIndex:setSelectedIndex,
+        setCalSearch:setCalSearch,
+        setOrgSearch:setOrgSearch,
 
         calFilter: "Time Created",
         calAscending: false,
         orgFilter: "Time Created",
         orgAscending: false,
         selectedIndex: 0,
+        calSearch: "",
+        orgSearch: "",
     }
 }))
 
