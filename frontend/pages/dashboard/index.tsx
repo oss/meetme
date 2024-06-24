@@ -80,6 +80,12 @@ function SortMethod(filter, ascending){
     else if (filter === "Time Modified" && ascending === true){
         return (function (b, a) {return a.data.modified < b.data.modified})
     }
+    else if (filter === "Meeting Time" && ascending === false){
+        return (function (a, b) {return a.data.meetingTime.start < b.data.meetingTime.start})
+    }
+    else if (filter === "Meeting Time" && ascending === true){
+        return (function (b, a) {return a.data.meetingTime.start < b.data.meetingTime.start})
+    }
     else{
         return (function (a, b) {return ('' + a.data._id).localeCompare(b.data._id)})
     }

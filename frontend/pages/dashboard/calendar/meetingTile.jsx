@@ -6,10 +6,12 @@ import calendarMetadata from "@store/calendarMetadata";
 
 const calendarTile = ({ calendarID }) => {
     const [startListeningToUpdates, stopListeningToUpdates] = calendarMetadata((store)=>[store.listenForUpdates, store.stopListenForUpdates])
-    const [calendarName, calendarOwner, calendarLocation] = calendarMetadata((store) => [
+    const [calendarName, calendarOwner, calendarLocation, calendarStart, calendarEnd] = calendarMetadata((store) => [
         store.calendarMetadata[calendarID].data.name, 
         store.calendarMetadata[calendarID].data.owner._id,
         store.calendarMetadata[calendarID].data.location,  
+        store.calendarMetadata[calendarID].data.meetingTime.start, 
+        store.calendarMetadata[calendarID].data.meetingTime.end
     ])
 
     useEffect(()=>{
@@ -19,6 +21,8 @@ const calendarTile = ({ calendarID }) => {
         }
     },[])
 
+    const pastTime = calendarEnd ? new Date(calendarEnd) <= new Date() : false ;
+
     return (
         <Tile 
 
@@ -26,7 +30,7 @@ const calendarTile = ({ calendarID }) => {
             <Link to={`/cal/${calendarID}`} >
                 <div className='bg-white grow group '>
                     <div className='border-solid border-white transition-all ease-linear duration-100 group-hover:border-l-8 group-hover:border-rutgers_red '>
-                        <div className = "w-full p-4 bg-white rounded cursor-pointer">
+                        <div className = {`w-full p-4 ${ pastTime ? "bg-slate-200" : "bg-white"} rounded cursor-pointer`}>
                         <p className="w-full mr-20 text-xl h-fit font-semibold break-words col-span-2" >
                             <wbr />
                             {calendarName}
@@ -37,9 +41,14 @@ const calendarTile = ({ calendarID }) => {
                         <p className="text-xs overflow-hidden text-nowrap text-slate-500/50 overflow-ellipsis border-r-8 border-transparent">
                             {calendarID}
                         </p>
-                        <p className={"w-full mr-20 break-words col-span-2 " + (calendarLocation == null ? "text-gray-300" : "text-slate-500/50 font-semibold")}>
+                        <p className={" text-xs w-full mr-20 text-nowrap overflow-hidden break-words col-span-2 " + (calendarLocation == null ? "text-gray-300" : "text-slate-500/50 font-semibold")}>
                             {calendarLocation == null ? "-": calendarLocation}
                         </p>
+                        <p className={" text-xs w-full mr-20 text-nowrap overflow-hidden break-words col-span-2 " + (pastTime ? "text-rutgers_red" : "text-slate-500/50")}>
+                            {calendarStart == null ? "-": `Start: ${new Date(calendarStart).toDateString() + " " + new Date(calendarStart).toTimeString().substring(0,8)} End: ${new Date(calendarEnd).toDateString() + " " + new Date(calendarEnd).toTimeString().substring(0,8)}`}
+                        </p>
+
+                        
 
                         </div>
                     </div>
