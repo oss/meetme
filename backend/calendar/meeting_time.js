@@ -54,7 +54,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
 
     if (cal.owner.owner_type === 'organization') {
       const org = await Org_schema.findOne({
-        _id: calendar_id,
+        _id: cal.owner._id,
         $or: [
           { owner: req.user.uid },
           { 'admins._id': req.user.uid },
