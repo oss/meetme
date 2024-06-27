@@ -3,8 +3,8 @@ import userStore from '@store/userStore';
 
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-
 import { Field, Transition, Fieldset, Label, Select } from '@headlessui/react'
+import { Checkbox } from '@headlessui/react'
 
 function filterDropDown() {
     const filterHook = filterStore((store) => store.setCalFilter);
@@ -13,7 +13,9 @@ function filterDropDown() {
     const orgFilterHook = filterStore((store) => store.setOrgFilter);
     const orgAscendingHook = filterStore((store) => store.setOrgAscending);
 
-    const [calFilter, calAscending, orgFilter, orgAscending, selectedIndex] = filterStore((store) => [store.calFilter, store.calAscending, store.orgFilter, store.orgAscending, store.selectedIndex]);
+    const setShowOldCal = filterStore((store) => store.setShowOldCal);
+
+    const [calFilter, calAscending, orgFilter, orgAscending, selectedIndex, showOldCal] = filterStore((store) => [store.calFilter, store.calAscending, store.orgFilter, store.orgAscending, store.selectedIndex, store.showOldCal]);
 
 
     return (
@@ -49,6 +51,18 @@ function filterDropDown() {
                             <option>Ascending</option>
                             <option>Descending</option>
                             </Select>
+                        </Field>
+                        <Field className="flex items-center gap-2">
+                        <Checkbox
+                            defaultChecked={showOldCal}
+                            onChange={(e) => {setShowOldCal(e)}}
+                            className="group block size-4 rounded border bg-white data-[checked]:bg-blue-500"
+                        >
+                            <svg className="stroke-white opacity-0 group-data-[checked]:opacity-100" viewBox="0 0 14 14" fill="none">
+                            <path d="M3 8L6 11L11 3.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </Checkbox>
+                        <Label>Show old meetings</Label>
                         </Field>
                     </Fieldset>
                 </PopoverPanel>

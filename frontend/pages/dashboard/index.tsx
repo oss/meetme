@@ -134,9 +134,10 @@ const TileLayer = function TileLayer() {
     const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
     const search = filterStore((store) => store.calSearch)
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
+    const showOldCal = filterStore((store) => store.showOldCal)
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search))
+        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search)).filter(meta => showOldCal ? true : meta.data.meetingTime.end ? new Date(meta.data.meetingTime.end) >= new Date() : true)
         const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
         calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }
@@ -161,7 +162,7 @@ function MenuLayer() {
     const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
 
     if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search))
+        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search)).filter(meta => meta.data.meetingTime.end ? new Date(meta.data.meetingTime.end) >= new Date() : true)
         const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
         calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }

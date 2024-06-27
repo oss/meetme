@@ -44,6 +44,12 @@ const useStore = create(subscribeWithSelector((set) => {
         }))
     }
 
+    const setShowOldCal = (showOldCal) => {
+        set( state => ({
+            showOldCal: showOldCal,
+        }))
+    }
+
 
     return {
         setOrgFilter: setOrgFilter,
@@ -53,6 +59,7 @@ const useStore = create(subscribeWithSelector((set) => {
         setSelectedIndex:setSelectedIndex,
         setCalSearch:setCalSearch,
         setOrgSearch:setOrgSearch,
+        setShowOldCal:setShowOldCal,
 
         calFilter: "Time Created",
         calAscending: false,
@@ -61,6 +68,7 @@ const useStore = create(subscribeWithSelector((set) => {
         selectedIndex: 0,
         calSearch: "",
         orgSearch: "",
+        showOldCal: false,
     }
 }))
 

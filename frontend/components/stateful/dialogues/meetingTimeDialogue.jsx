@@ -28,8 +28,6 @@ function MeetingTimeDialogue({ calID }) {
 
     async function onClickPassthrough(event, startTimeValue, endTimeValue, startDateValue, endDateValue){
 
-        console.log("VALUES")
-        console.log(startTimeValue + endTimeValue)
         const date_start = new Date(startTimeValue + startDateValue + (new Date().getTimezoneOffset())*60*1000);
 
         const date_end = new Date(endTimeValue + endDateValue + (new Date().getTimezoneOffset())*60*1000);

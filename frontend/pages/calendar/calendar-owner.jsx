@@ -149,7 +149,7 @@ function CalendarOwner({ calID }) {
                                 </svg>
                             </Button>
                         </div>
-                        {location|| 'No location set'}
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{location|| 'No location set'}</p>
                     </Tile.Body>
                 </div>
             </Tile>
