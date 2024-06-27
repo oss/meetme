@@ -14,7 +14,7 @@ import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
     const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
-    const [start, end] = calendarMaindata((store) => [store.calendarData[calID].data.meetingTime.start, store.calendarData[calID].data.meetingTime.end])
+    const [start, end] = calendarMetadata((store) => [store.calendarMetadata[calID].data.meetingTime.start, store.calendarMetadata[calID].data.meetingTime.end])
     const location = calendarMaindata((store) => store.calendarData[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
@@ -99,7 +99,7 @@ function CalendarOwner({ calID }) {
         const getTextValue = () => {
             if (start === null || end === null)
                 return ('Meeting time has not been set.')
-            return `${start} ${end}`
+            return `Start: ${new Date(start).toLocaleString()} End: ${new Date(end).toLocaleString()}`
         }
 
         return (

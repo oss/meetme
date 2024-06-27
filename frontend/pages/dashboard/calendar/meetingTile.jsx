@@ -45,7 +45,7 @@ const calendarTile = ({ calendarID }) => {
                             {calendarLocation == null ? "-": calendarLocation}
                         </p>
                         <p className={" text-xs w-full mr-20 text-nowrap overflow-hidden break-words col-span-2 " + (pastTime ? "text-rutgers_red" : "text-slate-500/50")}>
-                            {calendarStart == null ? "-": `Start: ${new Date(calendarStart).toDateString() + " " + new Date(calendarStart).toTimeString().substring(0,8)} End: ${new Date(calendarEnd).toDateString() + " " + new Date(calendarEnd).toTimeString().substring(0,8)}`}
+                            {calendarStart == null ? "-": `Start: ${new Date(calendarStart).toLocaleString()} End: ${new Date(calendarEnd).toLocaleString()}`}
                         </p>
 
                         
