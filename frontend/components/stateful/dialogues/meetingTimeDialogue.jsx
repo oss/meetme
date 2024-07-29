@@ -20,6 +20,13 @@ function MeetingTimeDialogue({ calID }) {
         setValidTime(end === '00:00' || start < end);
     }
 
+    function setEndtoStart(){
+        const start = startDateRef.current.value;
+        if (endDateRef.current.value == ""){
+            endDateRef.current.value = start;
+        }
+    }
+
 
     const startTimeRef = useRef(null);
     const endTimeRef = useRef(null);
@@ -74,7 +81,10 @@ function MeetingTimeDialogue({ calID }) {
                 Start
             </p>
             <div style={{ gridColumn: 1, gridRow: 2 }}>
-                <input  ref={startDateRef} type="date" className = "mr-2" />
+                <input  ref={startDateRef} type="date" className = "mr-2"
+                    onChange={(e) => {
+                        setEndtoStart();
+                    }} />
                 <input
                     ref={startTimeRef}
                     type="time"
