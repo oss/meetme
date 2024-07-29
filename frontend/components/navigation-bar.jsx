@@ -7,9 +7,9 @@ import { useShallow } from 'zustand/react/shallow';
 function NotificationIcon() {
     const notificationNumber = userStore(useShallow((store) => store.pendingCalendars.length + store.pendingOrganizations.length));
     return (
-        <Link className={`${notificationNumber === 0 && 'hidden'} absolute -right-1 -top-1 flex items-center justify-center w-4 h-4 text-sm text-white rounded-full bg-rutgers_red`} to='/invites'>
+        <p className={`${notificationNumber === 0 && 'hidden'} absolute -right-1 -top-1 flex items-center justify-center w-4 h-4 text-sm text-white rounded-full bg-rutgers_red`} to='/invites'>
             {notificationNumber}
-        </Link>
+        </p>
     )
 }
 

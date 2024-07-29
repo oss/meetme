@@ -110,6 +110,7 @@ function MyInvitations() {
                             return (
                                 <InvitationTile
                                     id={cal._id}
+                                    key={cal._id}
                                     name={cal.name}
                                     owner={cal.owner._id}
                                     acceptInvite={() => {
