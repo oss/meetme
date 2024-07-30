@@ -23,9 +23,20 @@ function OrgOwner({
     const [showRenameDialogue, setShowRenameDialogue] = useState(false);
     const navigate = useNavigate();
 
-    let inviteNetID = () => {
+    let inviteNetID = async () => {
         if (userID === "") {
             alert("please enter a valid netid");
+            return;
+        }
+        const resp = await fetch(process.env.API_URL + "/user/" + userID, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        const resp_json = await resp.json()
+        if (resp_json.Status !== 'ok') {
+            alert("netid is invalid or inactive");
             return;
         }
         for (let i = 0; i < members.length; i++) {
@@ -134,7 +145,7 @@ function OrgOwner({
                             toggleConfirmDelete(true);
                         }}
                         className="bg-rutgers_red rounded px-3 py-2 text-white transition-all 
-                                                    duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
+                                                    duration-100 ease-in-out hover:bg-red-600"
                     >
                         {" "}
                         Delete Organization
@@ -170,7 +181,7 @@ function OrgOwner({
                                 />
                                 <button
                                     className="bg-rutgers_red rounded px-5 h-9 text-white transition-all 
-                                                duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
+                                                duration-100 ease-in-out hover:bg-red-600"
                                     onClick={inviteNetID}
                                 >
                                     Invite
@@ -200,7 +211,7 @@ function OrgOwner({
                             <div className="flex">
                                 <button
                                     className="bg-rutgers_red rounded px-5 h-9 text-white transition-all 
-                                                duration-100 ease-in-out hover:bg-red-600 hover:scale-95"
+                                                duration-100 ease-in-out hover:bg-red-600"
                                     onClick={() => {
                                         navigate(
                                             `/org/${orgData.organization._id}/add_meeting`
@@ -338,7 +349,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                         <div className={"flex "}>
                             <button
                                 className="px-4 mr-7 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95 text-lg"
+							transition-all duration-100 ease-linear text-lg"
                                 onClick={() => {
                                     setShowConfirm(true);
                                     setRandomString(
@@ -352,7 +363,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                             </button>
                             <button
                                 className="px-4 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95 text-lg"
+							transition-all duration-100 ease-linear text-lg"
                                 onClick={onClickNo}
                             >
                                 No
@@ -385,7 +396,7 @@ function DeletePopup({ onClickNo, visible, onClickYes, setVisible }) {
                             />
                             <button
                                 className="px-4 py-1.5 mr-7 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95"
+							transition-all duration-100 ease-linear "
                                 onClick={confirmDelete}
                             >
                                 Confirm

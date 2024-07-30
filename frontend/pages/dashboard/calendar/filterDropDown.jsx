@@ -20,7 +20,7 @@ function filterDropDown() {
 
     return (
         <Popover className="group content-center mx-5">
-            <PopoverButton className={`outline-none my-2 w-fit flex rounded-xl bg-white p-2 text-red-700 hover:shadow-md 
+            <PopoverButton className={`outline-none my-2 w-fit flex rounded-xl bg-white p-2 text-red-700 hover:shadow-md hover:bg-slate-100
             group-data-[open]:bg-rutgers_red group-data-[open]:shadow group-data-[open]:text-white`}>
                 Filter</PopoverButton>
             <Transition

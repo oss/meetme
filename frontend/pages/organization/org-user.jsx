@@ -97,7 +97,7 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                         <div className={"flex "}>
                             <button
                                 className="px-4 mr-7 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95"
+							transition-all duration-100 ease-linear "
                                 onClick={() => {
                                     setShowConfirm(true);
                                     setRandomString(
@@ -111,7 +111,7 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                             </button>
                             <button
                                 className="px-4 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95"
+							transition-all duration-100 ease-linear "
                                 onClick={onClickNo}
                             >
                                 No
@@ -144,14 +144,14 @@ function DeletePopup({ onClickNo, visible, onClickYes }) {
                             />
                             <button
                                 className="px-4 py-1.5 mr-7 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95"
+							transition-all duration-100 ease-linear "
                                 onClick={confirmDelete}
                             >
                                 Confirm
                             </button>
                             <button
                                 className="px-4 text-white  rounded bg-rutgers_red
-							transition-all duration-100 ease-linear hover:scale-95"
+							transition-all duration-100 ease-linear "
                                 onClick={() => {
                                     setShowConfirm(false);
                                     onClickNo();

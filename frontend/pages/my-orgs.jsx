@@ -94,7 +94,7 @@ export default function MyOrgs() {
                             <Tile fullHeight={true}>
                                 <div className="h-5/6 flex flex-col">
                                     <p
-                                        className="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-105 
+                                        className="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 
                                         hover:bg-red-600 duration-300 text-lg text-white break-words rounded text-center bg-rutgers_red"
                                         onClick={() => {
                                             navigate('/org/' + org._id);
@@ -142,7 +142,7 @@ export default function MyOrgs() {
                                                         onClick={() => {
                                                             navigate(`/cal/${cal.calendarInfo.metadata._id}`);
                                                         }}
-                                                        className="transition ease-in-out delay-70 hover:scale-105 duration-100 mt-1 py-1 overflow-x-hidden cursor-pointer"
+                                                        className="transition ease-in-out delay-70  duration-100 mt-1 py-1 overflow-x-hidden cursor-pointer"
                                                         key={uniqid()}
                                                     >
                                                         {cal.calendarInfo.metadata.name}

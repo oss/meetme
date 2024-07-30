@@ -26,7 +26,7 @@ function Navbar() {
                 </Link>
             </div>
             <div className='flex items-center ml-auto p-2 gap-x-4'>
-                <div className='relative'>
+                <div className='relative bg-white hover:bg-slate-100'>
                     <Link to='/invites'>
                         <NotificationIcon />
                         <svg
