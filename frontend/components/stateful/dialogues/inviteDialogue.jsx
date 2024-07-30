@@ -112,8 +112,7 @@ function MemberSVGIcon({ netID }) {
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6 inline"
+                    className="w-6 h-6 inline stroke-green-700"
                 >
                     <path
                         strokeLinecap="round"
@@ -130,8 +129,7 @@ function MemberSVGIcon({ netID }) {
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6 inline"
+                    className="w-6 h-6 inline stroke-rutgers_red hover:stroke-blue-700"
                 >
                     <path
                         strokeLinecap="round"
@@ -196,15 +194,21 @@ function InviteDialogue({ calID }) {
         })
     }
 
+    useEffect(() => {
+        if(textBarRef.current != null){
+            setTextBarValue(textBarRef.current.value)
+        }
+      });
+
 
     return (
         <>
-            <Dialog.Title>Invite Users</Dialog.Title>
+            <Dialog.Title>Invite Users By Netid</Dialog.Title>
             <ul>
                 {pendingInviteOrder.map((pendingMember, idx) =>
                     <li key={idx} className='inline-flex align-middle'>
                         <Tile>
-                            <div className='flex align-middle grow-0 bg-slate-600'>
+                            <div className='flex align-middle grow-0 bg-slate-400'>
                                 <MemberSVGIcon netID={pendingMember} />
                                 <p className="inline" >
                                     {pendingMember}
@@ -215,8 +219,7 @@ function InviteDialogue({ calID }) {
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="w-6 h-6 inline"
+                                    className="w-6 h-6 inline stroke-black hover:stroke-rutgers_red"
                                     onClick={() => { removeNetID(pendingMember) }}
                                 >
                                     <path
@@ -263,6 +266,7 @@ function InviteDialogue({ calID }) {
                 <BaseButton className='border-1 border-solid bg-slate-400 p-1' onClick={() => { closeDialogue() }}>
                     <p>Close</p>
                 </BaseButton>
+                <p className = {`mr-2 ${inviteListOK ? 'hidden': ""}`}>Remove all invalid or inactive netids</p>
             </div>
             <TabGroup defaultIndex={shareLinkState ? 0 : 1} onChange={(index) => {
             setShareLinkStatus(index === 0);

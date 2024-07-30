@@ -23,7 +23,7 @@ export default function InvitationTile({
                 fullHeight={true}
             >
                 <div className="flex justify-start items-center w-full h-full">
-                    <div className={`bg-white rounded cursor-pointer`}>
+                    <div className={`bg-white rounded cursor-pointer w-full`}>
                         <p
                             className={
                                 "w-full mr-20 text-xl h-fit font-semibold break-words col-span-2 "
