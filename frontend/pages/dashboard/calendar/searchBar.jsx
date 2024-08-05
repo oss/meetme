@@ -19,7 +19,7 @@ function searchBar() {
         setOrgSearch(orgSearchInputRef.current.value);
     }
 
-    return (<div className = "my-2 w-1/5">
+    return (<div className = "my-2 md:w-1/5">
                 {
                 selectedIndex === 0
                 ?

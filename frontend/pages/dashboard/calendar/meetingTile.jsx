@@ -38,9 +38,9 @@ const calendarTile = ({ calendarID }) => {
                         <p className="w-full mr-20 text-sm h-fit font-medium break-words text-slate-500/50 col-span-2">
                             {calendarOwner}
                         </p>
-                        <p className="text-xs overflow-hidden text-nowrap text-slate-500/50 overflow-ellipsis border-r-8 border-transparent">
+                        {/* <p className="text-xs overflow-hidden text-nowrap text-slate-500/50 overflow-ellipsis border-r-8 border-transparent">
                             {calendarID}
-                        </p>
+                        </p> */}
                         <p className={" text-xs w-full mr-20 text-nowrap overflow-hidden break-words col-span-2 " + (calendarLocation == null ? "text-gray-300" : "text-slate-500/50 font-semibold")}>
                             {calendarLocation == null ? "-": calendarLocation}
                         </p>

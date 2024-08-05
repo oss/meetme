@@ -143,7 +143,7 @@ function CalendarOwner({ calID }) {
     const tabClassString = 'rounded-full py-1 px-3 mb-2 text-sm/6 font-semibold focus:outline-none data-[selected]:bg-rutgers_red data-[selected]:text-white hover:shadow-md hover:bg-slate-100'
     return (
         <div className="flex flex-col items-center w-full h-full bg-gray-100 border-gray-100 grow">
-            <div className="grid grid-cols-[40%_60%] w-full p-2 space-x-2">
+            <div className="grid grid-cols-1 md:grid-cols-[40%_60%] w-full p-2 space-x-2">
                 <div className = "col-start-1 row-span-full">
                     <NameTile />
                     <div className='p-1' />
@@ -153,7 +153,7 @@ function CalendarOwner({ calID }) {
                 </div>
 
                 <div className='p-1' />
-                <div className = "col-start-2 row-span-full">
+                <div className = "col-start-1 md:col-start-2 md:row-span-full">
                     <Tile>
                         <div className='bg-white'>
                             <TabGroup>
