@@ -277,15 +277,19 @@ function InviteDialogue({ calID }) {
                 <Tab
                     key={category}
                     className={({ selected }) =>
-                        `transition-all ease-linear duration-75 w-full rounded-lg p-2.5 text-base font-medium leading-5 text-red-700 outline-none
-                        ${selected ? "bg-rutgers_red shadow text-white" : "text-rutgers_red hover:shadow-md"}`
+                        `transition-all ease-linear duration-75 w-full rounded-lg p-2.5 text-base font-medium leading-5 text-red-700 outline-none 
+                        ${selected ? "bg-rutgers_red shadow text-white" : "bg-slate-50 text-rutgers_red hover:shadow-md"}`
                     }
                 >
                     {category}
                 </Tab>
             )}
             </TabList>
+            <BaseButton className='inline border-1 border-solid bg-slate-50 p-1 hover:bg-slate-100 hover:shadow-md"' onClick={() =>  navigator.clipboard.writeText(window.location.href)}>
+                    <p>Copy Link</p>
+            </BaseButton>
             </TabGroup>
+
         </>
     )
 }

@@ -48,7 +48,7 @@ function CalendarOwner({ calID }) {
                         <p className="font-bold text-xs text-slate-400/70">{roleEntry.role.toUpperCase()}</p>
                         <ul>
                             {roleEntry.IDs.map((netid, idx) =>
-                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rutgers_red'}`}>
+                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rutgers_red  text-white'}`}>
                                     {netid}
                                 </li>
                             )}
