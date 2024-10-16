@@ -15,8 +15,9 @@ import Stack from '@primitives/stack'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
-    const [calendarMetadata, addCalendar] = metadataStore((store) => [store.calendarMetadata[calendarID], store.addCalendar])
-    
+    const calendarMetadata = metadataStore((store) => store.calendarMetadata[calendarID])
+    const addCalendar = metadataStore((store)=> store.addCalendar)
+
     if (calendarInStore === false) {
         addCalendar(calendarID)
         return <LoadingCalendarTile calendarID={calendarID} />
@@ -95,22 +96,22 @@ function SortMethod(filter, ascending){
 function OrgPanel() {
     let orgList = userStore((store) => store.organizations);
 
-    
+
     const [orgFilter, orgAscending] = filterStore((store) => [store.orgFilter, store.orgAscending]);
 
     const search = filterStore((store) => store.orgSearch)
 
-    
+
     const orgMetaData = orgDataStore((store) => orgList.map((x)=> store.orgData[x._id]));
 
 
-    
+
     if (orgMetaData.every(x => x != undefined) && (orgMetaData.map((x)=>x.isLoaded)).every(x => x === true)){
         const searchFilter = orgMetaData.filter(meta => meta.data.name.toLowerCase().includes(search))
         const sorted = searchFilter.toSorted(SortMethod(orgFilter, orgAscending)).map(x => x.data._id)
         orgList = orgList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
     }
-    
+
 
     return (
         <TabPanel>
@@ -129,19 +130,7 @@ function OrgPanel() {
 
 
 const TileLayer = function TileLayer() {
-    let calendarList = userStore((store) => store.calendars.toReversed());
-
-    const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
-    const search = filterStore((store) => store.calSearch)
-    const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
-    const showOldCal = filterStore((store) => store.showOldCal)
-
-    if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search)).filter(meta => showOldCal ? true : meta.data.meetingTime.end ? new Date(meta.data.meetingTime.end) >= new Date() : true)
-        const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
-        calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
-    }
-
+    const calendarList = userStore((store) => store.calendars);
 
     return (
         calendarList.map((cal, idx) => {
@@ -181,18 +170,13 @@ function MenuLayer() {
         ));
 }
 
-function CalendarPanel() { 
+function CalendarPanel() {
     return (
         <TabPanel>
-            <Stack className = "">
+            <Stack>
                 <Stack.Item>
                     <ul className='relative flex flex-wrap'>
                         <TileLayer />
-                    </ul>
-                </Stack.Item>
-                <Stack.Item>
-                    <ul className='relative flex flex-wrap pointer-events-none'>
-                        <MenuLayer />
                     </ul>
                 </Stack.Item>
             </Stack>
@@ -204,17 +188,12 @@ function CalendarPanel() {
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
 
-
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
-                <HeaderButton />
-                <FilterDropDown  />
-                <SearchBar />
                 <div className = "w-full"></div>
                 <TabPanels className = "w-full">
                     <CalendarPanel />
-                    <OrgPanel />
                 </TabPanels>
             </TabGroup>
         </div>
@@ -226,7 +205,7 @@ function Dashboard() {
     const IntersectionObserverCallback = (entries) =>{
         console.log(entries)
         const entry = entries[0]
-        
+
         if(entry.isIntersecting)
             fetchCalendarMetadata(calendarID)
     }
