@@ -144,18 +144,7 @@ const TileLayer = function TileLayer() {
 }
 
 function MenuLayer() {
-    let calendarList = userStore((store) => store.calendars.toReversed());
-
-    const [calFilter, calAscending] = filterStore((store) => [store.calFilter, store.calAscending])
-    const search = filterStore((store) => store.calSearch)
-    const calendarMetadata = metadataStore((store) => calendarList.map((x)=> store.calendarMetadata[x._id]))
-
-    if (calendarMetadata.every(x => x != undefined) && (calendarMetadata.map((x)=>x.isLoaded)).every(x => x === true)){
-        const searchFilter = calendarMetadata.filter(meta => meta.data.name.toLowerCase().includes(search)).filter(meta => meta.data.meetingTime.end ? new Date(meta.data.meetingTime.end) >= new Date() : true)
-        const sorted = searchFilter.toSorted(SortMethod(calFilter, calAscending)).map(x => x.data._id)
-        calendarList = calendarList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
-    }
-
+    let calendarList = userStore((store) => store.calendars);
 
     return (
         calendarList.map((cal, idx) =>
@@ -179,6 +168,11 @@ function CalendarPanel() {
                         <TileLayer />
                     </ul>
                 </Stack.Item>
+                <Stack.Item>
+                    <ul className='relative flex flex-wrap pointer-events-none'>
+                        <MenuLayer />
+                    </ul>
+                </Stack.Item>
             </Stack>
         </TabPanel >
     );
@@ -191,9 +185,11 @@ function Dashboard() {
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
+                <HeaderButton />
                 <div className = "w-full"></div>
                 <TabPanels className = "w-full">
                     <CalendarPanel />
+                    <OrgPanel />
                 </TabPanels>
             </TabGroup>
         </div>
