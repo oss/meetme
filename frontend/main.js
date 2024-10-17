@@ -14,7 +14,7 @@ const Error404 = lazy(() => import("./pages/error-404"));
 const MyMeetings = lazy(() => import("./pages/my-meetings"));
 import "./index.css";
 const Faq = lazy(() => import("./pages/faq"));
-const OrgLoader = lazy(() => import("./components/org-loader"));
+const OrgLoader = lazy(() => import("./pages/organization"));
 const MyInvitations = lazy(() => import("./pages/my-invitations"));
 const Logout = lazy(() => import("./pages/logout"));
 import dialogueStore from './store/dialogueStore';
@@ -22,7 +22,7 @@ import { Dialog, Transition, TransitionChild, DialogPanel } from "@headlessui/re
 import { Fragment } from "react";
 
 function App() {
-    
+
     const dialogueStatus = dialogueStore((store) => store)
 
     const router = createBrowserRouter([

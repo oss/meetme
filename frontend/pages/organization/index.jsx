@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import OrgOwner from '../pages/organization/org-owner';
-import OrgUser from '../pages/organization/org-user';
+import OrgOwner from './org-owner';
+import OrgUser from './org-user';
 import Cookies from 'js-cookie';
 
 function OrgLoader() {
