@@ -44,8 +44,17 @@ const useStore = create((set) => {
             },
         );
         const resp_json = await resp.json();
-
-        return resp_json;
+        if(resp_json.Status === 'ok'){
+            set(
+                produce((prevState) => {
+                    prevState.calendarMetadata[calendarID] = {
+                        isLoaded: true,
+                        error: false,
+                        data: resp_json.metadata,
+                    };
+                }),
+            );
+        }
     };
 
     const addCalendar = async (calendarID) => {
@@ -67,18 +76,7 @@ const useStore = create((set) => {
         );
 
         if (!shouldFetch) return;
-
-        const n = await fetchCalendarMetadata(calendarID);
-
-        set(
-            produce((prevState) => {
-                prevState.calendarMetadata[calendarID] = {
-                    isLoaded: true,
-                    error: false,
-                    data: n.metadata,
-                };
-            }),
-        );
+        fetchCalendarMetadata(calendarID);
     };
 
     socket.on("calendar_metadata_updated", (calendarID) => {
