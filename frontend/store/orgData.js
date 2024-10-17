@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import userData from './userStore';
+import { produce } from 'immer';
 
 const useStore = create(set => {
 
@@ -15,35 +15,41 @@ const useStore = create(set => {
         console.log(resp_json)
 
         if (resp_json.Status === 'ok') {
-            set((previous_state) => {
-                const orgJSON = { ...previous_state.orgData };
-
-                orgJSON[orgID].isLoaded = true
-                orgJSON[orgID].data = resp_json.organization
-                return {
-                    orgData: orgJSON
-                }
-            })
+            set(
+                produce((prevState) => {
+                    prevState.orgData[orgID] = {
+                        isLoaded: true,
+                        error: false,
+                        data: resp_json.organization,
+                    };
+                }),
+            )
         }
     }
 
 
     const addOrg = (orgID) => {
-        set((previous_state) => {
-            const orgJSON = { ...previous_state.orgData };
-            if(orgID in orgJSON)
-                return previous_state
+        let shouldFetch = true;
 
-            orgJSON[orgID] = {}
-            orgJSON[orgID].isLoaded = false
-            return {
-                orgData: orgJSON
+        set(produce((prevState) => {
+
+            if (orgID in prevState.orgData) {
+                shouldFetch = false
+                return;
             }
-        })
 
+            prevState.orgData[orgID] = {
+                isLoaded: false,
+                error: false,
+                data: {},
+            };
+        }));
+
+        if (!shouldFetch) return;
+
+        console.log('fetching',orgID)
         fetchOrgData(orgID)
     }
-
 
     return {
         fetchOrgData: fetchOrgData,

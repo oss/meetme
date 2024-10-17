@@ -48,7 +48,8 @@ const HeaderButton = memo(function HeaderButton() {
 
 function OrgTileCreator({ orgID }) {
     const orgInStore = orgDataStore((store) => orgID in store.orgData)
-    const [orgData, addOrg] = orgDataStore((store) => [store.orgData[orgID], store.addOrg])
+    const orgData = orgDataStore((store) => store.orgData[orgID])
+    const addOrg = orgDataStore((store) => store.addOrg)
 
     if (orgInStore === false) {
         addOrg(orgID)
@@ -94,24 +95,7 @@ function SortMethod(filter, ascending){
 }
 
 function OrgPanel() {
-    let orgList = userStore((store) => store.organizations);
-
-
-    const [orgFilter, orgAscending] = filterStore((store) => [store.orgFilter, store.orgAscending]);
-
-    const search = filterStore((store) => store.orgSearch)
-
-
-    const orgMetaData = orgDataStore((store) => orgList.map((x)=> store.orgData[x._id]));
-
-
-
-    if (orgMetaData.every(x => x != undefined) && (orgMetaData.map((x)=>x.isLoaded)).every(x => x === true)){
-        const searchFilter = orgMetaData.filter(meta => meta.data.name.toLowerCase().includes(search))
-        const sorted = searchFilter.toSorted(SortMethod(orgFilter, orgAscending)).map(x => x.data._id)
-        orgList = orgList.toSorted(function(a, b){  return sorted.indexOf(a._id) - sorted.indexOf(b._id);}).filter(a => sorted.includes(a._id));
-    }
-
+    const orgList = userStore((store) => store.organizations);
 
     return (
         <TabPanel>
