@@ -44,13 +44,13 @@ function IndividualCalendarLoader() {
         const isViewer = calendar.viewers.some((uname) => uname._id === netID)
         if (isViewer) return 'viewer'
     })
-    
+
     switch (individualRole) {
         case 'owner':
             return <CalendarOwnerPage calID={id} />
         case 'user':
             return <CalendarUserPage calID={id} />
-        
+
     }
 }
 
@@ -72,7 +72,7 @@ function OrganizationCalendarLoader(){
     },[memberList])
 
     const orgRole = orgData((store)=>{
-        
+
         const organization = store.orgData[ownerID].data;
 
         const isOwner = (organization.owner === netID);
@@ -111,7 +111,7 @@ function CalendarLoader() {
 
     const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
     const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
-        
+
     useEffect(() => {
         async function sharelink(calendarID){
             const data = await fetch(
@@ -152,6 +152,7 @@ function CalendarLoader() {
 
     const error = calendarMetadataStore((store) =>  store.calendarMetadata[id].error)
 
+    /*
     const [orgInit ,orgLoaded, addOrg] = orgData((store)=>{
         if(ownerType !== 'organization')
             return Array(3).fill(null)
@@ -161,6 +162,7 @@ function CalendarLoader() {
 
         return [orgInitialized, orgLoaded, store.addOrg];
     })
+    */
 
     const readyToLoad = (() => {
         switch (ownerType) {

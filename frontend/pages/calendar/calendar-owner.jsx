@@ -20,7 +20,8 @@ import memberListStore from './store';
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
     const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
-    const [start, end] = calendarMetadata((store) => [store.calendarMetadata[calID].data.meetingTime.start, store.calendarMetadata[calID].data.meetingTime.end])
+    const start = calendarMetadata((store) => store.calendarMetadata[calID].data.meetingTime.start)
+    const end = calendarMetadata((store) => store.calendarMetadata[calID].data.meetingTime.end)
     const location = calendarMetadata((store) => store.calendarMetadata[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
@@ -98,12 +99,11 @@ function CalendarOwner({ calID }) {
 
     const FinalMeetingTile = () => {
 
-
-        const getTextValue = () => {
+        const getTextValue = (() => {
             if (start === null || end === null)
                 return ('Meeting time has not been set.')
             return `Start: ${new Date(start).toLocaleString()} End: ${new Date(end).toLocaleString()}`
-        }
+        })()
 
         return (
             <Tile>
@@ -123,7 +123,7 @@ function CalendarOwner({ calID }) {
 
                             </Button>
                         </div>
-                        <p>{getTextValue()}</p>
+                        <p>{getTextValue}</p>
                     </Tile.Body>
                 </div>
             </Tile>

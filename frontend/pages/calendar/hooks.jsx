@@ -2,10 +2,8 @@ import calendarMaindata from '@store/calendarMaindata';
 import orgData from '@store/orgData';
 
 const individualMemberListHook = (calID) => {
-    const [owner, users] = calendarMaindata((store) => [
-        store.calendarData[calID].data.owner._id,
-        store.calendarData[calID].data.users
-    ]);
+    const owner = calendarMaindata((store)=> store.calendarData[calID].data.owner._id)
+    const users = calendarMaindata((store)=> store.calendarData[calID].data.users)
 
     const arr = []
 
@@ -22,10 +20,8 @@ const individualMemberListHook = (calID) => {
 }
 
 const individualMemberSetHook = (calID) => {
-    const [owner, users] = calendarMaindata((store) => [
-        store.calendarData[calID].data.owner._id,
-        store.calendarData[calID].data.users
-    ]);
+    const owner = calendarMaindata((store)=> store.calendarData[calID].data.owner._id)
+    const users = calendarMaindata((store)=> store.calendarData[calID].data.users)
 
     const set = new Set();
 
