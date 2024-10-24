@@ -44,27 +44,20 @@ function MeetingGrid({ calID, rowsCount }) {
         return store.calendarData[calID].data.users
     })
 
-    const potentialMeetings = calendarMaindataStore((store) => {
-        return store.calendarData[calID].data.blocks.map(
-            (object: any, i: number) => {
-                let date = new Date(object.start);
-                return date;
-            }
-        )
-    })
-
     const userTimes = calendarMaindataStore((store) => store.calendarData[calID].data.users)
     const validTimes = calendarMaindataStore((store) => store.calendarData[calID].data.blocks)
 
-    const timeIntervals: number = 10;
-    const [startHour, endHour] = calendarMaindataStore((store) => {
-        const allowedTimes = store.calendarData[calID].data.blocks;
+    const potentialMeetings = validTimes.map(
+        (object: any, i: number) => {
+            const date = new Date(object.start);
+            return date;
+        }
+    )
 
-        return [
-            new Date(allowedTimes[0].start),
-            new Date(allowedTimes[0].end)
-        ]
-    })
+
+    const timeIntervals: number = 10;
+    const startHour = calendarMaindataStore((store)=> store.calendarData[calID].data.blocks[0].start)
+    const endHour = calendarMaindataStore((store)=> store.calendarData[calID].data.blocks[0].end)
 
     // This is the most important part of the code. It creates a 2D array of TimeBlocks that basically represents the entire grid.
     // the whole code depends on this array.
@@ -72,7 +65,7 @@ function MeetingGrid({ calID, rowsCount }) {
         rowsCount,
         columnCount,
         potentialMeetings,
-        startHour,
+        new Date(startHour),
         timeIntervals
     );
 
