@@ -2,7 +2,7 @@ import userStore from '@store/userStore';
 import metadataStore from '@store/calendarMetadata';
 import orgDataStore from '@store/orgData';
 import filterStore from '@store/filterStore';
-import { memo, } from 'react';
+import { memo, useRef } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
@@ -11,7 +11,8 @@ import FilterDropDown from './calendar/filterDropDown';
 import SearchBar from './calendar/searchBar'
 import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
-import Stack from '@primitives/stack'
+import Stack from '@primitives/stack';
+import { hoveredTileStore } from './store.js'
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
@@ -119,7 +120,7 @@ const TileLayer = function TileLayer() {
     return (
         calendarList.map((cal, idx) => {
             return (
-                <li key={idx} className='h-fit m-1 w-full md:w-[30%]'>
+                <li key={idx} className='h-fit m-1 w-full md:w-[30%] group/meeting-tile'>
                     <CalendarTileCreator calendarID={cal._id} idx={idx} />
                 </li>
             )
@@ -128,11 +129,11 @@ const TileLayer = function TileLayer() {
 }
 
 function MenuLayer() {
-    let calendarList = userStore((store) => store.calendars);
+    const calendarList = userStore((store) => store.calendars);
 
     return (
         calendarList.map((cal, idx) =>
-            <li key={idx} className='relative h-fit m-1 w-full md:w-[30%] group'>
+            <li key={idx} className='relative h-fit m-1 w-full md:w-[30%]'>
                 <div className='invisible'>
                     <CalendarTileCreator calendarID={cal._id} idx={idx} />
                 </div>
@@ -144,11 +145,13 @@ function MenuLayer() {
 }
 
 function CalendarPanel() {
+    const hoveredTileListRef = hoveredTileStore((store)=>store.hoveredTileListRef)
+
     return (
         <TabPanel>
             <Stack>
                 <Stack.Item>
-                    <ul className='relative flex flex-wrap'>
+                    <ul className='relative flex flex-wrap' ref={hoveredTileListRef} >
                         <TileLayer />
                     </ul>
                 </Stack.Item>

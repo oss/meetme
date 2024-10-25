@@ -4,13 +4,22 @@ import { useRef, Fragment } from 'react';
 import { Menu, Transition, MenuItem, MenuItems, MenuButton } from '@headlessui/react';
 import RenameDialogue from '@components/stateful/dialogues/renameDialogue';
 import DeleteDialogue from '@components/stateful/dialogues/deleteDialogue';
+import { hoveredTileStore } from '../store'
 
 function dropDownMenu({ calID, idx }) {
     const dialogueHook = dialogueStore((store) => store.setPanel)
+    const tileListRef = hoveredTileStore((store)=> store.hoveredTileListRef)
+
+    const makeTileActive = () => {
+        tileListRef.current.childNodes.item(idx).setAttribute('data-hover',true)
+    }
+    const makeTileInactive = () => {
+        tileListRef.current.childNodes.item(idx).setAttribute('data-hover',false)
+    }
 
     return (
         <Menu>
-            <MenuButton className='pointer-events-auto data-[active]:bg-gray-200'>
+            <MenuButton className='pointer-events-auto data-[active]:bg-gray-200' onMouseEnter={makeTileActive} onMouseLeave={makeTileInactive}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -39,11 +48,7 @@ function dropDownMenu({ calID, idx }) {
                 >
                     <MenuItem>
                         <button
-                            className='
-                                data-[active]:bg-rutgers_red data-[active]:text-white 
-                                 text-gray-900 
-                                flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none
-                            '
+                            className='data-[active]:bg-rutgers_red data-[active]:text-white text-gray-900 flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none'
                             onClick={() => {
                                 dialogueHook(<RenameDialogue calID={calID} />)
                             }}
@@ -54,9 +59,8 @@ function dropDownMenu({ calID, idx }) {
                     <MenuItem>
                         <button
                             className='
-                                data-[active]:bg-rutgers_red data-[active]:text-white 
-                                 text-gray-900 
-                                flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none
+                                data-[active]:bg-rutgers_red data-[active]:text-white text-gray-900
+                        flex w-full items-center rounded-md px-2 py-2 text-sm focus:border-0 focus:outline-none
                             '
                             onClick={()=>{
                                 dialogueHook(<DeleteDialogue calID={calID} />)
