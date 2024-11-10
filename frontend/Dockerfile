@@ -5,7 +5,7 @@ WORKDIR /root
 ARG BUILD
 ENV BUILD=${BUILD}
 COPY package.json .
-RUN npm install .
+RUN npm install . --loglevel verbose --force
 
 COPY . .
 

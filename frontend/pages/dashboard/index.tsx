@@ -165,12 +165,151 @@ function CalendarPanel() {
     );
 }
 
+async function GetLINK(){
+    let data = await fetch(`https://oauth2.googleapis.com/token`, {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            code:"4/0AeanS0YoPxnNYMBGCdziKLVhL3Yf5fKVRXO1LIB785Cm0l6MzfwoeuRhcghdJfH9uK5aQw",
+            client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
+            client_secret:"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",
+            redirect_uri:"https://localhost.edu",
+            grant_type:"authorization_code"
+        }),
+    }).then((res) => res.json());
+
+    console.log(data)
+
+    const timeObject = new Date(Date.now() + data.expires_in * 1000);
+
+    console.log(timeObject)
+
+    let data2 = await fetch(`${process.env.API_URL}/user/google_tokens`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            access_token:data.access_token,
+            refresh_token:data.refresh_token,
+            expires: timeObject.valueOf(),
+        }),
+    }).then((res) => res.json());
+
+    return data2;
+}
+
+async function getLink(){
+    let data2 = await fetch(`${process.env.API_URL}/user/google_auth_link`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+    return data2
+}
+
+async function getINFO(){
+    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+    console.log(data2)
+    return data2
+}
+
+async function newaccess(){
+    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+
+    let data = await fetch(`https://oauth2.googleapis.com/token`, {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
+            client_secret:"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",
+            refresh_token:data2.refresh_token,
+            grant_type:"refresh_token"
+        }),
+    }).then((res) => res.json());
+
+    const timeObject = new Date(Date.now() + data.expires_in * 1000);
+
+    console.log(timeObject)
+
+    let data3 = await fetch(`${process.env.API_URL}/user/google_tokens`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            access_token:data.access_token,
+            refresh_token:data2.refresh_token,
+            expires: timeObject.valueOf(),
+        }),
+    }).then((res) => res.json());
+    console.log(data)
+    return data
+}
+
+async function getDates(){
+    let data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+        method: "GET",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+    return data;
+}
+
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
+            <button
+                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                onClick={() =>  getLink()}
+            >
+                Link
+            </button>
+            <button
+                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                onClick={() =>  GetLINK()}
+            >
+                USETOKEN
+            </button>
+            <button
+                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                onClick={() =>  newaccess()}
+            >
+                newaccess
+            </button>
+            <button
+                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                onClick={() =>  getDates()}
+            >
+                DATES
+            </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
                 <div className = "w-full"></div>

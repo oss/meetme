@@ -16,6 +16,8 @@ async function create_user(netid) {
   user.name.first = extra_user_info.givenName;
   user.name.middle = null;
   user.name.last = extra_user_info.sn;
+  user.googleTokens.access_token = ""
+  user.googleTokens.refresh_token = ""
   user.calendars = [];
 
   try {
