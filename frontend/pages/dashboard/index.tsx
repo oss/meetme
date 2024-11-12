@@ -173,7 +173,7 @@ async function GetLINK(){
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            code:"4/0AeanS0YoPxnNYMBGCdziKLVhL3Yf5fKVRXO1LIB785Cm0l6MzfwoeuRhcghdJfH9uK5aQw",
+            code:"4/0AeanS0YB2p6_EW_nNZkFiJkEeZCqTP71m_ax5idf52RgftLNxKb7uu33OUj9DDdILjAMbg",
             client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
             client_secret:"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",
             redirect_uri:"https://localhost.edu",
@@ -214,18 +214,6 @@ async function getLink(){
     return data2
 }
 
-async function getINFO(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-    console.log(data2)
-    return data2
-}
-
 async function newaccess(){
     let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
         method: "GET",
@@ -234,6 +222,8 @@ async function newaccess(){
             "Content-Type": "application/json",
         },
     }).then((res) => res.json());
+
+    console.log(data2)
 
     let data = await fetch(`https://oauth2.googleapis.com/token`, {
         method: "POST",
@@ -265,20 +255,45 @@ async function newaccess(){
             expires: timeObject.valueOf(),
         }),
     }).then((res) => res.json());
-    console.log(data)
+    console.log(data3)
     return data
 }
 
 async function getDates(){
-    let data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+
+
+    let data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=` + data2.access_token, {
         method: "GET",
         credentials: "omit",
         headers: {
             "Content-Type": "application/json",
         },
     }).then((res) => res.json());
+
+    console.log(data)
     return data;
 }
+
+async function getVerified(){
+    let data2 = await fetch(`${process.env.API_URL}/user/google_verified`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+
+    console.log(data2);
+    return data2.verified;
+}
+
 
 
 function Dashboard() {
@@ -309,6 +324,12 @@ function Dashboard() {
                 onClick={() =>  getDates()}
             >
                 DATES
+            </button>
+            <button
+                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                onClick={() =>  getVerified()}
+            >
+                Verified
             </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
