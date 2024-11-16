@@ -36,7 +36,6 @@ router.patch('/google_tokens', isAuthenticated, async function (req, res) {
   const code = req.body.code;
 
   if (code === undefined || code === null) {
-    use_refresh_token(req.user.uid)
     res.json({
         Status: 'error',
         error: 'No code provided',
@@ -59,13 +58,7 @@ router.patch('/google_tokens', isAuthenticated, async function (req, res) {
     }),
   }).then((res) => res.json());
 
-  if (data.error != ""){
-    res.json({
-      Status: 'error',
-      error: 'invalid code provided',
-    });
-    return;
-  }
+  console.log(data)
 
   const timeObject = new Date(Date.now() + data.expires_in * 1000);
 
@@ -73,6 +66,21 @@ router.patch('/google_tokens', isAuthenticated, async function (req, res) {
   const user_data = await User_schema.findOne({ _id: req.user.uid });
   user_data.googleTokens.access_token = data.access_token;
   user_data.googleTokens.refresh_token = data.refresh_token;
+  user_data.googleTokens.expires = timeObject.valueOf();
+  await user_data.save();
+  res.json({
+    Status: 'Ok',
+  });
+  return;
+});
+
+router.delete('/google_remove', isAuthenticated, async function (req, res) {
+
+  const timeObject = new Date();
+
+  const user_data = await User_schema.findOne({ _id: req.user.uid });
+  user_data.googleTokens.access_token = "";
+  user_data.googleTokens.refresh_token = "";
   user_data.googleTokens.expires = timeObject.valueOf();
   await user_data.save();
   res.json({
@@ -147,7 +155,9 @@ router.get('/google_cal_dates', isAuthenticated, async function (req, res) {
         },
     }).then((res) => res.json());
 
-  console.log(data)
+  if (data.error.code == 401){
+    use_refresh_token(req.user.uid)
+  }
 
   res.json({
     Status: 'ok',
