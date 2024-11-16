@@ -1,8 +1,9 @@
 import userStore from '@store/userStore';
 import metadataStore from '@store/calendarMetadata';
+import googleStore from '@store/googleStore';
 import orgDataStore from '@store/orgData';
 import filterStore from '@store/filterStore';
-import { memo, useRef } from 'react';
+import { memo, useEffect } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingCalendarTile from './calendar/loadingTile';
 import CalendarTile from './calendar/meetingTile';
@@ -165,27 +166,8 @@ function CalendarPanel() {
     );
 }
 
-async function GetLINK(){
-    let data = await fetch(`https://oauth2.googleapis.com/token`, {
-        method: "POST",
-        credentials: "omit",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            code:"4/0AeanS0YB2p6_EW_nNZkFiJkEeZCqTP71m_ax5idf52RgftLNxKb7uu33OUj9DDdILjAMbg",
-            client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
-            client_secret:"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",
-            redirect_uri:"https://localhost.edu",
-            grant_type:"authorization_code"
-        }),
-    }).then((res) => res.json());
+async function USECODE(){
 
-    console.log(data)
-
-    const timeObject = new Date(Date.now() + data.expires_in * 1000);
-
-    console.log(timeObject)
 
     let data2 = await fetch(`${process.env.API_URL}/user/google_tokens`, {
         method: "PATCH",
@@ -194,11 +176,11 @@ async function GetLINK(){
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            access_token:data.access_token,
-            refresh_token:data.refresh_token,
-            expires: timeObject.valueOf(),
+            code:"4/0AeanS0YReccHtwcsuzoU6-7A6dbL02ZVigfDKCzxtMufc9Zk5KdslneEFAtHm9dQkb7dcg",
         }),
     }).then((res) => res.json());
+
+    console.log(data2)
 
     return data2;
 }
@@ -211,6 +193,7 @@ async function getLink(){
             "Content-Type": "application/json",
         },
     }).then((res) => res.json());
+    console.log(data2)
     return data2
 }
 
@@ -281,23 +264,33 @@ async function getDates(){
     return data;
 }
 
-async function getVerified(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_verified`, {
-        method: "GET",
+
+
+async function getRemove(){
+    let data2 = await fetch(`${process.env.API_URL}/user/google_remove`, {
+        method: "DELETE",
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
     }).then((res) => res.json());
 
-    console.log(data2);
-    return data2.verified;
-}
 
+    console.log(data2)
+    return data2;
+}
 
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
+    const googleVerified = googleStore((store) => store.googleVerified);
+    const fetchGoogleVerified = googleStore((store) => store.fetchGoogleVerified);
+
+    useEffect(()=>{
+        fetchGoogleVerified()
+    },[])
+
+    
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
@@ -309,9 +302,9 @@ function Dashboard() {
             </button>
             <button
                 className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  GetLINK()}
+                onClick={() =>  USECODE()}
             >
-                USETOKEN
+                USECODE
             </button>
             <button
                 className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
@@ -326,10 +319,10 @@ function Dashboard() {
                 DATES
             </button>
             <button
-                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  getVerified()}
+                className={`${googleVerified?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
+                onClick={() =>  getRemove()}
             >
-                Verified
+                Status
             </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
