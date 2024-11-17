@@ -258,9 +258,21 @@ async function getDates(){
         }),
     }).then((res) => res.json());
 
-
     console.log(data2)
-    return data2;
+
+    const googlestartend = data2.data.items.map((object: any, i: number) => {
+        const startDate = new Date(object.start.dateTime).valueOf();
+        const endDate = new Date(object.start.dateTime).valueOf();
+        return {start: startDate,  end: endDate};
+    })
+
+    console.log(googlestartend)
+
+    const googleCals = {_id: "primary", times:googlestartend}
+
+    console.log(googleCals)
+
+    return googleCals;
 }
 
 
@@ -284,12 +296,13 @@ function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
     const googleVerified = googleStore((store) => store.googleVerified);
     const fetchGoogleVerified = googleStore((store) => store.fetchGoogleVerified);
+    const setGoogleCal = googleStore((store) => store.setGoogleCal);
 
-    useEffect(()=>{
+    useEffect( ()=>{
         fetchGoogleVerified()
+        setGoogleCal()
     },[])
 
-    
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
