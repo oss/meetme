@@ -243,25 +243,24 @@ async function newaccess(){
 }
 
 async function getDates(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
-        method: "GET",
+    const time = new Date().toISOString()
+    const time2 = new Date(Date.now() + 48 * (60 * 60 * 1000) ).toISOString()
+
+    let data2 = await fetch(`${process.env.API_URL}/user/google_cal_dates`, {
+        method: "POST",
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+            minTime:time,
+            maxTime:time2,
+        }),
     }).then((res) => res.json());
 
 
-    let data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=` + data2.access_token, {
-        method: "GET",
-        credentials: "omit",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-
-    console.log(data)
-    return data;
+    console.log(data2)
+    return data2;
 }
 
 

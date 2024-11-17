@@ -123,11 +123,11 @@ router.get('/google_auth_link', isAuthenticated, async function (req, res) {
   return;
 });
 
-router.get('/google_cal_dates', isAuthenticated, async function (req, res) {
+router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
 
   const user_data = await User_schema.findOne({ _id: req.user.uid });
 
-  if (user_data.access_token === undefined || user_data.access_toke === null) {
+  if (user_data.googleTokens.access_token === undefined || user_data.googleTokens.access_toke === null) {
     res.json({
         Status: 'error',
         error: 'Not verified',
@@ -135,8 +135,8 @@ router.get('/google_cal_dates', isAuthenticated, async function (req, res) {
     return;
   }
 
-  const minTime = new Date().toISOString()
-  const maxTime = new Date(minTime + 48 * 3600)
+  const minTime = req.body.minTime;
+  const maxTime = req.body.maxTime;
 
 
   if (minTime === undefined || minTime === null || maxTime === undefined || maxTime === null) {
@@ -155,7 +155,7 @@ router.get('/google_cal_dates', isAuthenticated, async function (req, res) {
         },
     }).then((res) => res.json());
 
-  if (data.error.code == 401){
+  if (data?.error?.code == 401){
     use_refresh_token(req.user.uid)
   }
 
