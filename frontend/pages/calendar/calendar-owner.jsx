@@ -1,4 +1,5 @@
 import Tile from '@primitives/tile';
+import Stack from '@primitives/stack';
 
 import { Button } from '@headlessui/react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
@@ -9,6 +10,7 @@ import LocationDialogue from '@components/stateful/dialogues/locationDialogue';
 import MeetingTimeDialogue from '@components/stateful/dialogues/meetingTimeDialogue';
 
 import GlobalCalendar from './calendarPanels/globalCalendar';
+import GoogleCalendar from './calendarPanels/googleCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
 
 import calendarMetadata from '@store/calendarMetadata';
@@ -186,7 +188,19 @@ function CalendarOwner({ calID }) {
                                 </div>
                                 <TabPanels>
                                     <TabPanel>
-                                        <GlobalCalendar calID={calID} />
+                                    <Stack>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap' >
+                                                <GlobalCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap'>
+                                                <GoogleCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                    </Stack>
+                                        
                                     </TabPanel>
                                     <TabPanel>
                                         <UserCalendar calID={calID} />

@@ -7,6 +7,7 @@ import {
 } from "../utilities";
 
 import calendarMaindataStore from '@store/calendarMaindata';
+import googleStore from '@store/googleStore';
 import { hoveredUsersStore } from './state.js';
 import calendarPageStore from '../../store.js';
 
@@ -41,7 +42,8 @@ function MeetingGrid({ calID, rowsCount }) {
         return store.calendarData[calID].data.users
     })
 
-    const userTimes = calendarMaindataStore((store) => store.calendarData[calID].data.users)
+    const userTimes = googleStore((store) => store.googleCal)
+
     console.log(userTimes)
 
     const validTimes = calendarMaindataStore((store) => store.calendarData[calID].data.blocks)
