@@ -53,7 +53,6 @@ function MeetingBlock({
             ${disabled ? "bg-gray-600 border-transparent" : "border-slate-200"}
             ${new Date(start).getMinutes() === 0 ? "border-t-red-600" : ""} 
             ${new Date(start).getMinutes() === 50 ? "border-b-red-600" : ""} 
-            ${colorBrightness === 0 ? "opacity-0" : "opacity-75"}
             border-[1px] border-solid transition-colors duration-75 flex justify-evenly`}
             style={{
                 height: `${displayHeight}rem`,
