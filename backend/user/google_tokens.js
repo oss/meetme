@@ -179,5 +179,21 @@ router.get('/google_verified', isAuthenticated, async function (req, res) {
   return;
 });
 
+router.post('/code', isAuthenticated, async function (req, res) {
+  console.log(JSON.stringify(req.user));
+  console.log(req.query.code)
+  console.log(req.query.state)
+
+  const user = await User_schema.findOne({ _id: req.user.uid });
+
+  console.log("user")
+  //create a new user account if user doesnt exist
+
+
+  res.redirect('https://localhost.edu');
+
+}
+);
+
 
 module.exports = router;

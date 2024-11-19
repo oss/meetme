@@ -291,6 +291,20 @@ async function getRemove(){
     return data2;
 }
 
+async function testCode(){
+    let data2 = await fetch(`${process.env.API_URL}/user/code?state=asifhalfi&code=4/0AeanS0bsk7Iu3gJaOjqX2ECGBqmcPTndL3ZThT3-5tLyMRmZ2iW5TOHig7Vta2URjzEuuw&scope=https://www.googleapis.com/auth/calendar.readonly`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json());
+
+
+    console.log(data2)
+    return data2;
+    }
+
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
@@ -314,9 +328,9 @@ function Dashboard() {
             </button>
             <button
                 className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  USECODE()}
+                onClick={() =>  testCode()}
             >
-                USECODE
+                testCode
             </button>
             <button
                 className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
