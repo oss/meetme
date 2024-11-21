@@ -147,6 +147,10 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
     return;
   }
 
+  if (new Date(user_data.googleTokens.expires) > new Date(Date.now() + 60 * 1000) ){
+    use_refresh_token(req.user.uid)
+  }
+
   const data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.googleTokens.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
         method: "GET",
         credentials: "omit",
@@ -155,9 +159,6 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
         },
     }).then((res) => res.json());
 
-  if (data?.error?.code == 401){
-    use_refresh_token(req.user.uid)
-  }
 
   res.json({
     Status: 'ok',
@@ -179,7 +180,7 @@ router.get('/google_verified', isAuthenticated, async function (req, res) {
   return;
 });
 
-router.post('/code', isAuthenticated, async function (req, res) {
+router.get('/code', isAuthenticated, async function (req, res) {
   console.log(JSON.stringify(req.user));
   console.log(req.query.code)
   console.log(req.query.state)
@@ -187,11 +188,9 @@ router.post('/code', isAuthenticated, async function (req, res) {
   const user = await User_schema.findOne({ _id: req.user.uid });
 
   console.log("user")
-  //create a new user account if user doesnt exist
 
 
   res.redirect('https://localhost.edu');
-
 }
 );
 
