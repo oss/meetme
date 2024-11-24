@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User_schema = require('./user_schema');
+const Google_schema = require('./user_schema');
 const mongoose = require('mongoose');
 const { isAuthenticated } = require('../auth/passport/util');
+const crypto =  require("crypto");
 
 
 async function use_refresh_token(uid){
@@ -29,6 +31,46 @@ async function use_refresh_token(uid){
   user_data.googleTokens.expires = timeObject.valueOf();
   await user_data.save();
 
+}
+
+async function newState(uid){
+  const exists = await Google_schema.findOne({ _id: uid });
+  if (exists === null){
+    const google_state = new Google_schema();
+    google_state._id = uid;
+    google_state.state = crypto.randomUUID();
+    try {
+      //save to variable to force to wait
+      await google_state.save();
+      const check = await Google_schema.findOne(google_state);
+      console.log('--- created new state ---');
+      console.log(check);
+      console.log('------------------------');
+      return {
+        Status: 'ok',
+        Result: 'State added',
+        data: check,
+      };
+      //adds user
+    } catch (e) {
+      console.log("--error--")
+      console.log(e)
+      return {
+        Status: 'error',
+        error: 'Could not add state to database',
+      };
+    }
+  }
+  else{
+    exists.state = crypto.randomUUID();
+    await exists.save();
+    console.log('--- updated state ---');
+    return {
+      Status: 'ok',
+      Result: 'State updated',
+      data: exists,
+    };
+  }
 }
 
 router.patch('/google_tokens', isAuthenticated, async function (req, res) {
@@ -108,6 +150,8 @@ router.get('/google_auth_link', isAuthenticated, async function (req, res) {
   const clientid = "35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com";
   const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
 
+  newState(req.user.uid);
+
   const user_data = await User_schema.findOne({ _id: req.user.uid });
   user_data.googleTokens.state = STATE;
 
@@ -147,8 +191,10 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
     return;
   }
 
+  use_refresh_token(req.user.uid);
+
   if (new Date(user_data.googleTokens.expires) > new Date(Date.now() + 60 * 1000) ){
-    use_refresh_token(req.user.uid)
+    use_refresh_token(req.user.uid);
   }
 
   const data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.googleTokens.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
@@ -186,6 +232,16 @@ router.get('/code', isAuthenticated, async function (req, res) {
   console.log(req.query.state)
 
   const user = await User_schema.findOne({ _id: req.user.uid });
+
+  const state = await Google_schema.findOne({ _id: req.user.uid });
+
+  if (req.query.state != state.state){
+    res.json({
+      Status: 'error',
+      error: 'Invalid request',
+  });
+  return;
+  }
 
   console.log("user")
 
