@@ -35,32 +35,40 @@ const useStore = create(set => {
                 maxTime:time2,
             }),
         }).then((res) => res.json());
-    
-        console.log(data2)
-    
-        const googlestartend = data2.data.items.map((object, i) => {
-            const startDate = new Date(object.start.dateTime).valueOf();
-            const endDate = new Date(object.end.dateTime).valueOf();
-            return {start: startDate,  end: endDate};
-        })
-    
-        console.log(googlestartend)
-    
-        const googleCals = {_id: "netid1", times:googlestartend}
-    
-        console.log(googleCals)
 
-        const arr = [googleCals]
-
-        console.log(arr)
-    
-        set((previous_state) => {
-
-            return {
-                googleCal: arr
-            }
-        })
+        if (data2.Status == "error"){
+            set((previous_state) => {
+                return {
+                    googleCal: previous_state
+                }
+            })
+        }
+        else{
+            const googlestartend = data2.data.items.map((object, i) => {
+                const startDate = new Date(object.start.dateTime).valueOf();
+                const endDate = new Date(object.end.dateTime).valueOf();
+                return {start: startDate,  end: endDate};
+            })
         
+            console.log(googlestartend)
+        
+            const googleCals = {_id: "netid1", times:googlestartend}
+        
+            console.log(googleCals)
+    
+            const arr = [googleCals]
+    
+            console.log(arr)
+        
+            set((previous_state) => {
+    
+                return {
+                    googleCal: arr
+                }
+            })
+        }
+
+
     }
 
 
