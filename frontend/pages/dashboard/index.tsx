@@ -292,7 +292,7 @@ async function getRemove(){
 }
 
 async function testCode(){
-    let data2 = await fetch(`${process.env.API_URL}/user/code?state=asifhalfi&code=4/0AeanS0bsk7Iu3gJaOjqX2ECGBqmcPTndL3ZThT3-5tLyMRmZ2iW5TOHig7Vta2URjzEuuw&scope=https://www.googleapis.com/auth/calendar.readonly`, {
+    let data2 = await fetch(`${process.env.API_URL}/user/code?state=asifhalfi&code=4/0AeanS0bxGKv_xLo5GRIUdIPTS7psw4bDNEQeCon7yk-nUCRisdA83YN7RdJF-4ohL_PSRA&scope=https://www.googleapis.com/auth/calendar.readonly`, {
         method: "POST",
         credentials: "include",
         headers: {
