@@ -90,7 +90,7 @@ async function useCode(code, uid){
         code:code,
         client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
         client_secret:"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",
-        redirect_uri:"https://localhost.edu",
+        redirect_uri:"https://api.localhost.edu/user/code",
         grant_type:"authorization_code"
     }),
   }).then((res) => res.json());
