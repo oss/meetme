@@ -42,6 +42,7 @@ function MeetingGrid({ calID, rowsCount }) {
     })
 
     const userTimes = calendarMaindataStore((store) => store.calendarData[calID].data.users)
+    console.log("GLOBAL")
     console.log(userTimes)
 
     const validTimes = calendarMaindataStore((store) => store.calendarData[calID].data.blocks)
