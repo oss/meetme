@@ -15,6 +15,7 @@ import UserCalendar from './calendarPanels/userCalendar';
 
 import calendarMetadata from '@store/calendarMetadata';
 import calendarMaindata from '@store/calendarMaindata';
+import googleStore from '@store/googleStore'
 import dialogueStore from '@store/dialogueStore';
 import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
 import memberListStore from './store';
@@ -28,6 +29,9 @@ function CalendarOwner({ calID }) {
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
     const memberList = memberListStore((store)=>store.memberList)
+
+    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
+    const googleEmail = googleStore((store) => store.googleEmail)
 
 
     const MemberTileList = () => {
@@ -158,6 +162,29 @@ function CalendarOwner({ calID }) {
         )
     }
 
+    const GoogleTile = () => {
+        return (
+            <Tile>
+                <div className='bg-white'>
+                    <Tile.Body>
+                        <div className="flex justify-between items-center">
+                            <Tile.Title>
+                                Google Calendar Integration
+                            </Tile.Title>
+                            <Button
+                                className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
+                                onClick={() => {addGoogleCalendar(calID) }}
+                            >
+                                Get Google Calendar
+                            </Button>
+                        </div>
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{googleEmail || "not Linked"}</p>
+                    </Tile.Body>
+                </div>
+            </Tile>
+        )
+    }
+
     /*
                 <CalendarLocationTile calID={calID} />
             <CalendarMeetingTimeTile calID={calID} />
@@ -173,6 +200,7 @@ function CalendarOwner({ calID }) {
                     <CollaboratorTile />
                     <FinalMeetingTile/>
                     <LocationTile/>
+                    <GoogleTile/>
                 </div>
 
                 <div className='p-1' />

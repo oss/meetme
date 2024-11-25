@@ -197,50 +197,7 @@ async function getLink(){
     return data2
 }
 
-async function newaccess(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_info`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
 
-    console.log(data2)
-
-    let data = await fetch(`https://oauth2.googleapis.com/token`, {
-        method: "POST",
-        credentials: "omit",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
-            client_secret:"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",
-            refresh_token:data2.refresh_token,
-            grant_type:"refresh_token"
-        }),
-    }).then((res) => res.json());
-
-    const timeObject = new Date(Date.now() + data.expires_in * 1000);
-
-    console.log(timeObject)
-
-    let data3 = await fetch(`${process.env.API_URL}/user/google_tokens`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            access_token:data.access_token,
-            refresh_token:data2.refresh_token,
-            expires: timeObject.valueOf(),
-        }),
-    }).then((res) => res.json());
-    console.log(data3)
-    return data
-}
 
 async function getDates(){
     const time = new Date().toISOString()
@@ -291,30 +248,19 @@ async function getRemove(){
     return data2;
 }
 
-async function testCode(){
-    let data2 = await fetch(`${process.env.API_URL}/user/code?state=asifhalfi&code=4/0AeanS0bxGKv_xLo5GRIUdIPTS7psw4bDNEQeCon7yk-nUCRisdA83YN7RdJF-4ohL_PSRA&scope=https://www.googleapis.com/auth/calendar.readonly`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-
-
-    console.log(data2)
-    return data2;
-    }
 
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
-    const googleVerified = googleStore((store) => store.googleVerified);
-    const fetchGoogleVerified = googleStore((store) => store.fetchGoogleVerified);
+    const googleEmail = googleStore((store) => store.googleEmail);
+    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
+    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar);
     const setGoogleCal = googleStore((store) => store.setGoogleCal);
 
     useEffect( ()=>{
-        fetchGoogleVerified()
+        fetchGoogleEmail()
         setGoogleCal()
+        addGoogleCalendar("6uetvqHgDScEm8_82CLy5D-L1qyoKwxzev1t1UKvv606Eef6Zmx-yqw_Fqr2-JlISwvQHXd2j74rhce4USpb4Q") 
     },[])
 
 
@@ -328,24 +274,12 @@ function Dashboard() {
             </button>
             <button
                 className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  testCode()}
-            >
-                testCode
-            </button>
-            <button
-                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  newaccess()}
-            >
-                newaccess
-            </button>
-            <button
-                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
                 onClick={() =>  getDates()}
             >
                 DATES
             </button>
             <button
-                className={`${googleVerified?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
+                className={`${googleEmail?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
                 onClick={() =>  getRemove()}
             >
                 Status

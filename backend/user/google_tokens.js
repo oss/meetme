@@ -186,7 +186,7 @@ router.get('/google_info', isAuthenticated, async function (req, res) {
 
 router.get('/google_auth_link', isAuthenticated, async function (req, res) {
   const clientid = "35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com";
-  const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email";
 
   const State_obj =  await newState(req.user.uid);
 
@@ -213,6 +213,38 @@ router.get('/google_auth_link', isAuthenticated, async function (req, res) {
     link: link,
   });
   return;
+});
+
+router.post('/google_email', isAuthenticated, async function (req, res) {
+  const user_data = await User_schema.findOne({ _id: req.user.uid });
+
+  console.log(user_data)
+
+  if (user_data.googleTokens.access_token === '' || user_data.googleTokens.access_token === null) {
+    res.json({
+        Status: 'error',
+        error: 'Not verified',
+    });
+    return;
+  }
+
+  const data = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user_data.googleTokens.access_token}`, {
+    method: "GET",
+    credentials: "omit",
+    headers: {
+        "Content-Type": "application/json",
+    },
+  }).then((res) => res.json());
+
+  console.log(data)
+
+
+  res.json({
+  Status: 'ok',
+  email: data.email,
+  });
+  return;
+
 });
 
 router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
