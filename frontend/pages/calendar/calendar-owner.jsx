@@ -30,14 +30,8 @@ function CalendarOwner({ calID }) {
 
     const memberList = memberListStore((store)=>store.memberList)
 
-    const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
+    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
     const googleEmail = googleStore((store) => store.googleEmail)
-
-    const startHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[0].start)
-    const columnCount = calendarMaindata((store) => {
-        return store.calendarData[calID].data.blocks.length
-    });
-    const endHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[columnCount-1].end)
 
 
     const MemberTileList = () => {
@@ -179,7 +173,7 @@ function CalendarOwner({ calID }) {
                             </Tile.Title>
                             <Button
                                 className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
-                                onClick={() => {fetchGoogleData(calID, startHour, endHour) }}
+                                onClick={() => {addGoogleCalendar(calID) }}
                             >
                                 Get Google Calendar
                             </Button>
