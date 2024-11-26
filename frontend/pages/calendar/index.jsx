@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 
 import calendarMaindataStore from '@store/calendarMaindata';
 import calendarMetadataStore from '@store/calendarMetadata';
+import googleStore from '@store/googleStore';
 import authData from '@store/authStore';
 import orgData from '@store/orgData';
 
@@ -111,6 +112,7 @@ function CalendarLoader() {
 
     const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
     const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
+    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
 
     useEffect(() => {
         async function sharelink(calendarID){
@@ -126,6 +128,7 @@ function CalendarLoader() {
             ).then((res) => res.json());
             fetchCalendarMaindata(id);
             fetchCalendarMetadata(id);
+            fetchGoogleEmail();
             return data.Status
         }
         sharelink(id);
