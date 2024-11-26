@@ -282,22 +282,35 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
     return;
   }
 
-  //use_refresh_token(req.user.uid);
-
-  const data = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.googleTokens.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
-        method: "GET",
-        credentials: "omit",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
+  if (user_data.googleTokens.expires + 120 > Date.now() ) {
+    await use_refresh_token(req.user.uid);
+  }
 
 
+  const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.googleTokens.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
+    method: "GET",
+    credentials: "omit",
+    headers: {
+        "Content-Type": "application/json",
+    },
+  });
+  const data = await resp.json();
+
+  if (resp.status == 200){
+    res.json({
+      Status: 'ok',
+      data: data,
+    });
+    return;
+  }
   res.json({
-    Status: 'ok',
-    data: data,
+    Status: 'error',
+    error: "Something went wrong",
   });
   return;
+
+
+
 });
 
 

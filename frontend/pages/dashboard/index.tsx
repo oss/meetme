@@ -257,10 +257,13 @@ function Dashboard() {
     const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar);
     const setGoogleCal = googleStore((store) => store.setGoogleCal);
 
+    const time = new Date().toISOString()
+    const time2 = new Date(Date.now() + 48 * (60 * 60 * 1000) ).toISOString()
+
     useEffect( ()=>{
         fetchGoogleEmail()
         setGoogleCal()
-        addGoogleCalendar("6uetvqHgDScEm8_82CLy5D-L1qyoKwxzev1t1UKvv606Eef6Zmx-yqw_Fqr2-JlISwvQHXd2j74rhce4USpb4Q") 
+        addGoogleCalendar("6uetvqHgDScEm8_82CLy5D-L1qyoKwxzev1t1UKvv606Eef6Zmx-yqw_Fqr2-JlISwvQHXd2j74rhce4USpb4Q", time, time2) 
     },[])
 
 
