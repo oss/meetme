@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import socket from "../socket";
 import { produce } from "immer";
+import googleStore from "./googleStore"
 
 /*
 const calendarMetadataUpdatedHandler = (calendarID) => {
@@ -66,7 +67,8 @@ const useStore = create((set) => {
                     shouldFetch = false;
                     return;
                 }
-
+                const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
+                addGoogleCalendar(calendarID)
                 prevState.calendarMetadata[calendarID] = {
                     isLoaded: false,
                     error: false,
