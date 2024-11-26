@@ -45,9 +45,7 @@ async function newState(uid){
       //save to variable to force to wait
       await google_state.save();
       const check = await Google_schema.findOne(google_state);
-      console.log('--- created new state ---');
-      console.log(check);
-      console.log('------------------------');
+
       return {
         Status: 'ok',
         Result: 'State added',
@@ -55,8 +53,7 @@ async function newState(uid){
       };
       //adds user
     } catch (e) {
-      console.log("--error--")
-      console.log(e)
+
       return {
         Status: 'error',
         error: 'Could not add state to database',
@@ -65,8 +62,7 @@ async function newState(uid){
   }
   else{
     exists.state = crypto.randomUUID();
-    await exists.save();
-    console.log('--- updated state ---');
+
     return {
       Status: 'ok',
       Result: 'State updated',
@@ -170,18 +166,6 @@ router.delete('/google_remove', isAuthenticated, async function (req, res) {
   return;
 });
 
-router.get('/google_info', isAuthenticated, async function (req, res) {
-
-
-  const user_data = await User_schema.findOne({ _id: req.user.uid });
-  res.json({
-    Status: 'Ok',
-    access_token :user_data.googleTokens.access_token,
-    refresh_token:user_data.googleTokens.refresh_token,
-    expires:user_data.googleTokens.expires
-  });
-  return;
-});
 
 
 router.get('/google_auth_link', isAuthenticated, async function (req, res) {
@@ -218,8 +202,6 @@ router.get('/google_auth_link', isAuthenticated, async function (req, res) {
 router.post('/google_email', isAuthenticated, async function (req, res) {
   const user_data = await User_schema.findOne({ _id: req.user.uid });
 
-  console.log(user_data)
-
   if (user_data.googleTokens.access_token === '' || user_data.googleTokens.access_token === null) {
     res.json({
         Status: 'error',
@@ -228,20 +210,29 @@ router.post('/google_email', isAuthenticated, async function (req, res) {
     return;
   }
 
-  const data = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user_data.googleTokens.access_token}`, {
+
+
+  const resp = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user_data.googleTokens.access_token}`, {
     method: "GET",
     credentials: "omit",
     headers: {
         "Content-Type": "application/json",
     },
-  }).then((res) => res.json());
+  });
+  const data = await resp.json();
 
-  console.log(data)
+  if (resp.status == 200){
+    res.json({
+      Status: 'ok',
+      email: data.email,
+      });
+    return;
+  }
 
 
   res.json({
   Status: 'ok',
-  email: data.email,
+  error: "Something went wrong",
   });
   return;
 
@@ -250,9 +241,6 @@ router.post('/google_email', isAuthenticated, async function (req, res) {
 router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
 
   const user_data = await User_schema.findOne({ _id: req.user.uid });
-
-  console.log("dates")
-  console.log(user_data)
 
   if (user_data.googleTokens.access_token === '' || user_data.googleTokens.access_token === null) {
     res.json({
@@ -282,7 +270,7 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
     return;
   }
 
-  if (user_data.googleTokens.expires + 120 > Date.now() ) {
+  if (user_data.googleTokens.expires < Date.now() + 120000 ) {
     await use_refresh_token(req.user.uid);
   }
 
@@ -327,13 +315,10 @@ router.get('/google_verified', isAuthenticated, async function (req, res) {
 });
 
 router.get('/code', isAuthenticated, async function (req, res) {
-  console.log(JSON.stringify(req.user));
-  console.log(req.query.code)
-  console.log(req.query.state)
+
 
   const state = await Google_schema.findOne({ _id: req.user.uid });
 
-  console.log(state)
 
   if (state == null || req.query.state != state.state){
     res.json({
@@ -343,12 +328,7 @@ router.get('/code', isAuthenticated, async function (req, res) {
   return;
   }
 
-  console.log("user")
-
   await useCode(req.query.code, req.user.uid)
-
-  console.log("code used")
-
 
   res.redirect('https://localhost.edu');
 }
