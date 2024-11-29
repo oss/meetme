@@ -37,7 +37,6 @@ let user = new Schema({
   googleTokens:{
     access_token: String,
     refresh_token: String,
-    state:String,
     expires:Number,
   }
 });
