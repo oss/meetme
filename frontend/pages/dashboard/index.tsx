@@ -166,72 +166,24 @@ function CalendarPanel() {
     );
 }
 
-async function USECODE(){
 
-
-    let data2 = await fetch(`${process.env.API_URL}/user/google_tokens`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            code:"4/0AeanS0YReccHtwcsuzoU6-7A6dbL02ZVigfDKCzxtMufc9Zk5KdslneEFAtHm9dQkb7dcg",
-        }),
-    }).then((res) => res.json());
-
-    console.log(data2)
-
-    return data2;
-}
 
 async function getLink(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_auth_link`, {
+    let data = await fetch(`${process.env.API_URL}/user/google_auth_link`, {
         method: "GET",
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
     }).then((res) => res.json());
-    console.log(data2)
-    return data2
+    console.log(data)
+
+    if (data.Status == 'ok'){
+        return data.link;
+    }
+
+    return '';
 }
-
-
-
-async function getDates(){
-    const time = new Date().toISOString()
-    const time2 = new Date(Date.now() + 48 * (60 * 60 * 1000) ).toISOString()
-
-    let data2 = await fetch(`${process.env.API_URL}/user/google_cal_dates`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            minTime:time,
-            maxTime:time2,
-        }),
-    }).then((res) => res.json());
-
-    console.log(data2)
-
-    const googlestartend = data2.data.items.map((object: any, i: number) => {
-        const startDate = new Date(object.start.dateTime).valueOf();
-        const endDate = new Date(object.start.dateTime).valueOf();
-        return {start: startDate,  end: endDate};
-    })
-
-    console.log(googlestartend)
-
-    const googleCals = {_id: "primary", times:googlestartend}
-
-    console.log(googleCals)
-
-    return googleCals;
-}
-
 
 
 async function getRemove(){
@@ -253,32 +205,25 @@ async function getRemove(){
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
     const googleEmail = googleStore((store) => store.googleEmail);
+    const googleLink = googleStore((store) => store.googleLink);
     const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
-    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar);
-
-    const time = new Date().toISOString()
-    const time2 = new Date(Date.now() + 48 * (60 * 60 * 1000) ).toISOString()
+    const fetchGoogleLink = googleStore((store) => store.fetchGoogleLink);
 
     useEffect( ()=>{
         fetchGoogleEmail()
-        addGoogleCalendar("6uetvqHgDScEm8_82CLy5D-L1qyoKwxzev1t1UKvv606Eef6Zmx-yqw_Fqr2-JlISwvQHXd2j74rhce4USpb4Q", time, time2) 
+        fetchGoogleLink()
     },[])
 
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
-            <button
-                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  getLink()}
-            >
-                Link
-            </button>
-            <button
-                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                onClick={() =>  getDates()}
-            >
-                DATES
-            </button>
+            <a href={'' + googleLink}>
+                <button
+                    className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                >
+                    Link
+                </button>
+            </a>
             <button
                 className={`${googleEmail?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
                 onClick={() =>  getRemove()}
