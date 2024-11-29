@@ -108,48 +108,6 @@ async function useCode(code, uid){
   return 'ok';
 }
 
-router.patch('/google_tokens', isAuthenticated, async function (req, res) {
-
-  const code = req.body.code;
-
-  if (code === undefined || code === null) {
-    res.json({
-        Status: 'error',
-        error: 'No code provided',
-    });
-    return;
-  }
-
-  const data = await fetch(`https://oauth2.googleapis.com/token`, {
-    method: "POST",
-    credentials: "omit",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-        code:code,
-        client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
-        client_secret:"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",
-        redirect_uri:"https://localhost.edu",
-        grant_type:"authorization_code"
-    }),
-  }).then((res) => res.json());
-
-  console.log(data)
-
-  const timeObject = new Date(Date.now() + data.expires_in * 1000);
-
-  //updates the userdata schema
-  const user_data = await User_schema.findOne({ _id: req.user.uid });
-  user_data.googleTokens.access_token = data.access_token;
-  user_data.googleTokens.refresh_token = data.refresh_token;
-  user_data.googleTokens.expires = timeObject.valueOf();
-  await user_data.save();
-  res.json({
-    Status: 'Ok',
-  });
-  return;
-});
 
 router.delete('/google_remove', isAuthenticated, async function (req, res) {
 
@@ -302,17 +260,6 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
 });
 
 
-router.get('/google_verified', isAuthenticated, async function (req, res) {
-
-  const user_data = await User_schema.findOne({ _id: req.user.uid });
-  const verified = user_data.googleTokens.refresh_token ? true : false;
-
-  res.json({
-    Status: 'ok',
-    verified: verified,
-  });
-  return;
-});
 
 router.get('/code', isAuthenticated, async function (req, res) {
 
