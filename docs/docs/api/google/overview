@@ -1,0 +1,21 @@
+These endpoints handle the integration with google cal
+
+google_auth_link
+this creates a link to allow the user to verify their account and give meetme access to their data
+in addition it generates a state to verify requests 
+right now the clientid is setup under Andrew Somers's personal gmail account, though it will be moved eventually
+once a user completes the steps on the link, google will redirect them to the provided redirect link with a code and the given state
+
+code 
+verifies that the given state is correct and then uses the code to gain a access token and refresh token
+the refresh token last forever unless the user removes it, where access tokens last an hour
+both of these tokens are saved in the user object 
+
+after this process is done, google_email and google_cal_date can be called
+google_email gets the email of the linked account
+google_cal_date takes a time range and gives all the events on the primary calendar in that time range
+
+google_remove is used to remove the currently linked account
+
+
+

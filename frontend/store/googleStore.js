@@ -21,6 +21,24 @@ const useStore = create(set => {
         }
     }
 
+    const fetchGoogleLink= async () => {
+
+        const resp = await fetch(process.env.API_URL + `/user/google_auth_link`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        const resp_json = await resp.json();
+
+        if (resp_json.Status === 'ok') {
+            set( state => ({
+                googleLink:resp_json.link
+            }))
+        }
+    }
+
 
     const fetchGoogleData = async (calendarID, start, end) => {
 
@@ -88,9 +106,11 @@ const useStore = create(set => {
 
     return {
         fetchGoogleEmail: fetchGoogleEmail,
+        fetchGoogleLink:fetchGoogleLink,
         fetchGoogleData:fetchGoogleData,
         addGoogleCalendar:addGoogleCalendar,
         googleEmail:"",
+        googleLink:"",
         googleData:{},
     }
 })
