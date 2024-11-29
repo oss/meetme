@@ -23,34 +23,34 @@ router.get('/me', isAuthenticated, async function (req, res) {
     });
 });
 
-// //limited access
-// router.get('/:netid', isAuthenticated, async function (req, res) {
-//   const netid = req.params.netid;
-//   let target_usr = await User_schema.findOne(
-//     { _id: netid },
-//     { _id: 1, alias: 1, name: 1 }
-//   );
+//limited access
+router.get('/:netid', isAuthenticated, async function (req, res) {
+  const netid = req.params.netid;
+  let target_usr = await User_schema.findOne(
+    { _id: netid },
+    { _id: 1, alias: 1, name: 1 }
+  );
 
-//   if (target_usr === null) {
-//     if (await valid_netid(netid)) {
-//       await create_user(netid);
-//       target_usr = await User_schema.findOne(
-//         { _id: netid },
-//         { _id: 1, alias: 1, name: 1 }
-//       );
-//     } else {
-//       res.json({
-//         Status: 'error',
-//         error: 'User does not exist or has not made an account yet',
-//       });
-//       return;
-//     }
-//   }
+  if (target_usr === null) {
+    if (await valid_netid(netid)) {
+      await create_user(netid);
+      target_usr = await User_schema.findOne(
+        { _id: netid },
+        { _id: 1, alias: 1, name: 1 }
+      );
+    } else {
+      res.json({
+        Status: 'error',
+        error: 'User does not exist or has not made an account yet',
+      });
+      return;
+    }
+  }
 
-//   res.json({
-//     Status: 'ok',
-//     data: target_usr,
-//   });
-// });
+  res.json({
+    Status: 'ok',
+    data: target_usr,
+  });
+});
 
 module.exports = router;
