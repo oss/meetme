@@ -211,19 +211,20 @@ function Dashboard() {
 
     useEffect( ()=>{
         fetchGoogleEmail()
-        fetchGoogleLink()
     },[])
 
 
     return (
         <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
-            <a href={'' + googleLink}>
+            
                 <button
                     className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                    onClick={() => fetchGoogleLink()}
                 >
                     Link
+                    <a href={'' + googleLink}>HI</a>
                 </button>
-            </a>
+            
             <button
                 className={`${googleEmail?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
                 onClick={() =>  getRemove()}
