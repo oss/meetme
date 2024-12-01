@@ -63,6 +63,8 @@ async function newState(uid){
   else{
     exists.state = crypto.randomUUID();
 
+    await exists.save();
+
     return {
       Status: 'ok',
       Result: 'State updated',
@@ -141,9 +143,6 @@ router.get('/google_auth_link', isAuthenticated, async function (req, res) {
   }
 
 
-
-  const user_data = await User_schema.findOne({ _id: req.user.uid });
-  user_data.googleTokens.state = State_obj.state;
 
   const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=`+SCOPES+`&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+State_obj.state+`&redirect_uri=https://api.localhost.edu/user/code&client_id=`+clientid
 
@@ -265,6 +264,10 @@ router.get('/code', isAuthenticated, async function (req, res) {
 
 
   const state = await Google_schema.findOne({ _id: req.user.uid });
+
+  console.log("STATE")
+  console.log(state)
+  console.log(req.query.state)
 
 
   if (state == null || req.query.state != state.state){
