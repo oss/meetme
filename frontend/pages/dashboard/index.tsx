@@ -173,7 +173,7 @@ function CalendarPanel() {
 
 
 async function getRemove(){
-    let data2 = await fetch(`${process.env.API_URL}/user/google_remove`, {
+    let data2 = await fetch(`${process.env.API_URL}/int/google_remove`, {
         method: "DELETE",
         credentials: "include",
         headers: {

@@ -5,7 +5,7 @@ const useStore = create(set => {
 
     const fetchGoogleEmail= async () => {
 
-        const resp = await fetch(process.env.API_URL + `/user/google_email`, {
+        const resp = await fetch(process.env.API_URL + `/int/google_email`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -23,7 +23,7 @@ const useStore = create(set => {
 
     const fetchGoogleLink= async () => {
 
-        const resp = await fetch(process.env.API_URL + `/user/google_auth_link`, {
+        const resp = await fetch(process.env.API_URL + `/int/google_auth_link`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -45,7 +45,7 @@ const useStore = create(set => {
         const time = new Date(start).toISOString()
         const time2 = new Date(end ).toISOString()
     
-        const resp = await fetch(`${process.env.API_URL}/user/google_cal_dates`,
+        const resp = await fetch(`${process.env.API_URL}/int/google_cal_dates`,
             {
                 method: "POST",
                 credentials: "include",

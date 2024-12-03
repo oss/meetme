@@ -22,5 +22,9 @@
     {
         "dir": "settings",
         "route": "/settings"
+    },
+    {
+        "dir": "integration",
+        "route": "/int"
     }
 ]
