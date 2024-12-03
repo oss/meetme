@@ -14,6 +14,9 @@ import OrgTile from './organizations/orgTile';
 import LoadingOrgTile from './organizations/loadingTile';
 import Stack from '@primitives/stack';
 import { hoveredTileStore } from './store.js'
+import dialogueStore from '@store/dialogueStore';
+import { Dialog } from '@headlessui/react';
+import RedButton from '@components/utils/red-button';
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
@@ -168,23 +171,6 @@ function CalendarPanel() {
 
 
 
-async function getLink(){
-    let data = await fetch(`${process.env.API_URL}/user/google_auth_link`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-    console.log(data)
-
-    if (data.Status == 'ok'){
-        return data.link;
-    }
-
-    return '';
-}
-
 
 async function getRemove(){
     let data2 = await fetch(`${process.env.API_URL}/user/google_remove`, {
@@ -202,12 +188,45 @@ async function getRemove(){
 
 
 
+
+function GoogleLinkDialogue(){
+    const googleLink = googleStore((store) => store.googleLink);
+    const googleEmail = googleStore((store) => store.googleEmail);
+
+    return (
+    <>
+        <Dialog.Title>{"Link Google Account"}</Dialog.Title>
+        <Dialog.Description>
+            <p className="text-sm text-gray-500">
+                {"This will take you to google to link your account"}
+            </p>
+            {googleEmail?
+                <p className="text-sm text-gray-500">
+                {"You have already linked the account: " + googleEmail}
+                </p>:
+                ""}
+        </Dialog.Description>
+        <div className='h-1' />
+        <div className='inline-flex w-full'>
+            <div className=''>
+                <a href = {googleLink}>
+                    <RedButton>
+                        {"Go to Google"}
+                    </RedButton>
+                </a>
+            </div>
+        </div>
+    </>
+    )
+}
+
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
     const googleEmail = googleStore((store) => store.googleEmail);
-    const googleLink = googleStore((store) => store.googleLink);
     const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
+    const dialogueHook = dialogueStore((store) => store.setPanel)
     const fetchGoogleLink = googleStore((store) => store.fetchGoogleLink);
+
 
     useEffect( ()=>{
         fetchGoogleEmail()
@@ -219,10 +238,12 @@ function Dashboard() {
             
                 <button
                     className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                    onClick={() => fetchGoogleLink()}
+                    onClick={() => {
+                        fetchGoogleLink()
+                        dialogueHook(<GoogleLinkDialogue/>)
+                    }}
                 >
                     Link
-                    <a href={'' + googleLink}>HI</a>
                 </button>
             
             <button
