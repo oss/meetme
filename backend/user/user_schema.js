@@ -34,11 +34,6 @@ let user = new Schema({
       _id: String,
     },
   ],
-  googleTokens:{
-    access_token: String,
-    refresh_token: String,
-    expires:Number,
-  }
 });
 
 const User = mongoose.model('users', user);
