@@ -108,19 +108,6 @@ for (let i = 0; i < router_config.length; i++) {
       router.use(top_endpoint, require('./' + dir + '/' + files[j]));
     }
   }
-
-  if (process.env.DEV === 'true') {
-    if (fs.existsSync('./' + dir + '/testing')) {
-      const testing_files = fs.readdirSync('./' + dir + '/testing');
-      for (let j = 0; j < testing_files.length; j++) {
-        console.log('loading test file ---> ' + testing_files[j]);
-        router.use(
-          '/test',
-          require('./' + dir + '/testing/' + testing_files[j])
-        );
-      }
-    }
-  }
 }
 
 router.get('/', function (req, res) {
