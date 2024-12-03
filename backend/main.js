@@ -96,18 +96,18 @@ require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
 //set up paths
-require('json5/lib/register')
-//const JSON5 = require('json5')
-//const config = JSON5.parse('./config.json5');
-const config = require('./config.json5')
-const enabled_routes = config['routers']
-for (let i = 0; i < enabled_routes.length; i++) {
-    const enabled_route = enabled_routes[i];
+const router_config = require('./router_config.json');
+for (let i = 0; i < router_config.length; i++) {
+  let dir = router_config[i]['dir'];
+  let top_endpoint = router_config[i]['route'];
+  let files = fs.readdirSync(dir);
 
-    const prefix = enabled_route['prefix'];
-    const router_location = enabled_route['router_file'];
-
-    router.use(prefix, require(router_location));
+  for (let j = 0; j < files.length; j++) {
+    if (!files[j].includes('schema') && files[j].endsWith('.js')) {
+      console.log('loading file ---> ' + files[j]);
+      router.use(top_endpoint, require('./' + dir + '/' + files[j]));
+    }
+  }
 }
 
 router.get('/', function (req, res) {
