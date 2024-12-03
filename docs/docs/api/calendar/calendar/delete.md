@@ -1,5 +1,10 @@
 ---
-last_updated_hash: abc
+properties: !!set
+    ? api-endpoint
+endpoint-info:
+    http-method: DELETE
+    url: '/cal/:calendar_id'
+    latest-hash: cc1ca67906c54dbe6603abc20f52da0b5b87be3c
 ---
 
 # Delete

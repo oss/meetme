@@ -4,8 +4,8 @@ const { MongoClient } = require('mongodb');
 const fetch = require('node-fetch');
 const watch_meetme = require('./rings of power/watch_meetme');
 const watch_cal_memberlist = require('./rings of power/watch_cal_memberlist');
-const watch_orgs = require('./rings of power/watch_orgs');
-const watch_user = require('./rings of power/watch_user');
+const watch_invites = require('./rings of power/watch_invites');
+const watch_cal_metadata = require('./rings of power/watch_calendars_metadata');
 
 // create new server with path /sauron
 const io = new Server({ path: '/sauron' });
@@ -14,19 +14,6 @@ const io = new Server({ path: '/sauron' });
 const mongoClient = new MongoClient(process.env.MONGO_URL, {
   useUnifiedTopology: true,
 });
-
-const collection = mongoClient.db('meetme').collection('calendar_metas');
-const changeStream = collection.watch(
-  [
-    { $match: { operationType: 'update' } },
-    {
-      $addFields: {
-        doc: { $objectToArray: '$updateDescription.updatedFields' },
-      },
-    },
-  ],
-  { fullDocument: 'updateLookup' }
-);
 
 // async function for promise-based behavior
 const main = async () => {
@@ -57,8 +44,7 @@ const main = async () => {
         },
       })
     ).json();
-    console.log(res);
-
+    
     // clients are not actually connected when this middleware function gets executed so we call next() instead of disconnect()
     // next() executes the next middleware function. If its the last middleware function, the client conencts to server ?
     // if next is sent with error message, then connection will be refused and client will recieve connect_error event
@@ -124,18 +110,12 @@ const main = async () => {
       socket.emit('listen', calid);
     });
 
-    socket.on('dashboard', () => {
-      console.log('Connected to dashbaord');
-      socket.emit('custom-message', 'message from websocket server', {
-        status: 'connected',
-      });
-    });
-  });
+});
 
   await watch_meetme(io, mongoClient);
   await watch_cal_memberlist(io, mongoClient);
-
-  await watch_user(io, mongoClient);
+  await watch_invites(io, mongoClient);
+  await watch_cal_metadata(io,mongoClient);
   // server starts listening for connections on port 3000
   io.listen(3000);
 };

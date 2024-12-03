@@ -8,4 +8,4 @@ setInterval(()=>{
     }).then((res) => res.json()).then((data) => {
         self.postMessage(data.Status === 'ok');
     });
-},1000*1);
+},1000*10);

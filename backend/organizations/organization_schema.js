@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 let organization = new Schema({
   _id: String,
   name: String,
+  created:Number,
   owner: String,
   calendars: [
     {

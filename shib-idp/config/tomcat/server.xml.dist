@@ -10,10 +10,6 @@
           scheme="https" secure="true" SSLEnabled="true"
           keystoreFile="/opt/certs/keystore.jks" keystorePass="password"
           clientAuth="false" sslProtocol="TLS"/>
-<Connector
-     port="8080" maxThreads="150"
-     enableLookups="false" connectionTimeout="20000" />
-    
     <Engine name="Catalina" defaultHost="localhost">
 
       <Host name="localhost"  appBase="webapps"

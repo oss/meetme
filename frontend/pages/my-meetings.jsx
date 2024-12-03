@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import uniqid from 'uniqid';
-import { socket } from '../socket';
+import socket from '../socket';
 
 function MyMeetings() {
     const [userInfo, setUserInfo] = useState(null);

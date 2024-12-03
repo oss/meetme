@@ -23,7 +23,7 @@ export default function InvitationTile({
                 fullHeight={true}
             >
                 <div className="flex justify-start items-center w-full h-full">
-                    <div className={`bg-white rounded cursor-pointer`}>
+                    <div className={`bg-white rounded cursor-pointer w-full`}>
                         <p
                             className={
                                 "w-full mr-20 text-xl h-fit font-semibold break-words col-span-2 "
@@ -36,13 +36,13 @@ export default function InvitationTile({
                         </p>
                         <div className="flex justify-end mt-2">
                             <button
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
+                                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
                                 onClick={() => acceptInvite()}
                             >
                                 Accept
                             </button>
                             <button
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                                className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
                                 onClick={() => declineInvite()}
                             >
                                 Decline

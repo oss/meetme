@@ -43,17 +43,6 @@ router.post('/', isAuthenticated, async function (req, res) {
   }
 
   console.log(JSON.stringify(owner));
-  if (
-    !JSON.stringify(owner).match(
-      '{"type":"(?:individual|organization)","id":"[a-zA-Z0-9]+"}'
-    )
-  ) {
-    res.json({
-      Status: 'error',
-      error: 'Invalid owner syntax',
-    });
-    return;
-  }
 
   //verify owner data is ok and able to create calendar
   if (owner.type === 'individual') {
@@ -168,9 +157,12 @@ router.post('/', isAuthenticated, async function (req, res) {
 
     calendar_metadata.name = req.body.name || 'untitled';
     calendar_metadata.location = req.body.location || null;
+    calendar_metadata.created = new Date().getTime();
+    calendar_metadata.modified = new Date().getTime();
     calendar_metadata.description = [];
     calendar_maindata.links = [];
     calendar_metadata.public = req.body.public || false; //false by default
+    calendar_metadata.shareLink = req.body.public || true; //true by default
 
     //TODO: doubel check that owner and org id match
     calendar_maindata.owner = {
@@ -182,7 +174,7 @@ router.post('/', isAuthenticated, async function (req, res) {
       _id: owner.id,
     };
     calendar_maindata.blocks = timeblocks;
-    calendar_maindata.meetingTime = {
+    calendar_metadata.meetingTime = {
       start: null,
       end: null,
     };
@@ -329,17 +321,6 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
   }
 });
 
-/*
-
-router.get('/:calendar_id/dump', isAuthenticated, async function (req, res) {
-
-    MEANT TO DO BOTH /meta and /main in 1 call
-    implement later not required
-
-});
-
-*/
-
 router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
   //individual cal or made time in org cal
   const cal_meta = await Calendar_schema_meta.findOne(
@@ -351,7 +332,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
     res.json({
       Status: 'error',
       error:
-        'This calendar does not exist or you do not have access to this calendar',
+        'Calendar does not exist or you do not have access to this calendar',
     });
     return;
   }
@@ -368,7 +349,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
       res.json({
         Status: 'error',
         error:
-          'This calendar does not exist or you do not have access to this calendar',
+          'Calendar does not exist or you do not have access to this calendar',
       });
       return;
     }
@@ -399,7 +380,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
         res.json({
           Status: 'error',
           error:
-            'The calendar does not exist or you do not have access to this calendar',
+            'Calendar does not exist or you do not have access to this calendar',
         });
       else
         res.json({
@@ -422,7 +403,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
     res.json({
       Status: 'error',
       error:
-        'The calendar does not exist or you do not have access to this calendar',
+        'Calendar does not exist or you do not have access to this calendar',
     });
 
     return;
@@ -437,7 +418,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
       res.json({
         Status: 'error',
         error:
-          'Calendar does not exist or you do not ave access to this calendar',
+          'Calendar does not exist or you do not have access to this calendar',
       });
       return;
     }
@@ -466,7 +447,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
         res.json({
           Status: 'error',
           error:
-            'The calendar does not exist or you do not have access to this calendar',
+            'Calendar does not exist or you do not have access to this calendar',
         });
       else
         res.json({
@@ -515,51 +496,5 @@ router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
     });
   }
 });
-
-/*
-router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
-    const cal_id = req.params.calendar_id;
-    const uid = req.user.uid;
-
-    if (!uid.toString().match(req.user.uid)) {
-        res.json({
-            Status: "error",
-            error: "Incorrect target users payload"
-        });
-        return;
-    }
-
-    const target_cal = await Calendar_schema_main.findOne({
-        _id: cal_id, $or: [
-            { owner: req.user.uid },
-            { admins: { _id: req.user.uid } }
-        ]
-    });
-
-    if (target_cal === null) {
-        res.json({
-            Status: 'error',
-            error: 'The calendar does not exist or you do not have access to share'
-        });
-        return;
-    }
-
-    await Calendar_schema_main.updateOne({ _id: cal_id }, {
-        $pull: {
-            editors: { _id: uid },
-            members: { _id: uid },
-            viewers: { _id: uid },
-        }
-    });
-
-    res.json({
-        Status: 'ok',
-    });
-});
-
-router.patch('/:calendar_id/kick', isAuthenticated, async function (req, res){
-    res.json({Status: 'error', error: 'not implemented yet'})
-});
-*/
 
 module.exports = router;

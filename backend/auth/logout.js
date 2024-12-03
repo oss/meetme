@@ -1,14 +1,20 @@
 const { isAuthenticated } = require("./passport/util");
+const express = require('express');
+const router = express.Router();
 
-module.exports = function (router, passport) {
-  router.get('/logout',isAuthenticated, function (req, res, next) {
-    req.logout(function(err) {
-      if (err) { return next(err); }
-      res.redirect('/');
+router.get('/logout', isAuthenticated, function (req, res, next) {
+    req.logout(function (err) {
+        if (err) { 
+            res.json({
+                Status: 'error',
+                error: error
+            }); 
+        }
     });
 
     res.json({
-      Status: 'ok',
+        Status: 'ok',
     });
-  });
-};
+});
+
+module.exports = router;

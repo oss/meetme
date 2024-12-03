@@ -27,15 +27,11 @@ setup_file() {
 
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '2'
 
-    assert_equal "$( "${jq_command[@]}" '$r.calendar | length' )" '9'
+    assert_equal "$( "${jq_command[@]}" '$r.calendar | length' )" '8'
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner | length' )" '2'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner.owner_type' )" 'individual'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner._id' )" "${NETID}"
-
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime | length' )" '2'
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime.start' )" 'null'
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime.end' )" "null"
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.deleted.isDeleted' )" 'false'
 
@@ -70,15 +66,11 @@ setup_file() {
 
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '2'
 
-    assert_equal "$( "${jq_command[@]}" '$r.calendar | length' )" '9'
+    assert_equal "$( "${jq_command[@]}" '$r.calendar | length' )" '8'
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner | length' )" '2'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner.owner_type' )" 'individual'
     assert_equal "$( "${jq_command[@]}" '$r.calendar.owner._id' )" "${NETID}"
-
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime | length' )" '2'
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime.start' )" 'null'
-    assert_equal "$( "${jq_command[@]}" '$r.calendar.meetingTime.end' )" "null"
 
     assert_equal "$( "${jq_command[@]}" '$r.calendar.deleted.isDeleted' )" 'false'
 

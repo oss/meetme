@@ -1,55 +1,72 @@
-site_name: Meetme by Rutgers OSS 
+site_name: Meetme
 site_url: https://oss.rutgers.edu
+repo_name: oss/meetme
+repo_url: https://github.com/oss/meetme
+
 nav:
+  - Overview: 
     - About: index.md
     - Quick Start: about.md
-    - Backend: backend.md
-    - Endpoints: api-summary.md
-    - API:
-      - Overview: api/api-overview.md
-      - Summary: api/api-summary.md
-      - Calendar:
-        - Calendars:
-          - api/calendar/calendar/post.md
-          - api/calendar/calendar/delete.md
-        - Locations:
-          - api/calendar/location/get.md
-          - api/calendar/location/patch.md
-    - Architecture: 
-      - Philosophy: architecture/index.md
-      - Diagrams: architecture/systems.md
-      - Dependencies: architecture/dependencies.md
     - FAQ: faq.md
     - Todo List: todo.md
     - Changelog: changelog.md
+  - Endpoints:
+      - Overview: api/api-overview.md
+      - Authentication:
+          - api/auth/login.md
+          - api/auth/login-callback.md
+          - api/auth/logout.md
+      - Calendar:
+          - Calendars:
+              - api/calendar/calendar/post.md
+              - api/calendar/calendar/delete.md
+          - Locations:
+              - api/calendar/location/get.md
+              - api/calendar/location/patch.md
+          - Sharing:
+              - api/calendar/sharing/accept-invite.md
+  - Testing:
+      - testing/backend-test.md
+      - testing/testing-docs.md
+  - Architecture:
+      - Philosophy: architecture/index.md
+      - Diagrams: architecture/systems.md
+      - Dependencies: architecture/dependencies.md
 
 use_directory_urls: false
 
 theme:
   name: material
   palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: indigo
+      accent: indigo
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/toggle-switch
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
+      accent: indigo
       toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+
   features:
     - content.tabs
+    - navigation.tabs
 
 plugins:
   - offline
   - search:
       lang: en
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
-  
-  
+
 markdown_extensions:
   - admonition
   - pymdownx.superfences:
@@ -62,16 +79,13 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tabbed:
-      alternate_style: true 
+      alternate_style: true
   - toc:
       permalink: true
 
 extra:
   social:
-    - icon: fontawesome/brands/linkedin 
+    - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/company/rutgersoss
     - icon: fontawesome/brands/github
       link: https://github.com/oss
-
-extra_javascript:
-  - extra/refresh_on_toggle_dark_light.js

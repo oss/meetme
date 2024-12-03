@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  #CI_DEBUG_SERVICES: 1
+  CI_DEBUG_SERVICES: 1
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'

@@ -12,3 +12,4 @@ frontend/index.css
 *.vscode*
 docs/site
 response.json
+frontend/.config

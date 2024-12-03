@@ -10,6 +10,7 @@ const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
 const logger = require('./logging');
 const crypto =  require("crypto");
+const Keygrip = require("keygrip");
 mongoose.connect(process.env.MONGO_URL);
 const random_ip_list = require("./random_ip_list.json");
 
@@ -17,7 +18,8 @@ app.set('trust proxy', 1);
 router.use((req, res, next) => {
   //console.log('backend: %s %s %s', req.method, req.url, req.path);
   req.request_id = crypto.randomUUID();
-  logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
+  //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
+  logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
   next();
 });
 
@@ -37,7 +39,7 @@ app.use((error, req, res, next) => {
 
 app.use(
   cookieSession({
-    keys: ['secret1',"secret2"],
+    keys: new Keygrip(['secret1',"secret2"],'sha512'),
     resave: true,
     saveUninitialized: false,
     domain: 'localhost.edu',
@@ -73,8 +75,8 @@ const samlStrategy = new saml.Strategy(
     identifierFormat: null,
     decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf8'),
     privateCert: fs.readFileSync('./certs/cert.pem', 'utf8'),
-    cert: fs.readFileSync('./certs/idp.pem', 'utf8'),
-    validateInResponseTo: false,
+    idpCert: fs.readFileSync('./certs/idp.pem', 'utf8'),
+//    validateInResponseTo: false,
     disableRequestedAuthnContext: true,
     wantAssertionsSigned: false
   },
@@ -92,30 +94,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
-
-//set up authentication paths, need to pass passport functions w/ special param
-const auth_files = fs.readdirSync('./auth');
-const auth_router = express.Router();
-for (let i = 0; i < auth_files.length; i++) {
-  let auth_file = auth_files[i];
-  if (auth_file.endsWith('.js')) {
-    console.log('loading --> ' + auth_file);
-    require('./auth/' + auth_file)(auth_router, passport);
-  }
-}
-
-if (process.env.DEV === 'true') {
-  if (fs.existsSync('./auth/testing')) {
-    const testing_files = fs.readdirSync('./auth/testing');
-    for (let j = 0; j < testing_files.length; j++) {
-      console.log('loading test file ---> ' + testing_files[j]);
-      if (testing_files[j].endsWith('.js'))
-        router.use('/test', require('./auth/testing/' + testing_files[j]));
-    }
-  }
-}
-
-router.use('/', auth_router);
 
 //set up paths
 const router_config = require('./router_config.json');
@@ -196,21 +174,6 @@ router.get('/', function (req, res) {
 });
 
 app.use('/', router);
-
-if (process.env.DEV === 'true') {
-    router.get('/clear_db', async function (req, res) {
-        //comment here to change a git hash
-      const User_schema = require('./user/user_schema');
-      const Calendar_schema_main = require('./calendar/calendar_schema_main');
-      const Calendar_schema_meta = require('./calendar/calendar_schema_meta');
-      const Org_schema = require('./organizations/organization_schema');
-      await User_schema.deleteMany({});
-      await Calendar_schema_main.deleteMany({});
-      await Calendar_schema_meta.deleteMany({});
-      await Org_schema.deleteMany({});
-      res.json({ Status: 'ok' });
-    });
-}  
 
 // Starting server using listen function
 app.listen(port, function (err) {

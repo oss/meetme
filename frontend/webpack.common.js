@@ -1,6 +1,7 @@
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
 module.exports = env = {
     entry: {
@@ -13,6 +14,12 @@ module.exports = env = {
     },
     resolve: {
         extensions: ['.*', '.js', '.jsx', '.tsx', '.ts'],
+        alias: {
+            "@primitives": path.resolve(__dirname, './components/lib/primitives'),
+            "@ui": path.resolve(__dirname, './components/lib/ui'),
+            "@store": path.resolve(__dirname, './store'),
+            "@components": path.resolve(__dirname, './components'),
+        },
     },
     module: {
         rules: [
@@ -22,7 +29,7 @@ module.exports = env = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+                        presets: ['@babel/preset-env', '@babel/preset-react', ['@babel/preset-typescript', {optimizeConstEnums: true}]],
                         plugins: ['@babel/plugin-transform-object-assign'],
                     },
                 },
@@ -42,6 +49,7 @@ module.exports = env = {
     plugins: [
         new HTMLWebpackPlugin({ template: './public/index.html' }),
         new webpack.EnvironmentPlugin(['API_URL']),
+        new webpack.EnvironmentPlugin(['WEBSITE_URL']),
         new webpack.ProvidePlugin({
             React: 'react',
         }),

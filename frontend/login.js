@@ -3,15 +3,17 @@ import Cookies from 'js-cookie';
 const App = lazy(() => import('./main'));
 import Tile from '/components/utils/tile';
 import LargeButton from '/components/utils/large-button';
-import sheild_img from '/assets/RU_SHIELD_BLACK.png';
+import rutgersR from '/assets/RUTGERS_H_RED_BLACK_RGB.png'
 import '/index.css';
-import Footer from '/components/footer';
+import Footer from './components/lib/ui/footer';
+import authStore from "./store/authStore";
+import userStore from "./store/userStore"
 
 function NavbarLogin() {
     return (
         <div className="w-full h-14 flex bg-white border-white" id="navbar_wrapper">
             <div className="ml-10 flex items-center">
-                <img className="w-8 h-8 items-center" src={sheild_img}></img>
+                <img className="h-9 m-4 items-center" src={rutgersR}></img>
                 <span className="font-semibold text-xl">meetMe</span>
             </div>
         </div>
@@ -19,57 +21,34 @@ function NavbarLogin() {
 }
 
 function Login() {
-    const [cookie_check, setCookieCheck] = useState(() => {
-        if ( Cookies.get('session') === undefined || Cookies.get('session.sig') === undefined ) {
-            return false;
-        }
-        return true;
-    });
-
-    const [logged_in, set_logged_in] = useState(null);
-
-    useEffect(() => {
-        if (cookie_check === true)
-            fetch(process.env.API_URL + '/whoami', {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data.Status === 'ok');
-                set_logged_in(data.Status === 'ok');
-            });
-    }, []);
+    const isLoggedIn = authStore((state)=>state.isLoggedIn)
+    const hasUserData = userStore((state)=> '_id' in state)
 
     //set this up so we can redirect to custom pages
     const login = () => {
-        let current_url = window.location.href;
-        let dest = current_url.replace(/https:\/\/localhost.edu/, '');
-        window.location.href = 'https://api.localhost.edu/login?dest=' + dest;
+        const current_url = window.location.href;
+        const dest = current_url.replace(process.env.WEBSITE_URL, '');
+        window.location.assign(process.env.API_URL+'/login?dest=' + dest);
     };
 
-    if (cookie_check) {
-        if (logged_in === null) {
-            return (
-                <>
-                    <p>Attempting to login</p>
-                </>
-            );
-        } else if (logged_in){
-            const loginHeartBeat = new Worker(new URL("./web_workers/worker.js", import.meta.url));
-            loginHeartBeat.addEventListener("message",(e)=>{
-                set_logged_in(e.data);
-            });
-            return <App />;
-        }
-        else {
-            Cookies.remove('session', { domain: '.localhost.edu' });
-            Cookies.remove('session.sig', { domain: '.localhost.edu' });
-            setCookieCheck(false);
-        }
+    if (isLoggedIn) {
+        //const loginHeartBeat = new Worker(new URL("./web_workers/worker.js", import.meta.url));
+        /*loginHeartBeat.addEventListener("message",(e)=>{
+            set_logged_in(e.data);
+        });
+        */
+       if(!hasUserData){
+           return(
+               <div>
+                   Getting user data...
+               </div>
+           )
+       }
+        return(
+            <React.Suspense>
+                <App />
+            </React.Suspense>
+        )
     } else
         return (
             <>

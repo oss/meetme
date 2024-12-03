@@ -47,7 +47,7 @@
         <InputDataConnector ref="myLDAP" attributeNames="pager"/>
     </AttributeDefinition>
 
-    <AttributeDefinition xsi:type="Simple" id="sn">
+    <AttributeDefinition xsi:type="Simple" id="surname">
         <InputDataConnector ref="myLDAP" attributeNames="sn"/>
     </AttributeDefinition>
 
@@ -208,32 +208,6 @@
 -->
 
     <!-- Example LDAP Connector -->
-<!--
-    <DataConnector id="myLDAP" xsi:type="LDAPDirectory"
-        ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
-        baseDN="%{idp.attribute.resolver.LDAP.baseDN}" 
-        principal="%{idp.attribute.resolver.LDAP.bindDN}"
-        principalCredential="%{idp.attribute.resolver.LDAP.bindDNCredential}"
-        useStartTLS="%{idp.attribute.resolver.LDAP.useStartTLS:true}"
-        connectTimeout="%{idp.attribute.resolver.LDAP.connectTimeout}"
-	trustFile="%{idp.attribute.resolver.LDAP.trustCertificates}"
-        responseTimeout="%{idp.attribute.resolver.LDAP.responseTimeout}">
-        <FilterTemplate>
-            <![CDATA[
-                %{idp.attribute.resolver.LDAP.searchFilter}
-            ]]>
-        </FilterTemplate>
-	    <ConnectionPool
-            minPoolSize="%{idp.pool.LDAP.minSize:3}"
-            maxPoolSize="%{idp.pool.LDAP.maxSize:10}"
-            blockWaitTime="%{idp.pool.LDAP.blockWaitTime:PT3S}"
-            validatePeriodically="%{idp.pool.LDAP.validatePeriodically:true}"
-            validateTimerPeriod="%{idp.pool.LDAP.validatePeriod:PT5M}"
-            expirationTime="%{idp.pool.LDAP.idleTime:PT10M}" />
-    </DataConnector>
--->
-
-    <!-- Default LDAP Connector (no TLS) -->
     <DataConnector id="myLDAP" xsi:type="LDAPDirectory"
         ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
         baseDN="%{idp.attribute.resolver.LDAP.baseDN}" 
@@ -255,7 +229,6 @@
             validateTimerPeriod="%{idp.pool.LDAP.validatePeriod:PT5M}"
             expirationTime="%{idp.pool.LDAP.idleTime:PT10M}" />
     </DataConnector>
-
 
     <!-- DataConector for pairwise-id (example depends on saml-nameid.properties). -->
 
@@ -272,4 +245,3 @@
 -->
 
 </AttributeResolver>
-

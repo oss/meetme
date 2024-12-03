@@ -1,5 +1,7 @@
 module.exports = {
-    plugins: [],
+    plugins: [
+        require('@headlessui/tailwindcss')
+    ],
     content: [
         './public/index.html',
         './components/**/*.{html,js,jsx,ts,tsx}',

@@ -70,16 +70,14 @@ setup_file() {
     
     assert_equal "$( "${jq_command[@]}" '$r | length' )" '3'
 
-    assert_equal "$( "${jq_command[@]}" '$r.user | length' )" '3'
+    assert_equal "$( "${jq_command[@]}" '$r.user | length' )" '2'
     assert_equal "$( "${jq_command[@]}" '$r.user.uid' )" "${NETID}"
     assert_equal "$( "${jq_command[@]}" '$r.user.firstName' )" 'First'"${NETID}"
-    assert_equal "$( "${jq_command[@]}" '$r.user.lastName' )" 'Last'"${NETID}"
 
     assert_equal "$( "${jq_command[@]}" '$r.session | length' )" '2'
     assert_regex "$( "${jq_command[@]}" '$r.session.time' )" '[0-9]+'
     assert_equal "$( "${jq_command[@]}" '$r.session.passport.user.uid' )" "${NETID}"
     assert_equal "$( "${jq_command[@]}" '$r.session.passport.user.firstName' )" 'First'"${NETID}"
-    assert_equal "$( "${jq_command[@]}" '$r.session.passport.user.lastName' )" 'Last'"${NETID}"
 
     assert_equal "$(jq -rn --argjson r "${details}" '$r.http_code')" '200' 
 }

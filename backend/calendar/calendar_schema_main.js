@@ -8,10 +8,6 @@ let calendar = new Schema({
     owner_type: String,
     _id: String,
   },
-  meetingTime: {
-    start: Number,
-    end: Number,
-  },
   blocks: [{ start: Number, end: Number, _id: false }],
   users: [
     {

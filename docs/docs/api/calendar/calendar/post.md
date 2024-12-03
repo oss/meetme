@@ -1,5 +1,10 @@
 ---
-last_updated_hash: abc
+properties: !!set
+    ? api-endpoint
+endpoint-info:
+    http-method: POST
+    url: '/cal'
+    latest-hash: aada5a3d2337bec5e0d706601206fc2fc6fa35cd
 ---
 
 # Create
@@ -44,10 +49,6 @@ fetch('https://api.localhost.edu/cal', {
     "owner": {
       "owner_type": "individual",
       "_id": "netid1"
-    },
-    "meetingTime": {
-      "start": null,
-      "end": null
     },
     "deleted": {
       "isDeleted": false
