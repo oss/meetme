@@ -1,0 +1,21 @@
+{
+    // specify extra routers to load
+    "routers": [
+        {
+            "router_file": "./auth/router.js",
+            "prefix": "/"
+        },
+        {
+            "router_file": "./calendar/router.js",
+            "prefix": "/cal"
+        },
+        {
+            "router_file": "./organizations/router.js",
+            "prefix": "/org"
+        },
+        {
+            "router_file": "./user/router.js",
+            "prefix": "/user"
+        }
+    ]
+}
