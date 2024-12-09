@@ -1,4 +1,5 @@
 import Tile from '@primitives/tile';
+import Stack from '@primitives/stack';
 
 import { Button } from '@headlessui/react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
@@ -9,10 +10,12 @@ import LocationDialogue from '@components/stateful/dialogues/locationDialogue';
 import MeetingTimeDialogue from '@components/stateful/dialogues/meetingTimeDialogue';
 
 import GlobalCalendar from './calendarPanels/globalCalendar';
+import GoogleCalendar from './calendarPanels/googleCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
 
 import calendarMetadata from '@store/calendarMetadata';
 import calendarMaindata from '@store/calendarMaindata';
+import googleStore from '@store/googleStore'
 import dialogueStore from '@store/dialogueStore';
 import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
 import memberListStore from './store';
@@ -26,6 +29,15 @@ function CalendarOwner({ calID }) {
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
     const memberList = memberListStore((store)=>store.memberList)
+
+    const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
+    const googleEmail = googleStore((store) => store.googleEmail)
+
+    const startHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[0].start)
+    const columnCount = calendarMaindata((store) => {
+        return store.calendarData[calID].data.blocks.length
+    });
+    const endHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[columnCount-1].end)
 
 
     const MemberTileList = () => {
@@ -156,6 +168,29 @@ function CalendarOwner({ calID }) {
         )
     }
 
+    const GoogleTile = () => {
+        return (
+            <Tile>
+                <div className='bg-white'>
+                    <Tile.Body>
+                        <div className="flex justify-between items-center">
+                            <Tile.Title>
+                                Google Calendar Integration
+                            </Tile.Title>
+                            <Button
+                                className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
+                                onClick={() => {fetchGoogleData(calID, startHour, endHour) }}
+                            >
+                                Get Google Calendar
+                            </Button>
+                        </div>
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{googleEmail || "not Linked"}</p>
+                    </Tile.Body>
+                </div>
+            </Tile>
+        )
+    }
+
     /*
                 <CalendarLocationTile calID={calID} />
             <CalendarMeetingTimeTile calID={calID} />
@@ -171,6 +206,7 @@ function CalendarOwner({ calID }) {
                     <CollaboratorTile />
                     <FinalMeetingTile/>
                     <LocationTile/>
+                    <GoogleTile/>
                 </div>
 
                 <div className='p-1' />
@@ -186,7 +222,19 @@ function CalendarOwner({ calID }) {
                                 </div>
                                 <TabPanels>
                                     <TabPanel>
-                                        <GlobalCalendar calID={calID} />
+                                    <Stack>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap' >
+                                                <GlobalCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap'>
+                                                <GoogleCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                    </Stack>
+                                        
                                     </TabPanel>
                                     <TabPanel>
                                         <UserCalendar calID={calID} />
