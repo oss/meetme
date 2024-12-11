@@ -153,7 +153,7 @@ function split (thing) {
     } else if (thing.fast_slash) {
         return '';
     } else {
-        var match = thing.toString()
+        const match = thing.toString()
         .replace('\\/?', '')
         .replace('(?=\\/|$)', '$')
         .match(/^\/\^((?:\\[.*+?^${}()|[\]\\\/]|[^.*+?^${}()|[\]\\\/])*)\$\//)
