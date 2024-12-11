@@ -1,4 +1,31 @@
 {
+    // utility stuff
+    "frontend_domain": "https://localhost.edu",
+    "backend_domain": "https://api.localhost.edu",
+
+    // mongodb url
+    "mongo_url": "mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0",
+
+    "auth": {
+        // cookie-session
+        "cookie_domain": "localhost.edu",
+        "keygrip_secret_file": "./security/private/keygrip.json",
+        "session": {
+            "update_unit": 60000,               // after when to update in ms, ex. 60000 equals a minute
+            "update_interval": 2,               // how many units till time to update
+            "expiration": 5                     // how many intervals until session exipres
+        },
+
+        // passport-saml
+        "shib_key": {
+            "public": "./security/cert.pem",
+            "private": "./security/private/key.pem"
+        },
+        "idp_cert": "./security/idp.pem",
+        "issuer": "https://api.localhost.edu/shibboleth",
+        "login_url": "https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO",
+    },
+
     // specify extra routers to load
     "routers": [
         {

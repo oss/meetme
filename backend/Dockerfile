@@ -1,7 +1,5 @@
-#So far we dont really need dockerfile, this is here just in case we need it
 FROM node:latest
 
-ENV MONGO_URL="mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0"
 ARG DEV
 ARG GIT_HASH
 ARG GIT_BRANCH
@@ -15,6 +13,13 @@ EXPOSE 8000
 
 WORKDIR /root
 RUN npm install express mongoose cookie-parser passport body-parser @node-saml/passport-saml cookie-session ldapjs winston keygrip --save
+
+COPY <<EOF build.json
+{
+    "GIT_HASH": "$GIT_HASH",
+    "GIT_BRANCH": "$GIT_BRANCH"
+}
+EOF
 
 COPY . .
 CMD ["node","main.js"]
