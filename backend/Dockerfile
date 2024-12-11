@@ -21,5 +21,12 @@ COPY <<EOF build.json
 }
 EOF
 
+COPY <<EOF build.json
+{
+    "GIT_HASH": "$GIT_HASH",
+    "GIT_BRANCH": "$GIT_BRANCH"
+}
+EOF
+
 COPY . .
 CMD ["node","main.js"]
