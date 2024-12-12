@@ -22,6 +22,8 @@ function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
     const calendarMetadata = metadataStore((store) => store.calendarMetadata[calendarID])
     const addCalendar = metadataStore((store)=> store.addCalendar)
+    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
+    addGoogleCalendar(calendarID)
 
     if (calendarInStore === false) {
         addCalendar(calendarID)
