@@ -105,6 +105,9 @@ for (let i = 0; i < enabled_routes.length; i++) {
     const router_location = enabled_route['router_file'];
     const router_obj = require(router_location)
     router.use(prefix, router_obj);
+    router_obj.router_prefix = prefix;
+    if(prefix === '/')
+        router_obj.router_prefix = prefix.substring(1);
 }
 
 const routes = [];
@@ -120,60 +123,27 @@ router.get('/', function (req, res) {
 });
 
 app.use('/', router);
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).send('Something broke!')
+})
 
 
-function getRoutesOfLayer(path, layer) {
-    // end url, base case
-    if (layer.method) {
-        return [layer.method.toUpperCase() + ' ' + path];
-    }
-
-    // layer
-    else if (layer.route) {
-        return getRoutesOfLayer(path + split(layer.route.path), layer.route.stack[0]);
-    }
-
-    // router, so need to get all layers inside router
-    else if (layer.name === 'router' && layer.handle.stack) {
-        let routes = [];
-
-        layer.handle.stack.forEach(function(stackItem) {
-            routes = routes.concat(getRoutesOfLayer(path + split(layer.regexp), stackItem));
-        });
-
-        return routes;
-    }
-
-    return [];
-}
-
-function split (thing) {
-    if (typeof thing === 'string') {
-        return thing;
-    } else if (thing.fast_slash) {
-        return '';
-    } else {
-        const match = thing.toString()
-        .replace('\\/?', '')
-        .replace('(?=\\/|$)', '$')
-        .match(/^\/\^((?:\\[.*+?^${}()|[\]\\\/]|[^.*+?^${}()|[\]\\\/])*)\$\//)
-        return match
-        ? match[1].replace(/\\(.)/g, '$1')
-        : '<complex:' + thing.toString() + '>';
-    }
-}
-
-function getRoutes(app) {
-    let routes = [];
-
-    app._router.stack.forEach(function(layer) {
-        routes = routes.concat(getRoutesOfLayer('', layer));
+function printRegisteredRoutes(routerStack, parentPath) {
+    console.log('routerstack',routerStack)
+    routerStack.forEach((middleware) => {
+        if (middleware.route) {
+            routes.push(
+                `${middleware.route.stack[0].method.toUpperCase()} ${parentPath}${middleware.route.path}`
+            );
+        } else if (middleware.name === 'router') {
+            console.log(middleware.handle.router_prefix)
+            printRegisteredRoutes(middleware.handle.stack,`${parentPath}${middleware.handle.router_prefix || ''}`);
+        }
     });
-    console.log(routes);
-    return routes;
 }
 
-routes.push.apply(routes,getRoutes(app))
+printRegisteredRoutes(app.router.stack,'');
 
 // Starting server using listen function
 app.listen(port, function (err) {
