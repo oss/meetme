@@ -10,7 +10,7 @@ const fs = require("fs");
 
 const GOOGLE_CREDENTIALS = JSON.parse(fs.readFileSync(config.google_oauth_credentials))
 
-async function use_refresh_token(uid){
+async function create_access_token(uid){
 
     const user_data = await Google_schema.findOne({ _id: uid });
 
@@ -32,267 +32,172 @@ async function use_refresh_token(uid){
     user_data.access_token = data.access_token;
     user_data.expires = Date.now() + data.expires_in * 1000;
     await user_data.save();
+
+    return data.access_token;
 }
 
-async function newState(uid){
-    const exists = await Google_schema.findOne({ _id: uid });
-    const timeObject = new Date(Date.now() + 3 * 60000);
+async function create_new_nonce(netid){
+    const exists = await Google_schema.findOne({ _id: netid });
+    const timeObject = Date.now() + 3 * 60000;
+    const new_state_random_val = crypto.randomUUID();
+
     if (exists === null){
         const google_state = new Google_schema();
-        google_state._id = uid;
-        google_state.state = crypto.randomUUID();
-        google_state.state_expires = timeObject.valueOf();
-        google_state.access_token = "";
-        google_state.refresh_token = "";
-        try {
-      //save to variable to force to wait
-          await google_state.save();
+        google_state._id = netid;
+        google_state.state = new_state_random_val;
+        google_state.state_expires = timeObject;
+        google_state.access_token = null;
+        google_state.refresh_token = null;
+        await google_state.save();
+    }
+    else {
+        exists.state = new_state_random_val;
+        exists.state_expires = timeObject;
+        await exists.save();
+    }
 
-          return {
+    return new_state_random_val;
+}
+
+router.delete('/revoke', isAuthenticated, async function (req, res, next) {
+
+    const timeObject = new Date();
+
+    const user_data = await Google_schema.deleteOne({ _id: req.user.uid });
+
+    res.json({
+        Status: 'ok',
+    });
+});
+
+router.get('/enable', isAuthenticated, async function (req, res, next) {
+    const new_nonce =  await create_new_nonce(req.user.uid);
+
+    const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=${config.google_scopes}&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+new_nonce+`&redirect_uri=${config.backend_domain}/int/google_code&client_id=${GOOGLE_CREDENTIALS.client_id}`
+
+    res.json({
+        Status: 'ok',
+        link: link,
+    });
+});
+
+router.post('/validate', isAuthenticated, async function (req, res, next) {
+  const user_data = await Google_schema.findOne({ _id: req.user.uid });
+
+    if (user_data == null) {
+        res.status(424).json({
+            Status: 'error',
+            error: 'Not verified',
+        });
+        return;
+    }
+
+    const resp = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user_data.access_token}`, {
+        method: "GET",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    const data = await resp.json();
+
+    if (resp.status === 200){
+        res.json({
             Status: 'ok',
-            Result: 'State added',
-            state: google_state.state,
-        };
-      //adds user
-    } catch (e) {
+        });
+        return;
+    }
 
-      return {
-        Status: 'error',
-        error: 'Could not add state to database',
-    };
-}
-}
-else{
-    exists.state = crypto.randomUUID();
-    exists.state_expires = timeObject.valueOf();
-
-    await exists.save();
-
-    return {
-      Status: 'ok',
-      Result: 'State updated',
-      state: exists.state,
-  };
-}
-}
-
-async function useCode(code, uid){
-  if (code === undefined || code === null) {
-    return 'error';
-}
-
-const data = await fetch(`https://oauth2.googleapis.com/token`, {
-    method: "POST",
-    credentials: "omit",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-        code:code,
-        client_id:"35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com",
-        client_secret:"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",
-        redirect_uri:"https://api.localhost.edu/int/google_code",
-        grant_type:"authorization_code"
-    }),
-}).then((res) => res.json());
-
-console.log(data)
-
-if (data?.error == "invalid_grant"){
-    return 'error'
-}
-
-const timeObject = new Date(Date.now() + data.expires_in * 1000);
-
-  //updates the userdata schema
-const user_data = await Google_schema.findOne({ _id: uid });
-if (user_data == null) {
-    return 'error';
-}
-
-user_data.access_token = data.access_token;
-user_data.refresh_token = data.refresh_token;
-user_data.expires = timeObject.valueOf();
-await user_data.save();
-return 'ok';
-}
-
-
-router.delete('/google_remove', isAuthenticated, async function (req, res) {
-
-  const timeObject = new Date();
-
-  const user_data = await Google_schema.findOne({ _id: req.user.uid });
-
-  if (user_data == null || user_data.access_token === '' || user_data.refresh_token === '') {
-    res.json({
-        Status: 'error',
-        error: 'Not verified',
-    });
-    return;
-}
-
-user_data.access_token = "";
-user_data.refresh_token = "";
-user_data.expires = timeObject.valueOf();
-await user_data.save();
-res.json({
-    Status: 'Ok',
-});
-return;
-});
-
-
-
-router.get('/google_auth_link', isAuthenticated, async function (req, res) {
-  const clientid = "35553104132-c9sos4lv16atkakg7t6nuoi9amktickk.apps.googleusercontent.com";
-  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email";
-
-  const State_obj =  await newState(req.user.uid);
-
-  if  (State_obj.Status == 'error'){
-    res.json({
+    res.status(424).json({
       Status: 'error',
-      error: 'Something went wrong',
-  });
-    return;
-}
-
-
-
-const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=`+SCOPES+`&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+State_obj.state+`&redirect_uri=https://api.localhost.edu/int/google_code&client_id=`+clientid
-
-
-console.log(link)
-
-res.json({
-    Status: 'ok',
-    link: link,
-});
-return;
-});
-
-router.post('/google_email', isAuthenticated, async function (req, res) {
-  const user_data = await Google_schema.findOne({ _id: req.user.uid });
-
-  if (user_data == null || user_data.access_token === '' || user_data.refresh_token === '') {
-    res.json({
-        Status: 'error',
-        error: 'Not verified',
+      error: "not validated",
     });
-    return;
-}
-
-
-
-
-const resp = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user_data.access_token}`, {
-    method: "GET",
-    credentials: "omit",
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
-const data = await resp.json();
-
-if (resp.status == 200){
-    res.json({
-      Status: 'ok',
-      email: data.email,
-  });
-    return;
-}
-
-
-res.json({
-  Status: 'ok',
-  error: "Something went wrong",
-});
-return;
-
 });
 
-router.post('/google_cal_dates', isAuthenticated, async function (req, res) {
+router.post('/google_cal_dates', isAuthenticated, async function (req, res, next) {
 
   const user_data = await Google_schema.findOne({ _id: req.user.uid });
 
-  if (user_data == null || user_data.access_token === '' || user_data.refresh_token === '') {
-    res.json({
-        Status: 'error',
-        error: 'Not verified',
-    });
-    return;
-}
-
-const minTime = req.body.minTime;
-const maxTime = req.body.maxTime;
-
-
-if (minTime === undefined || minTime === null || maxTime === undefined || maxTime === null) {
-    res.json({
-        Status: 'error',
-        error: 'No Time Range provided',
-    });
-    return;
-}
-
-
-
-if (user_data.expires < Date.now() + 120000 ) {
-    await use_refresh_token(req.user.uid);
-}
-
-
-const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
-    method: "GET",
-    credentials: "omit",
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
-const data = await resp.json();
-
-if (resp.status == 200){
-    res.json({
-      Status: 'ok',
-      data: data,
-  });
-    return;
-}
-res.json({
-    Status: 'error',
-    error: "Something went wrong",
-});
-return;
-
-
-
-});
-
-
-
-router.get('/google_code', isAuthenticated, async function (req, res, next) {
-    const state = await Google_schema.findOne({ _id: req.user.uid });
-
-    if (state == null || req.query.state != state.state){
+  if (user_data == null) {
         res.json({
-          Status: 'error',
-          error: 'Invalid request',
-      });
+            Status: 'error',
+            error: 'google integration not completed',
+        });
         return;
     }
 
-    if (state.state_expires < Date.now()){
+    if (/^[0-9]+$/.test(req.body.minTime) || /^[0-9]+$/.test(req.body.maxTime) ){
         res.json({
-          Status: 'error',
-          error: 'Invalid request',
-      });
+            Status: 'error',
+            error: 'invalid min/max time',
+        });
         return;
     }
 
-    await useCode(req.query.code, req.user.uid)
+    const minTime = parseInt(req.body.minTime);
+    const maxTime = parseInt(req.body.maxTime);
 
-    res.redirect( config.frontend_url );
+
+    if (user_data.expires < Date.now() + 120000 ) {
+        user_data.access_token = await create_access_token(req.user.uid);
+    }
+
+    const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${user_data.access_token}&singleEvents=True&orderBy=startTime&timeMin=${minTime}&timeMax=${maxTime}`, {
+        method: "GET",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    
+    const data = await resp.json();
+
+    if (resp.status !== 200){
+        throw new Error("error getting your calendar");
+    }
+    res.json({
+        Status: 'ok',
+        data: data,
+    });
+    
+});
+
+router.get('/callback', isAuthenticated, async function (req, res, next) {
+    const google_integration_info = await Google_schema.findOne({ _id: req.user.uid });
+    const code = req.query.code;
+
+    if (google_integration_info === null || (req.query.state !== google_integration_info.state) )
+        throw new Error("google state mismatch");
+
+    if (google_integration_info.state_expires < Date.now())
+        throw new Error("state is expired");
+
+    const fetch_data = await fetch(`https://oauth2.googleapis.com/token`, {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            code: code,
+            client_id: GOOGLE_CREDENTIALS.client_id,
+            client_secret: GOOGLE_CREDENTIALS.client_secret,
+            redirect_uri: config.backend_domain+'/integrations/google/callback',
+            grant_type:"authorization_code"
+        }),
+    });
+
+    const data = await fetch_data.json();
+
+    if (data.error === "invalid_grant"){
+        throw new Error("invalid grant");
+    }
+
+    google_integration_info.access_token  = data.access_token;
+    google_integration_info.refresh_token = data.refresh_token;
+    google_integration_info.expires       = Date.now() + data.expires_in * 1000;
+    await google_integration_info.save();
+    res.redirect( config.frontend_domain );
 });
 
 module.exports = router;

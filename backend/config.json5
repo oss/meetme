@@ -27,6 +27,7 @@
     },
 
     "google_oauth_credentials": "./security/private/google_oauth.json",
+    "google_scopes": "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email",
 
     // specify extra routers to load
     "routers": [
@@ -44,7 +45,7 @@
             "prefix": "/user"
         },{
             "router_file": "./integrations/google/router.js",
-            "prefix": "/integration/google"
+            "prefix": "/integrations/google"
         }
     ]
 }
