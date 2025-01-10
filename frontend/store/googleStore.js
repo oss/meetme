@@ -3,9 +3,9 @@ import { produce } from "immer";
 
 const useStore = create(set => {
 
-    const fetchGoogleEmail= async () => {
+    const fetchGoogleValidate= async () => {
 
-        const resp = await fetch(process.env.API_URL + `/int/google_email`, {
+        const resp = await fetch(process.env.API_URL + `/integrations/google/validate`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -16,14 +16,14 @@ const useStore = create(set => {
 
         if (resp_json.Status === 'ok') {
             set( state => ({
-                googleEmail:resp_json.email
+                valid:true
             }))
         }
     }
 
     const fetchGoogleLink= async () => {
 
-        const resp = await fetch(process.env.API_URL + `/int/google_auth_link`, {
+        const resp = await fetch(process.env.API_URL + `/integrations/google/enable`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -45,7 +45,7 @@ const useStore = create(set => {
         const time = new Date(start).toISOString()
         const time2 = new Date(end ).toISOString()
     
-        const resp = await fetch(`${process.env.API_URL}/int/google_cal_dates`,
+        const resp = await fetch(`${process.env.API_URL}/integrations/google/google_cal_dates`,
             {
                 method: "POST",
                 credentials: "include",
@@ -105,11 +105,11 @@ const useStore = create(set => {
 
 
     return {
-        fetchGoogleEmail: fetchGoogleEmail,
+        fetchGoogleValidate: fetchGoogleValidate,
         fetchGoogleLink:fetchGoogleLink,
         fetchGoogleData:fetchGoogleData,
         addGoogleCalendar:addGoogleCalendar,
-        googleEmail:"",
+        valid:false,
         googleLink:"",
         googleData:{},
     }

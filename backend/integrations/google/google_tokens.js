@@ -73,7 +73,7 @@ router.delete('/revoke', isAuthenticated, async function (req, res, next) {
 router.get('/enable', isAuthenticated, async function (req, res, next) {
     const new_nonce =  await create_new_nonce(req.user.uid);
 
-    const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=${config.google_scopes}&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+new_nonce+`&redirect_uri=${config.backend_domain}/int/google_code&client_id=${GOOGLE_CREDENTIALS.client_id}`
+    const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=${config.google_scopes}&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+new_nonce+`&redirect_uri=${config.backend_domain}/integrations/google/callback&client_id=${GOOGLE_CREDENTIALS.client_id}`
 
     res.json({
         Status: 'ok',

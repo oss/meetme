@@ -112,7 +112,7 @@ function CalendarLoader() {
 
     const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
     const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
-    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
+    const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);
 
     useEffect(() => {
         async function sharelink(calendarID){
@@ -128,7 +128,7 @@ function CalendarLoader() {
             ).then((res) => res.json());
             fetchCalendarMaindata(id);
             fetchCalendarMetadata(id);
-            fetchGoogleEmail();
+            fetchGoogleValidate();
             return data.Status
         }
         sharelink(id);

@@ -175,7 +175,7 @@ function CalendarPanel() {
 
 
 async function getRemove(){
-    let data2 = await fetch(`${process.env.API_URL}/int/google_remove`, {
+    let data2 = await fetch(`${process.env.API_URL}/integrations/google/revoke`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -193,7 +193,7 @@ async function getRemove(){
 
 function GoogleLinkDialogue(){
     const googleLink = googleStore((store) => store.googleLink);
-    const googleEmail = googleStore((store) => store.googleEmail);
+    const valid = googleStore((store) => store.valid);
 
     return (
     <>
@@ -202,9 +202,9 @@ function GoogleLinkDialogue(){
             <p className="text-sm text-gray-500">
                 {"This will take you to google to link your account"}
             </p>
-            {googleEmail?
+            {valid?
                 <p className="text-sm text-gray-500">
-                {"You have already linked the account: " + googleEmail}
+                {"You have already linked with scarletmail: "}
                 </p>:
                 ""}
         </Dialog.Description>
@@ -224,14 +224,14 @@ function GoogleLinkDialogue(){
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
-    const googleEmail = googleStore((store) => store.googleEmail);
-    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
+    const valid = googleStore((store) => store.valid);
+    const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);
     const dialogueHook = dialogueStore((store) => store.setPanel)
     const fetchGoogleLink = googleStore((store) => store.fetchGoogleLink);
 
 
     useEffect( ()=>{
-        fetchGoogleEmail()
+        fetchGoogleValidate()
     },[])
 
 
@@ -249,7 +249,7 @@ function Dashboard() {
                 </button>
             
             <button
-                className={`${googleEmail?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
+                className={`${valid?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
                 onClick={() =>  getRemove()}
             >
                 Status
