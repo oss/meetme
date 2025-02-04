@@ -134,8 +134,9 @@ router.post('/google_cal_dates', isAuthenticated, async function (req, res, next
         return;
     }
 
-    const minTime = parseInt(req.body.minTime);
-    const maxTime = parseInt(req.body.maxTime);
+
+    const minTime = new Date(req.body.minTime).toISOString();
+    const maxTime = new Date(req.body.maxTime).toISOString();
 
 
     if (user_data.expires < Date.now() + 120000 ) {
