@@ -15,7 +15,8 @@ import LoadingOrgTile from './organizations/loadingTile';
 import Stack from '@primitives/stack';
 import { hoveredTileStore } from './store.js'
 import dialogueStore from '@store/dialogueStore';
-import { Dialog } from '@headlessui/react';
+import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+
 import RedButton from '@components/utils/red-button';
 
 function CalendarTileCreator({ calendarID, idx }) {
@@ -197,8 +198,8 @@ function GoogleLinkDialogue(){
 
     return (
     <>
-        <Dialog.Title>{"Link Google Account"}</Dialog.Title>
-        <Dialog.Description>
+        <DialogTitle>{"Link Google Account"}</DialogTitle>
+        <Description>
             <p className="text-sm text-gray-500">
                 {"This will take you to google to link your account"}
             </p>
@@ -207,7 +208,7 @@ function GoogleLinkDialogue(){
                 {"You have already linked with scarletmail: "}
                 </p>:
                 ""}
-        </Dialog.Description>
+        </Description>
         <div className='h-1' />
         <div className='inline-flex w-full'>
             <div className=''>
