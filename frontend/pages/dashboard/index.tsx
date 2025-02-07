@@ -176,7 +176,7 @@ function CalendarPanel() {
 
 
 async function getRemove(){
-    let data2 = await fetch(`${process.env.API_URL}/integrations/google/revoke`, {
+    let data = await fetch(`${process.env.API_URL}/integrations/google/revoke`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -185,8 +185,8 @@ async function getRemove(){
     }).then((res) => res.json());
 
 
-    console.log(data2)
-    return data2;
+    console.log(data)
+    return data;
 }
 
 
@@ -253,7 +253,7 @@ function Dashboard() {
                 className={`${valid?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
                 onClick={() =>  getRemove()}
             >
-                Status
+                Remove Google Account
             </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />

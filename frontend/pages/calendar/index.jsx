@@ -148,7 +148,13 @@ function CalendarLoader() {
         return false;
     })
 
-    const calendarIsLoaded = loadedMaindata && loadedMetadata;
+    const loadedGoogledata = googleStore((store) => {
+        if (id in store.googleData) return true
+        store.addGoogleCalendar(id)
+        return false;
+    })
+
+    const calendarIsLoaded = loadedMaindata && loadedMetadata && loadedGoogledata;
 
     const ownerType = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner.owner_type)
     const ownerID = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner._id)
