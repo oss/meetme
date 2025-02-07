@@ -12,7 +12,7 @@ function MeetingCalendar({ calID }) {
     const rowsCount: number = Math.ceil((endHour - startHour) / (60 * 1000 * timeIntervals));
 
     return (
-        <div className="flex overflow-scroll">
+        <div className="flex grow overflow-scroll">
             <div className="inline-block">
                 <MeetingLabels
                     displayHeight={blockHeight}

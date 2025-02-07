@@ -237,7 +237,18 @@ function CalendarOwner({ calID }) {
                                         
                                     </TabPanel>
                                     <TabPanel>
-                                        <UserCalendar calID={calID} />
+                                        <Stack>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap' >
+                                                <GoogleCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap'>
+                                                <UserCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                    </Stack>
                                     </TabPanel>
                                 </TabPanels>
                             </TabGroup>
