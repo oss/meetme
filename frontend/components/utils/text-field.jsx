@@ -1,6 +1,5 @@
 import uniqid from "uniqid";
 import { useEffect, useState } from "react";
-import "../../index.css";
 function TextField({
     placeholder,
     error_status = { status: "normal", message: "" },

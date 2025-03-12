@@ -1,1 +1,15 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+
+@source "./index.js";
+@source "./main.js";
+@source "./login.js";
+
+@source "./components";
+@source "./pages";
+
+
+@theme {
+    --color-rutgers_red: #cc0033;
+    --color-rutgers_grey: #5f6a72;
+    --color-rutgers_black: #000000;
+}

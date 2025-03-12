@@ -12,7 +12,6 @@ const CalendarLoader = lazy(() => import("./pages/calendar"));
 const CreateOrg = lazy(() => import("./pages/create-org"));
 const Error404 = lazy(() => import("./pages/error-404"));
 const MyMeetings = lazy(() => import("./pages/my-meetings"));
-import "./index.css";
 const Faq = lazy(() => import("./pages/faq"));
 const OrgLoader = lazy(() => import("./pages/organization"));
 const MyInvitations = lazy(() => import("./pages/my-invitations"));
@@ -33,7 +32,7 @@ function App() {
                     <div className="relative">
                         <Navbar />
                     </div>
-                    <div className="relative grow">
+                    <div className="relative grow bg-black">
                         <Outlet />
                     </div>
                 </>
