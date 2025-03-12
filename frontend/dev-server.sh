@@ -1,5 +1,5 @@
 tmpfile="/tmp/$(date | sha1sum | cut -d " " -f 1 )"
-rm -rf node_modules
+rm -rf node_modules package-lock.json .npm .cache
 npm outdated --json | \
     jq -r '. | to_entries | map( { (.key): .value.latest } ) | add // {} | { "dependencies": . }' | \
     jq --argjson ignorelist '[]' '.dependencies | with_entries(select([.key] | inside($ignorelist) | not)) | {dependencies: .}' | \

@@ -32,7 +32,7 @@ function App() {
                     <div className="relative">
                         <Navbar />
                     </div>
-                    <div className="relative grow bg-black">
+                    <div className="relative grow flex flex-col">
                         <Outlet />
                     </div>
                 </>
@@ -169,7 +169,7 @@ function App() {
 
     return (
         <>
-            <div className="flex flex-col w-full h-full">
+            <div className="flex flex-col min-w-screen min-h-screen">
                 <RouterProvider router={router} />
                 <div className="absolute h-full w-full pointer-events-none">
                     <div className="relative">
