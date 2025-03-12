@@ -12,7 +12,7 @@ ENV COOKIE_DURATION=2
 EXPOSE 8000
 
 WORKDIR /root
-RUN npm install express@next mongoose cookie-parser passport body-parser @node-saml/passport-saml cookie-session ldapjs winston keygrip json5 --save
+RUN npm install express@next mongoose cookie-parser passport body-parser @node-saml/passport-saml cookie-session cjsldap winston keygrip json5 --save
 
 COPY <<EOF build.json
 {

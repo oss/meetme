@@ -1,4 +1,4 @@
-const LDAP = require('ldapjs');
+const { LDAP, SEARCH_SCOPES, TLS_CHECK } = require('cjsldap');
 const User_schema = require('../../user/user_schema');
 
 async function valid_netid(netid) {
@@ -8,43 +8,36 @@ async function valid_netid(netid) {
 }
 
 async function getinfo_from_netid(netid) {
-  return new Promise((resolve, reject) => {
-    const opts = {
-      filter: `(uid=${netid})`,
-      attributes: ['uid', 'sn', 'givenName'],
-      scope: 'sub',
-    };
+    const client = new LDAP({uri: "ldap://openldap:1389"})
+    const bind = await client.bind({
+        dn: "cn=admin,dc=example,dc=org",
+        password: "adminpassword"
+    })
 
-    const client = LDAP.createClient({
-      url: 'ldap://openldap:1389',
-    });
+    const search_req = await client.search({
+        filter: `(uid=${netid})`,
+        scope: SEARCH_SCOPES.subtree,
+        base: "dc=example,dc=org",
+        attributes: ["dn","sn","givenName","uid"]
+    })
 
-    let data = null;
+    const search = search_req.toObject();
+    const close = await client.close()
 
-    client.bind(
-      'cn=admin,dc=example,dc=org',
-      'adminpassword',
-      async function (err) {
-        client.search('dc=example,dc=org', opts, (err, res) => {
-          if (err) {
-            console.log(JSON.stringify(err));
-            return reject(err);
-          }
-          res.on('searchEntry', (entry) => {
-            const attribute_obj = {};
-            entry.attributes.forEach((entry) => {
-              attribute_obj[entry.type] = entry.values[0];
-            });
-            return resolve(attribute_obj);
-          });
-          res.on('end', (result) => {
-            client.unbind();
-            return resolve(null);
-          });
-        });
-      }
-    );
-  });
+    if (Object.keys(search).length == 0)
+        return null
+
+    const dn = Object.keys(search)[0];
+
+    const usr_obj_to_return = {}
+
+    for(const attribute in search[dn] ){
+        // all of the stuff we get from ldap are single elements
+        // if we deal with stuff with multiple values (like roles), then have to upgrade
+        usr_obj_to_return[attribute] = search[dn][attribute][0] 
+    }
+
+    return usr_obj_to_return;
 }
 
 module.exports = { valid_netid, getinfo_from_netid };
