@@ -229,7 +229,7 @@ function CalendarOwner({ calID }) {
                                             </ul>
                                         </Stack.Item>
                                         <Stack.Item>
-                                            <ul className='relative flex flex-wrap'>
+                                            <ul className='relative flex flex-wrap pointer-events-none'>
                                                 <GoogleCalendar calID={calID} />
                                             </ul>
                                         </Stack.Item>
@@ -239,7 +239,7 @@ function CalendarOwner({ calID }) {
                                     <TabPanel>
                                         <Stack>
                                         <Stack.Item>
-                                            <ul className='relative flex flex-wrap' >
+                                            <ul className='relative flex flex-wrap pointer-events-none' >
                                                 <GoogleCalendar calID={calID} />
                                             </ul>
                                         </Stack.Item>
