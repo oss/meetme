@@ -6,6 +6,14 @@
     // mongodb url
     "mongo_url": "mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0",
 
+    "ldap": {
+        "uri": "ldap://openldap:1389",
+        "scope": "subtree",
+        "bind_dn": "cn=admin,dc=example,dc=org",
+        "base": "dc=example,dc=org",
+        "password_file": "./security/private/ldap_credential"
+    },
+
     "auth": {
         // cookie-session
         "cookie_domain": "localhost.edu",

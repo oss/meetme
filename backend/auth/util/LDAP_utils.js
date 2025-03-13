@@ -1,5 +1,7 @@
 const { LDAP, SEARCH_SCOPES, TLS_CHECK } = require('cjsldap');
 const User_schema = require('../../user/user_schema');
+const config = require('#config');
+const fs = require('fs');
 
 async function valid_netid(netid) {
   if (!(/^[a-zA-Z0-9]+$/.test(netid)))return false;
@@ -8,16 +10,16 @@ async function valid_netid(netid) {
 }
 
 async function getinfo_from_netid(netid) {
-    const client = new LDAP({uri: "ldap://openldap:1389"})
+    const client = new LDAP({ uri: config.ldap.uri })
     const bind = await client.bind({
-        dn: "cn=admin,dc=example,dc=org",
-        password: "adminpassword"
+        dn: config.ldap.bind_dn ,
+        password: fs.readFileSync(config.ldap.password_file, 'utf8')
     })
 
     const search_req = await client.search({
         filter: `(uid=${netid})`,
-        scope: SEARCH_SCOPES.subtree,
-        base: "dc=example,dc=org",
+        scope: SEARCH_SCOPES[config.ldap.scope],
+        base: config.ldap.base,
         attributes: ["dn","sn","givenName","uid"]
     })
 
