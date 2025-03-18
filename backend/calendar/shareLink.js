@@ -17,6 +17,14 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
       return;
     }
 
+    if( typeof req.body.shareLink !== 'boolean'){
+        res.json({
+            Status: 'error',
+            error: 'shareLink is not bool'
+        });
+        return;
+    }
+
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [

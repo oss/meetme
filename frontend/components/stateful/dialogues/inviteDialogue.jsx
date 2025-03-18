@@ -51,7 +51,7 @@ const inviteDialogueStore = create((set) => {
                 pendingMemberStatus: {...(previous_state.pendingMemberStatus), netid: 'pending'}
             };
         })
-        
+
         validateNetID(netid)
     }
 
@@ -260,8 +260,17 @@ function InviteDialogue({ calID }) {
                 <BaseButton className='border-1 border-solid bg-slate-400 p-1' onClick={() => { closeDialogue() }}>
                     <p>Close</p>
                 </BaseButton>
-                <p className = {`mr-2 ${inviteListOK ? 'hidden': ""}`}>Remove all invalid or inactive netids</p>
             </div>
+
+            <p>Link Sharing</p>
+            <BaseButton className={`inline border-1 border-solid bg-slate-50 p-1 hover:bg-slate-100 hover:shadow-md disabled:bg-slate-400`} disabled={!shareLinkState} onClick={() =>  navigator.clipboard.writeText(window.location.href)}>
+                <p>{shareLinkState && "Copy Link" || "Disabled"}</p>
+            </BaseButton>
+            <BaseButton onClick={()=>{
+                setShareLinkStatus(!shareLinkState)
+            }}>
+                <p>Toggle</p>
+            </BaseButton>
         </>
     )
 }
