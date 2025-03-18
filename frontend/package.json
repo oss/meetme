@@ -6,7 +6,7 @@
     "@babel/preset-react": "7.26.3",
     "@babel/preset-typescript": "7.26.0",
     "@headlessui/react": "2.2.0",
-    "@types/react": "19.0.10",
+    "@types/react": "19.0.11",
     "babel-loader": "10.0.0",
     "cjsldap": "0.0.5",
     "copy-webpack-plugin": "13.0.0",

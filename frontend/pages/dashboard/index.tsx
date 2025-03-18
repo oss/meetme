@@ -17,6 +17,8 @@ import { hoveredTileStore } from './store.js'
 import dialogueStore from '@store/dialogueStore';
 import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 
+import GoogleLinkDialogue from '@components/stateful/dialogues/googleLinkDialogue';
+
 import RedButton from '@components/utils/red-button';
 
 function CalendarTileCreator({ calendarID, idx }) {
@@ -175,53 +177,6 @@ function CalendarPanel() {
 
 
 
-async function getRemove(){
-    let data = await fetch(`${process.env.API_URL}/integrations/google/revoke`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-
-
-    console.log(data)
-    return data;
-}
-
-
-
-
-function GoogleLinkDialogue(){
-    const googleLink = googleStore((store) => store.googleLink);
-    const valid = googleStore((store) => store.valid);
-
-    return (
-    <>
-        <DialogTitle>{"Link Google Account"}</DialogTitle>
-        <Description>
-            <p className="text-sm text-gray-500">
-                {"This will take you to google to link your account"}
-            </p>
-            {valid?
-                <p className="text-sm text-gray-500">
-                {"You have already linked with scarletmail: "}
-                </p>:
-                ""}
-        </Description>
-        <div className='h-1' />
-        <div className='inline-flex w-full'>
-            <div className=''>
-                <a href = {googleLink}>
-                    <RedButton>
-                        {"Go to Google"}
-                    </RedButton>
-                </a>
-            </div>
-        </div>
-    </>
-    )
-}
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
@@ -239,22 +194,6 @@ function Dashboard() {
     return (
         <div className="py-3 px-10 bg-gray-100 border border-gray-200 w-full h-full">
             
-                <button
-                    className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                    onClick={() => {
-                        fetchGoogleLink()
-                        dialogueHook(<GoogleLinkDialogue/>)
-                    }}
-                >
-                    Link
-                </button>
-            
-            <button
-                className={`${valid?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
-                onClick={() =>  getRemove()}
-            >
-                Remove Google Account
-            </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
                 <div className = "w-full"></div>
