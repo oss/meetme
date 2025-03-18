@@ -237,7 +237,7 @@ function Dashboard() {
 
 
     return (
-        <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200 grow">
+        <div className="py-3 px-10 bg-gray-100 border border-gray-200 w-full h-full">
             
                 <button
                     className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"

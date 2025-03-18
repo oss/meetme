@@ -28,14 +28,16 @@ function App() {
         {
             path: "/",
             element: (
-                <>
+                <div className='flex flex-col min-h-screen min-w-screen'>
                     <div className="relative">
                         <Navbar />
                     </div>
-                    <div className="relative grow flex flex-col">
-                        <Outlet />
+                    <div className="relative grow flex">
+                        <div className='grow'>
+                            <Outlet />
+                        </div>
                     </div>
-                </>
+                </div>
             ),
             errorElement: <ErrorPage />,
             children: [
