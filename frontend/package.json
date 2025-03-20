@@ -6,6 +6,7 @@
     "@babel/preset-react": "7.26.3",
     "@babel/preset-typescript": "7.26.0",
     "@headlessui/react": "2.2.0",
+    "@tailwindcss/cli": "4.0.14",
     "@types/react": "19.0.12",
     "babel-loader": "10.0.0",
     "cjsldap": "0.0.7",
