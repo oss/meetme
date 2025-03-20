@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import googleStore from '@store/googleStore';
 import dialogueStore from '@store/dialogueStore';
 import GoogleLinkDialogue from '@components/stateful/dialogues/googleLinkDialogue';
+import rutgersR from '/assets/RUTGERS_H_RED_BLACK_RGB.png';
 
 function NotificationIcon() {
     const notificationNumber = userStore(useShallow((store) => store.pendingCalendars.length + store.pendingOrganizations.length));
@@ -39,6 +40,7 @@ function Navbar() {
             <div className="flex items-center p-2 grow-0">
                 <Link to="/" style={{ textDecoration: 'none' }}>
                     <div className="flex items-center">
+                        <img className="h-9 m-4 items-center" src={rutgersR}></img>
                         <span className="text-xl font-semibold">
                             MeetMe
                         </span>
