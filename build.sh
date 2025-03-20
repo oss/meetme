@@ -2,6 +2,10 @@ echo "running builds"
 
 docker build 'prometheus/.' -t prometheus-oss-meetme || exit 1
 docker build 'proxy/.' -t nginx-oss-meetme || exit 1
+docker build 'proxy-ssl-upgrade/.' -t nginx-ssl-oss-meetme || exit 1
+docker build 'proxy-internal/.' -t nginx-internal-oss-meetme || exit 1
+
+
 docker build 'proxy-docker/.' -t nginx-oss-docker || exit 1
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) || exit 1
