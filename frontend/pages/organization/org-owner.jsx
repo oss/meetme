@@ -15,6 +15,7 @@ function OrgOwner() {
     const orgName = orgData((store) => store.orgData[orgID].data.name);
     const members = orgData((store) => store.orgData[orgID].data.members);
     const pendingMembers = orgData((store) => store.orgData[orgID].data.pendingMembers);
+    const calendars = orgData((store)=>store.orgData[orgID].data.calendars)
     const navigate = useNavigate();
 
     const inviteNetID = async () => {
@@ -165,7 +166,7 @@ function OrgOwner() {
                 </div>
                 <div className="w-full h-full">
                     <Tile>
-                        <div className="bg-white">
+                        <div className="bg-white w-full overflow-x-auto">
                             <Tile.Body>
                                 <Tile.Title>Calendars</Tile.Title>
                                 <div className="flex">
@@ -179,6 +180,20 @@ function OrgOwner() {
                                         Add
                                     </button>
                                 </div>
+                                <ul className="py-2 flex flex-wrap">
+                                    {calendars.map((calendar,idx) => (
+                                        <li
+                                            key={idx}
+                                            className="cursor-pointer my-1 mr-8 p-3 flex items-center shadow rounded"
+                                            onClick={() => { navigate("/cal/" + calendar._id ); }}
+                                        >
+                                            <p>{calendar._id}</p>
+                                        </li>
+                                    ))}
+                                    <p className="text-sm text-gray-700/70">
+                                        {calendars.length === 0 && "No calendars added yet" }
+                                    </p>
+                                </ul>
                             </Tile.Body>
                         </div>
                     </Tile>
