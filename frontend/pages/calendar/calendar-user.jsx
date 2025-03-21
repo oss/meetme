@@ -172,7 +172,6 @@ function CalendarOwner({ calID }) {
                     <CollaboratorTile />
                     <FinalMeetingTile/>
                     <LocationTile/>
-                    <GoogleTile/>
                 </div>
 
                 <div className='p-1' />

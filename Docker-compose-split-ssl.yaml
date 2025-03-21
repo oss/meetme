@@ -32,8 +32,6 @@ services:
     networks:
       - no-internet
       - mongo-net
-    ports:
-      - 27017:27017
   mongo-jr:
     image: database-meetme
     networks:

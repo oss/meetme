@@ -111,7 +111,7 @@ function OrgOwner() {
     return (
         <div className="h-full bg-neutral-100 justify-center">
             <div className="w-10/12">
-                <div className="flex flex-col items-center my-4">
+                <div className="flex flex-col items-center">
                     <p className="mx-2 text-3xl bg-white rounded font-semibold px-3 py-2 shadow-sm mb-3">
                         {orgName}
                     </p>
