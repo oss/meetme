@@ -17,7 +17,7 @@ const useStore = create(set => {
         if (resp_json.Status === 'ok') {
 
             set((previous_state) => {
-                const orgJSON = { ...previous_state.orgData };
+                const orgJSON = { ...(previous_state.orgData) };
                     
                 orgJSON[orgID].isLoaded = true
                 orgJSON[orgID].data = resp_json.organization
@@ -32,7 +32,7 @@ const useStore = create(set => {
 
     const addOrg = (orgID) => {
         set((previous_state) => {
-            const orgJSON = { ...previous_state.orgData };
+            const orgJSON = { ...(previous_state.orgData) };
             if(orgID in orgJSON)
                 return previous_state
                 
