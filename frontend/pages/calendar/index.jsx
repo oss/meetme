@@ -58,23 +58,24 @@ function IndividualCalendarLoader() {
 function OrganizationCalendarLoader(){
     const netID = authData((store) => store.userData.user.uid)
     const { id } = useParams();
-    const ownerID = calendarMaindataStore((store) => store.calendarData[id].data.owner._id)
+    const orgOwnerID = calendarMetadataStore((store) => store.calendarMetadata[id].data.owner._id);
 
     const setMemberSet = calendarPageStore((store) => store.setMemberSet)
-    const allMembers = organizationMemberSetHook(ownerID)
+    const allMembers = organizationMemberSetHook(orgOwnerID)
     useEffect(()=>{
         setMemberSet(allMembers)
     },[allMembers])
 
     const setMemberList = calendarPageStore((store) => store.setMemberList )
-    const memberList = organizationMemberListHook(ownerID)
+    const memberList = organizationMemberListHook(orgOwnerID)
     useEffect(()=>{
         setMemberList(memberList)
     },[memberList])
 
+
     const orgRole = orgData((store)=>{
 
-        const organization = store.orgData[ownerID].data;
+        const organization = store.orgData[orgOwnerID].data;
 
         const isOwner = (organization.owner === netID);
         if (isOwner) return 'owner'
@@ -92,7 +93,6 @@ function OrganizationCalendarLoader(){
         if (isViewer) return 'viewer'
 
     })
-
     switch (orgRole) {
         case 'owner':
             return <CalendarOwnerPage calID={id} />
@@ -107,33 +107,20 @@ function OrganizationCalendarLoader(){
 
 
 function CalendarLoader() {
+    console.log('global loader')
     const { id } = useParams();
     const netID = authData((store) => store.userData.user.uid)
 
     const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
     const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
-    const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);
+
+    // disable all google stuff for now
+    //const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);
 
     useEffect(() => {
-        async function sharelink(calendarID){
-            const data = await fetch(
-                `${process.env.API_URL}/cal/${calendarID}/share_with_link`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            ).then((res) => res.json());
-            fetchCalendarMaindata(id);
-            fetchCalendarMetadata(id);
-            fetchGoogleValidate();
-            return data.Status
-        }
-        sharelink(id);
-
-    }, [])
+        fetchCalendarMaindata(id);
+        fetchCalendarMetadata(id);
+    }, []);
 
     const loadedMaindata = calendarMaindataStore((store) => {
         if (id in store.calendarData) return store.calendarData[id].isLoaded
@@ -141,6 +128,7 @@ function CalendarLoader() {
         store.addCalendar(id)
         return false;
     })
+
     const loadedMetadata = calendarMetadataStore((store) => {
         if (id in store.calendarMetadata) return store.calendarMetadata[id].isLoaded
 
@@ -148,30 +136,25 @@ function CalendarLoader() {
         return false;
     })
 
-    const loadedGoogledata = googleStore((store) => {
-        if (id in store.googleData) return true
-        store.addGoogleCalendar(id)
-        return false;
-    })
-
-    const calendarIsLoaded = loadedMaindata && loadedMetadata && loadedGoogledata;
+    const calendarIsLoaded = loadedMaindata && loadedMetadata;
 
     const ownerType = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner.owner_type)
     const ownerID = calendarMaindataStore((store) => calendarIsLoaded && store.calendarData[id].data.owner._id)
 
-    const error = calendarMetadataStore((store) =>  store.calendarMetadata[id].error)
-
-    /*
-    const [orgInit ,orgLoaded, addOrg] = orgData((store)=>{
+    const orgIsLoaded = orgData((store)=>{
+        if(!ownerType)
+            return false
+        if(!ownerID)
+            return false;
         if(ownerType !== 'organization')
-            return Array(3).fill(null)
+            return false;
 
-        const orgInitialized = ownerID in store.orgData
-        const orgLoaded = orgInitialized && store.orgData[ownerID].isLoaded
-
-        return [orgInitialized, orgLoaded, store.addOrg];
-    })
-    */
+        if (ownerID in store.orgData){
+            return store.orgData[ownerID].isLoaded;
+        };
+        store.addOrg(ownerID);
+        return false;
+    });
 
     const readyToLoad = (() => {
         switch (ownerType) {
@@ -180,13 +163,11 @@ function CalendarLoader() {
             }
 
             case 'organization': {
-                if(orgInit === false){
-                    addOrg(ownerID)
-                }
-                return orgLoaded;
+                console.log('orgLoad status',orgIsLoaded);
+                return orgIsLoaded && calendarIsLoaded;
             }
             default:{
-                return error;
+                return new Error('this should not be hit...');
             }
         }
     })()

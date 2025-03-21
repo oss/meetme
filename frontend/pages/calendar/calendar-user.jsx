@@ -30,8 +30,8 @@ function CalendarOwner({ calID }) {
 
     const memberList = memberListStore((store)=>store.memberList)
 
-    const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
-    const valid = googleStore((store) => store.valid)
+    //const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
+    //const valid = googleStore((store) => store.valid)
 
     const startHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[0].start)
     const columnCount = calendarMaindata((store) => {
@@ -193,21 +193,11 @@ function CalendarOwner({ calID }) {
                                                 <GlobalCalendar calID={calID} />
                                             </ul>
                                         </Stack.Item>
-                                        <Stack.Item>
-                                            <ul className='relative flex flex-wrap pointer-events-none'>
-                                                <GoogleCalendar calID={calID} />
-                                            </ul>
-                                        </Stack.Item>
                                     </Stack>
                                         
                                     </TabPanel>
                                     <TabPanel>
                                         <Stack>
-                                        <Stack.Item>
-                                            <ul className='relative flex flex-wrap pointer-events-none' >
-                                                <GoogleCalendar calID={calID} />
-                                            </ul>
-                                        </Stack.Item>
                                         <Stack.Item>
                                             <ul className='relative flex flex-wrap'>
                                                 <UserCalendar calID={calID} />
