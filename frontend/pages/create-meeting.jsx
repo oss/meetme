@@ -145,15 +145,18 @@ function CreateMeeting({ isOrganizationOwned = false }) {
         navigate(`/cal/${resp1_json.calendar._id}`);
     }
 
-    const [collaborators, setCollaborators] = useState(() => {
-        let userinfo = JSON.parse(atob(Cookies.get("session"))).passport.user;
-        return [
+
+    const [collaborators, setCollaborators] = useState([]);
+    const netid = userStore((store)=>store._id)
+    const name_info = userStore((store)=>store.name)
+    useEffect(()=>{
+        setCollaborators([
             {
-                name: userinfo.firstName + " " + userinfo.lastName,
-                netID: userinfo.uid,
+                name: name_info.first + " " + name_info.last,
+                netID: netid,
             },
-        ];
-    });
+        ])
+    },[])
 
     const collaboratorTextBoxRef = useRef(null)
     const collaboratorButtonRef = useRef(null)
