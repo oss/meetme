@@ -58,7 +58,8 @@ const HeaderButton = memo(function HeaderButton() {
 
 function OrgTileCreator({ orgID }) {
     const orgInStore = orgDataStore((store) => orgID in store.orgData)
-    const orgData = orgDataStore((store) => store.orgData[orgID])
+    const orgIsLoaded = orgDataStore((store) => orgInStore && store.orgData[orgID].isLoaded)
+    const orgData = orgDataStore((store) => orgInStore && store.orgData[orgID])
     const addOrg = orgDataStore((store) => store.addOrg)
 
     if (orgInStore === false) {
@@ -66,7 +67,7 @@ function OrgTileCreator({ orgID }) {
         return <LoadingOrgTile orgID={orgID} />
     }
 
-    if (orgData.isLoaded === false)
+    if (orgIsLoaded === false)
         return <LoadingOrgTile orgID={orgID} />
 
     //console.log(orgData)
