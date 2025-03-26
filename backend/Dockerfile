@@ -22,4 +22,5 @@ COPY <<EOF build.json
 EOF
 
 COPY . .
+COPY config.json5 /etc/meetme/
 CMD ["node","main.js"]
