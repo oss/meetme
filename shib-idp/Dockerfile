@@ -9,7 +9,7 @@ FROM --platform=$TARGETPLATFORM rockylinux:8.9 as base-shib-idp
 ENV TOMCAT_MAJOR=10 \
     TOMCAT_VERSION=10.1.19 \
 ##shib-idp \
-    VERSION=5.1.3 \
+    VERSION=5.1.4 \
 ##TIER \
     TIERVERSION=20240320_rocky8_multiarch \
 #################### \
