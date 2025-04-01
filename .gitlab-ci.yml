@@ -116,6 +116,8 @@ build-backend:
     entrypoint: ['']
   stage: build
   script:
+    - echo "${CI_COMMIT_BRANCH}"
+    - echo "${CI_COMMIT_SHA}"
     - /kaniko/executor
       --context "dir://${CI_PROJECT_DIR}/backend"
       --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
