@@ -1,43 +1,43 @@
 import Tile from '@primitives/tile';
+import Stack from '@primitives/stack';
 
 import { Button } from '@headlessui/react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 
+import InviteDialogue from '@components/stateful/dialogues/inviteDialogue';
+import RenameDialogue from '@components/stateful/dialogues/renameDialogue';
+import LocationDialogue from '@components/stateful/dialogues/locationDialogue';
+import MeetingTimeDialogue from '@components/stateful/dialogues/meetingTimeDialogue';
+
 import GlobalCalendar from './calendarPanels/globalCalendar';
+import GoogleCalendar from './calendarPanels/googleCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
 
 import calendarMetadata from '@store/calendarMetadata';
 import calendarMaindata from '@store/calendarMaindata';
+import googleStore from '@store/googleStore'
 import dialogueStore from '@store/dialogueStore';
 import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
+import memberListStore from './store';
 
 function CalendarOwner({ calID }) {
     const setPanel = dialogueStore((store) => store.setPanel)
     const calendarName = calendarMetadata((store) => store.calendarMetadata[calID].data.name)
-    const [start, end] = calendarMetadata((store) => [store.calendarMetadata[calID].data.meetingTime.start, store.calendarMetadata[calID].data.meetingTime.end])
-    const location = calendarMaindata((store) => store.calendarData[calID].data.location)
+    const start = calendarMetadata((store) => store.calendarMetadata[calID].data.meetingTime.start)
+    const end = calendarMetadata((store) => store.calendarMetadata[calID].data.meetingTime.end)
+    const location = calendarMetadata((store) => store.calendarMetadata[calID].data.location)
     const hoveredUsers = hoveredUsersStore((store) => store.hoveredUsers)
 
-    const memberList = calendarMaindata((store) => {
-        const calendar = store.calendarData[calID].data;
-        const memberListArr = []
-        switch (calendar.owner.owner_type) {
+    const memberList = memberListStore((store)=>store.memberList)
 
-            case 'individual':
-                memberListArr.push({ role: 'owner', IDs: [calendar.owner._id] })
+    //const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
+    //const valid = googleStore((store) => store.valid)
 
-                memberListArr.push({ role: 'users', IDs: [] })
-                calendar.users.forEach((member, index) => {
-                    if (calendar.owner._id !== member._id)
-                        memberListArr[1]['IDs'].push(member._id)
-                });
-
-                break;
-        }
-
-        return memberListArr;
-
-    })
+    const startHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[0].start)
+    const columnCount = calendarMaindata((store) => {
+        return store.calendarData[calID].data.blocks.length
+    });
+    const endHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[columnCount-1].end)
 
 
     const MemberTileList = () => {
@@ -48,7 +48,7 @@ function CalendarOwner({ calID }) {
                         <p className="font-bold text-xs text-slate-400/70">{roleEntry.role.toUpperCase()}</p>
                         <ul>
                             {roleEntry.IDs.map((netid, idx) =>
-                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rutgers_red  text-white'}`}>
+                                <li key={idx} className={`${hoveredUsers.has(netid) && 'bg-rutgers_red text-white'}`}>
                                     {netid}
                                 </li>
                             )}
@@ -95,12 +95,11 @@ function CalendarOwner({ calID }) {
 
     const FinalMeetingTile = () => {
 
-
-        const getTextValue = () => {
+        const getTextValue = (() => {
             if (start === null || end === null)
                 return ('Meeting time has not been set.')
             return `Start: ${new Date(start).toLocaleString()} End: ${new Date(end).toLocaleString()}`
-        }
+        })()
 
         return (
             <Tile>
@@ -111,7 +110,7 @@ function CalendarOwner({ calID }) {
                                 Meeting Time
                             </Tile.Title>
                         </div>
-                        <p>{getTextValue()}</p>
+                        <p>{getTextValue}</p>
                     </Tile.Body>
                 </div>
             </Tile>
@@ -128,7 +127,30 @@ function CalendarOwner({ calID }) {
                                 Meeting Location
                             </Tile.Title>
                         </div>
-                        {location || 'No location set'}
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{location|| 'No location set'}</p>
+                    </Tile.Body>
+                </div>
+            </Tile>
+        )
+    }
+
+    const GoogleTile = () => {
+        return (
+            <Tile>
+                <div className='bg-white'>
+                    <Tile.Body>
+                        <div className="flex justify-between items-center">
+                            <Tile.Title>
+                                Google Calendar Integration
+                            </Tile.Title>
+                            {valid ?<Button
+                                className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
+                                onClick={() => {fetchGoogleData(calID, startHour, endHour) }}
+                            >
+                                Get Google Calendar
+                            </Button> : <div></div>}
+                        </div>
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{valid? "Linked" : "not Linked"}</p>
                     </Tile.Body>
                 </div>
             </Tile>
@@ -165,10 +187,23 @@ function CalendarOwner({ calID }) {
                                 </div>
                                 <TabPanels>
                                     <TabPanel>
-                                        <GlobalCalendar calID={calID} />
+                                    <Stack>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap' >
+                                                <GlobalCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                    </Stack>
+                                        
                                     </TabPanel>
                                     <TabPanel>
-                                        <UserCalendar calID={calID} />
+                                        <Stack>
+                                        <Stack.Item>
+                                            <ul className='relative flex flex-wrap'>
+                                                <UserCalendar calID={calID} />
+                                            </ul>
+                                        </Stack.Item>
+                                    </Stack>
                                     </TabPanel>
                                 </TabPanels>
                             </TabGroup>

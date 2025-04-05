@@ -67,8 +67,6 @@ const useStore = create((set) => {
                     shouldFetch = false;
                     return;
                 }
-                const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
-                addGoogleCalendar(calendarID)
                 prevState.calendarMetadata[calendarID] = {
                     isLoaded: false,
                     error: false,

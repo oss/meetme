@@ -7,18 +7,36 @@ import Tile from "@primitives/tile";
 
 function OrgOwner() {
     const { orgID } = useParams();
-    const [userID, setUserID] = useState("");
+
+    const netidInviteInput = useRef();
+
     const setPanel = dialogueStore((store) => store.setPanel);
 
     const orgName = orgData((store) => store.orgData[orgID].data.name);
     const members = orgData((store) => store.orgData[orgID].data.members);
+    const pendingMembers = orgData((store) => store.orgData[orgID].data.pendingMembers);
+    const calendars = orgData((store)=>store.orgData[orgID].data.calendars)
+    const navigate = useNavigate();
 
-    let inviteNetID = async () => {
-        if (userID === "") {
-            alert("please enter a valid netid");
+    const inviteNetID = async () => {
+        const netid = netidInviteInput.current.value;
+
+        if(netid === "") return;
+
+        if( members.some((member_obj) => member_obj._id === netid) ){
+            netidInviteInput.current.value = "";
+            alert("user is already a member");
             return;
         }
-        const resp = await fetch(process.env.API_URL + "/user/" + userID, {
+
+        if( pendingMembers.some((member_obj) => member_obj._id === netid) ){
+            netidInviteInput.current.value = "";
+            alert("user is already invited");
+            return;
+        }
+
+
+        const resp = await fetch(process.env.API_URL + "/user/" + netid, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
@@ -26,23 +44,12 @@ function OrgOwner() {
         });
         const resp_json = await resp.json();
         if (resp_json.Status !== "ok") {
+            netidInviteInput.current.value = "";
             alert("netid is invalid or inactive");
             return;
         }
-        for (let i = 0; i < members.length; i++) {
-            if (members[i]._id === userID) {
-                alert("user is already a member");
-                return;
-            }
-        }
-        for (let i = 0; i < pendingMembers.length; i++) {
-            if (pendingMembers[i]._id === userID) {
-                alert("user is already invited");
-                return;
-            }
-        }
-        fetch(
-            process.env.API_URL + "/org/" + orgData.organization._id + "/share",
+        
+        await fetch(process.env.API_URL + "/org/" + orgID + "/share",
             {
                 method: "PATCH",
                 credentials: "include",
@@ -50,18 +57,10 @@ function OrgOwner() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    new_users: [userID],
+                    new_users: [netid],
                 }),
             },
         )
-            .then((res) => res.json())
-            .then((data) => {
-                setPendingMembers([...pendingMembers, { _id: userID }]);
-                console.log(JSON.stringify(data));
-            })
-            .catch((err) => {
-                console.log(err);
-            });
     };
 
     function deleteCalendar(cal_id) {
@@ -111,7 +110,7 @@ function OrgOwner() {
     return (
         <div className="h-full bg-neutral-100 justify-center">
             <div className="w-10/12">
-                <div className="flex flex-col items-center my-4">
+                <div className="flex flex-col items-center">
                     <p className="mx-2 text-3xl bg-white rounded font-semibold px-3 py-2 shadow-sm mb-3">
                         {orgName}
                     </p>
@@ -138,8 +137,11 @@ function OrgOwner() {
                                                 leading-tight focus:outline-none focus:shadow-outline"
                                         type="textfield"
                                         placeholder="NetID"
+                                        ref={netidInviteInput}
                                     />
-                                    <button className="bg-rutgers_red rounded px-5 h-9 text-white transition-all duration-100 ease-in-out hover:bg-red-600">
+                                    <button className="bg-rutgers_red rounded px-5 h-9 text-white transition-all duration-100 ease-in-out hover:bg-red-600"
+                                        onClick={inviteNetID}
+                                    >
                                         Invite
                                     </button>
                                 </div>
@@ -158,6 +160,40 @@ function OrgOwner() {
                                         {members.length == 0 && "No members added yet" }
                                     </p>
                                 </div>
+                            </Tile.Body>
+                        </div>
+                    </Tile>
+                </div>
+                <div className="w-full h-full">
+                    <Tile>
+                        <div className="bg-white w-full overflow-x-auto">
+                            <Tile.Body>
+                                <Tile.Title>Calendars</Tile.Title>
+                                <div className="flex">
+                                    <button
+                                        className="bg-rutgers_red rounded px-5 h-9 text-white transition-all duration-100 ease-in-out hover:bg-red-600"
+                                        onClick={() => {
+                                            navigate(`/org/${orgID}/add_meeting`
+                                            );
+                                        }}
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                <ul className="py-2 flex flex-wrap">
+                                    {calendars.map((calendar,idx) => (
+                                        <li
+                                            key={idx}
+                                            className="cursor-pointer my-1 mr-8 p-3 flex items-center shadow rounded"
+                                            onClick={() => { navigate("/cal/" + calendar._id ); }}
+                                        >
+                                            <p>{calendar._id}</p>
+                                        </li>
+                                    ))}
+                                    <p className="text-sm text-gray-700/70">
+                                        {calendars.length === 0 && "No calendars added yet" }
+                                    </p>
+                                </ul>
                             </Tile.Body>
                         </div>
                     </Tile>

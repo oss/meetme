@@ -1,5 +1,3 @@
-import '../../index.css';
-
 import { useState } from 'react';
 import uniqid from 'uniqid';
 

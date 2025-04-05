@@ -13,3 +13,5 @@ frontend/index.css
 docs/site
 response.json
 frontend/.config
+backend/security/private/google_oauth.json
+.cache

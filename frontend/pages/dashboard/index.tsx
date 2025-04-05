@@ -15,13 +15,18 @@ import LoadingOrgTile from './organizations/loadingTile';
 import Stack from '@primitives/stack';
 import { hoveredTileStore } from './store.js'
 import dialogueStore from '@store/dialogueStore';
-import { Dialog } from '@headlessui/react';
+import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+
+import GoogleLinkDialogue from '@components/stateful/dialogues/googleLinkDialogue';
+
 import RedButton from '@components/utils/red-button';
 
 function CalendarTileCreator({ calendarID, idx }) {
     const calendarInStore = metadataStore((store) => calendarID in store.calendarMetadata)
     const calendarMetadata = metadataStore((store) => store.calendarMetadata[calendarID])
     const addCalendar = metadataStore((store)=> store.addCalendar)
+    const addGoogleCalendar = googleStore((store) => store.addGoogleCalendar)
+    addGoogleCalendar(calendarID)
 
     if (calendarInStore === false) {
         addCalendar(calendarID)
@@ -53,7 +58,8 @@ const HeaderButton = memo(function HeaderButton() {
 
 function OrgTileCreator({ orgID }) {
     const orgInStore = orgDataStore((store) => orgID in store.orgData)
-    const orgData = orgDataStore((store) => store.orgData[orgID])
+    const orgIsLoaded = orgDataStore((store) => orgInStore && store.orgData[orgID].isLoaded)
+    const orgData = orgDataStore((store) => orgInStore && store.orgData[orgID])
     const addOrg = orgDataStore((store) => store.addOrg)
 
     if (orgInStore === false) {
@@ -61,7 +67,7 @@ function OrgTileCreator({ orgID }) {
         return <LoadingOrgTile orgID={orgID} />
     }
 
-    if (orgData.isLoaded === false)
+    if (orgIsLoaded === false)
         return <LoadingOrgTile orgID={orgID} />
 
     //console.log(orgData)
@@ -172,86 +178,23 @@ function CalendarPanel() {
 
 
 
-async function getRemove(){
-    let data2 = await fetch(`${process.env.API_URL}/int/google_remove`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json());
-
-
-    console.log(data2)
-    return data2;
-}
-
-
-
-
-function GoogleLinkDialogue(){
-    const googleLink = googleStore((store) => store.googleLink);
-    const googleEmail = googleStore((store) => store.googleEmail);
-
-    return (
-    <>
-        <Dialog.Title>{"Link Google Account"}</Dialog.Title>
-        <Dialog.Description>
-            <p className="text-sm text-gray-500">
-                {"This will take you to google to link your account"}
-            </p>
-            {googleEmail?
-                <p className="text-sm text-gray-500">
-                {"You have already linked the account: " + googleEmail}
-                </p>:
-                ""}
-        </Dialog.Description>
-        <div className='h-1' />
-        <div className='inline-flex w-full'>
-            <div className=''>
-                <a href = {googleLink}>
-                    <RedButton>
-                        {"Go to Google"}
-                    </RedButton>
-                </a>
-            </div>
-        </div>
-    </>
-    )
-}
 
 function Dashboard() {
     const setSelectedIndex = filterStore((store) => store.setSelectedIndex);
-    const googleEmail = googleStore((store) => store.googleEmail);
-    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
+    const valid = googleStore((store) => store.valid);
+    const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);
     const dialogueHook = dialogueStore((store) => store.setPanel)
     const fetchGoogleLink = googleStore((store) => store.fetchGoogleLink);
 
 
     useEffect( ()=>{
-        fetchGoogleEmail()
+        fetchGoogleValidate()
     },[])
 
 
     return (
-        <div className="py-3 px-10 w-full h-full bg-gray-100 border border-gray-200">
+        <div className="py-3 px-10 bg-gray-100 border border-gray-200 w-full h-full">
             
-                <button
-                    className="bg-rutgers_red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2"
-                    onClick={() => {
-                        fetchGoogleLink()
-                        dialogueHook(<GoogleLinkDialogue/>)
-                    }}
-                >
-                    Link
-                </button>
-            
-            <button
-                className={`${googleEmail?"bg-green-500":"bg-rutgers_red"} hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-2`}
-                onClick={() =>  getRemove()}
-            >
-                Status
-            </button>
             <TabGroup onChange = {setSelectedIndex} className= "flex flex-wrap">
                 <HeaderButton />
                 <div className = "w-full"></div>

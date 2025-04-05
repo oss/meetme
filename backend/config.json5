@@ -1,0 +1,59 @@
+{
+    // utility stuff
+    "frontend_domain": "https://localhost.edu",
+    "backend_domain": "https://api.localhost.edu",
+
+    // mongodb url
+    "mongo_url": "mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0",
+
+    "ldap": {
+        "uri": "ldap://openldap:1389",
+        "scope": "subtree",
+        "bind_dn": "cn=admin,dc=example,dc=org",
+        "base": "dc=example,dc=org",
+        "password_file": "./security/private/ldap_credential"
+    },
+
+    "auth": {
+        // cookie-session
+        "cookie_domain": "localhost.edu",
+        "keygrip_secret_file": "./security/private/keygrip.json",
+        "session": {
+            "update_unit": 60000,               // after when to update in ms, ex. 60000 equals a minute
+            "update_interval": 2,               // how many units till time to update
+            "expiration": 5                     // how many intervals until session exipres
+        },
+
+        // passport-saml
+        "shib_key": {
+            "public": "./security/cert.pem",
+            "private": "./security/private/key.pem"
+        },
+        "idp_cert": "./security/idp.pem",
+        "issuer": "https://api.localhost.edu/shibboleth",
+        "login_url": "https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO",
+    },
+
+    "google_oauth_credentials": "./security/private/google_oauth.json",
+    "google_scopes": "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email",
+
+    // specify extra routers to load
+    "routers": [
+        {
+            "router_file": "./auth/router.js",
+            "prefix": "/"
+        },{
+            "router_file": "./calendar/router.js",
+            "prefix": "/cal"
+        },{
+            "router_file": "./organizations/router.js",
+            "prefix": "/org"
+        },{
+            "router_file": "./user/router.js",
+            "prefix": "/user"
+        },{
+            "router_file": "./integrations/google/router.js",
+            "prefix": "/integrations/google"
+        }
+    ]
+}

@@ -30,9 +30,6 @@ function CalendarOwner({ calID }) {
 
     const memberList = memberListStore((store)=>store.memberList)
 
-    const fetchGoogleData = googleStore((store) => store.fetchGoogleData)
-    const googleEmail = googleStore((store) => store.googleEmail)
-
     const startHour = calendarMaindata((store) => store.calendarData[calID].data.blocks[0].start)
     const columnCount = calendarMaindata((store) => {
         return store.calendarData[calID].data.blocks.length
@@ -177,14 +174,14 @@ function CalendarOwner({ calID }) {
                             <Tile.Title>
                                 Google Calendar Integration
                             </Tile.Title>
-                            <Button
+                            {valid ?<Button
                                 className="px-1 ml-1 transition-all ease-linear rounded text-gray-600 hover:text-gray-400"
                                 onClick={() => {fetchGoogleData(calID, startHour, endHour) }}
                             >
                                 Get Google Calendar
-                            </Button>
+                            </Button> : <div></div>}
                         </div>
-                        <p className = "text-nowrap overflow-hidden text-ellipsis">{googleEmail || "not Linked"}</p>
+                        <p className = "text-nowrap overflow-hidden text-ellipsis">{valid? "Linked" : "not Linked"}</p>
                     </Tile.Body>
                 </div>
             </Tile>
@@ -228,16 +225,16 @@ function CalendarOwner({ calID }) {
                                                 <GlobalCalendar calID={calID} />
                                             </ul>
                                         </Stack.Item>
+                                    </Stack>
+                                    </TabPanel>
+                                    <TabPanel>
+                                        <Stack>
                                         <Stack.Item>
                                             <ul className='relative flex flex-wrap'>
-                                                <GoogleCalendar calID={calID} />
+                                                <UserCalendar calID={calID} />
                                             </ul>
                                         </Stack.Item>
                                     </Stack>
-                                        
-                                    </TabPanel>
-                                    <TabPanel>
-                                        <UserCalendar calID={calID} />
                                     </TabPanel>
                                 </TabPanels>
                             </TabGroup>

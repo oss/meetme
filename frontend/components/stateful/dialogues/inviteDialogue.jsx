@@ -9,6 +9,7 @@ import BaseButton from "../../utils/base-button";
 import TextBarWithEnter from '../../lib/primitives/textInputWithEnter'
 import { Tab, TabGroup, TabList } from '@headlessui/react'
 import calendarMetadata from '@store/calendarMetadata';
+import Stack from '@primitives/stack';
 
 const inviteDialogueStore = create((set) => {
     const validateNetID = async (netid) => {
@@ -44,12 +45,13 @@ const inviteDialogueStore = create((set) => {
 
         set((previous_state) => {
             if (netid in previous_state.pendingMemberStatus) return previous_state;
-            const clone = { ...previous_state };
-            clone.pendingMemberStatus[netid] = 'pending'
-            clone.pendingMemberOrder.push(netid)
 
-            return clone;
+            return {
+                pendingMemberOrder: [...(previous_state.pendingMemberOrder),netid ],
+                pendingMemberStatus: {...(previous_state.pendingMemberStatus), netid: 'pending'}
+            };
         })
+
         validateNetID(netid)
     }
 
@@ -145,17 +147,16 @@ function MemberSVGIcon({ netID }) {
 
 function InviteDialogue({ calID }) {
     const textBarRef = useRef(null);
-    const [textBarValue, setTextBarValue] = useState('')
-    const [pendingInviteOrder, clearStore, addNetID, removeNetID, pendingMemberStatus] = inviteDialogueStore((store) => [store.pendingMemberOrder, store.clearStore, store.addNetID, store.removeNetID, store.pendingMemberStatus]);
-    const inviteListOK = inviteDialogueStore((store) => {
-        for (let i = 0; i < store.pendingMemberOrder.length; i++) {
-            const netid = store.pendingMemberOrder[i]
-            if (store.pendingMemberStatus[netid] !== 'ok') {
-                return false
-            }
-        }
-        return true
-    });
+    const [textBarHasSomething,setTextBarHasSomething] = useState(false);
+
+    const pendingInviteOrder = inviteDialogueStore((store)=>store.pendingMemberOrder)
+    const pendingInviteStatus = inviteDialogueStore((store)=>store.pendingInviteStatus);
+    const clearStore = inviteDialogueStore((store)=>store.clearStore);
+    const addNetID = inviteDialogueStore((store)=>store.addNetID);
+    const removeNetID = inviteDialogueStore((store)=>store.removeNetID);
+    const pendingMemberStatus = inviteDialogueStore((store)=>store.pendingMemberStatus);
+
+    const inviteListOK = pendingInviteOrder.map((netid) => pendingMemberStatus[netid] === 'ok' );
 
     const closeDialogue = dialogueStore((store) => store.closePanel);
 
@@ -163,10 +164,6 @@ function InviteDialogue({ calID }) {
 
     useEffect(() => {
         clearStore()
-
-        return () => {
-            clearStore()
-        }
     }, [])
 
     const inviteUsers = async () => {
@@ -193,13 +190,6 @@ function InviteDialogue({ calID }) {
             }),
         })
     }
-
-    useEffect(() => {
-        if(textBarRef.current != null){
-            setTextBarValue(textBarRef.current.value)
-        }
-      });
-
 
     return (
         <>
@@ -241,8 +231,7 @@ function InviteDialogue({ calID }) {
                         return
                     addNetID(textBarRef.current.value)
                     textBarRef.current.value = ''
-                    setTextBarValue('')
-                }} />
+                }} onChange={(e)=>{setTextBarHasSomething(textBarRef.current.value.length !== 0) }}/>
             <div className="h-1" />
 
             <div className='inline-flex w-full flex-row-reverse'>
@@ -256,18 +245,37 @@ function InviteDialogue({ calID }) {
 
                     addNetID(textBarRef.current.value)
                     textBarRef.current.value = ''
-                    setTextBarValue('')
                 }} >
-                    <div className="grid grid-cols-1 grid-rows-1">
-                        <p className={`${textBarValue.length === 0 || 'invisible'}`} style={{ gridColumn: 1, gridRow: 1 }}>Invite</p>
-                        <p className={`${textBarValue.length === 0 && 'invisible'}`} style={{ gridColumn: 1, gridRow: 1 }}>Add</p>
-                    </div>
+
+                <Stack>
+                    <Stack.Item>
+                        <p className={`${textBarHasSomething && 'invisible'}`}>Invite</p>
+                    </Stack.Item>
+                    <Stack.Item>
+                        <p className={`${textBarHasSomething || 'invisible'}`}>Add</p>
+                    </Stack.Item>
+                </Stack>
+                
                 </RedButton>
                 <BaseButton className='border-1 border-solid bg-slate-400 p-1' onClick={() => { closeDialogue() }}>
                     <p>Close</p>
                 </BaseButton>
-                <p className = {`mr-2 ${inviteListOK ? 'hidden': ""}`}>Remove all invalid or inactive netids</p>
             </div>
+
+            <p>Link Sharing</p>
+            <BaseButton className={`inline border-1 border-solid bg-slate-50 p-1 hover:bg-slate-100 hover:shadow-md disabled:bg-slate-400`} disabled={!shareLinkState} onClick={() =>  navigator.clipboard.writeText(window.location.href)}>
+                <p>{shareLinkState && "Copy Link" || "Disabled"}</p>
+            </BaseButton>
+            <BaseButton onClick={()=>{
+                setShareLinkStatus(!shareLinkState)
+            }}>
+                <p>Toggle</p>
+            </BaseButton>
+        </>
+    )
+}
+
+/*
             <TabGroup defaultIndex={shareLinkState ? 0 : 1} onChange={(index) => {
             setShareLinkStatus(index === 0);
             }}>
@@ -290,8 +298,6 @@ function InviteDialogue({ calID }) {
             </BaseButton>
             </TabGroup>
 
-        </>
-    )
-}
+*/
 
 export default InviteDialogue;

@@ -9,7 +9,7 @@ function Tabs({
 }) {
     return (
         <Tab.Group>
-            <Tab.List className="my-2 w-fit flex space-x-12 rounded-xl bg-white p-2">
+            <Tab.List className="my-2 w-fit flex gap-x-3 rounded-xl bg-white p-2">
                 {categories.map((category) => {
                     return (
                         <Tab

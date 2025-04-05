@@ -1,5 +1,3 @@
-import '../../index.css';
-
 function Button({
     text,
     paddingX = 2,

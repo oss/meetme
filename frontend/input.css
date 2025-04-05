@@ -1,23 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-}
+@source "./index.js";
+@source "./main.js";
+@source "./login.js";
 
-#root {
-  width: 100%;
-  height: 100%;
-}
+@source "./components";
+@source "./pages";
 
-@keyframes rotate-90 {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(90deg);
-  }
+
+@theme {
+    --color-rutgers_red: #cc0033;
+    --color-rutgers_grey: #5f6a72;
+    --color-rutgers_black: #000000;
 }

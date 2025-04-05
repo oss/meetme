@@ -34,14 +34,11 @@ const individualMemberSetHook = (calID) => {
 }
 
 const organizationMemberListHook = (orgID) => {
-
-    const [owner, admins, editors, members, viewers] = orgData((store) => [
-        store.orgData[orgID].data.owner,
-        store.orgData[orgID].data.admins,
-        store.orgData[orgID].data.editors,
-        store.orgData[orgID].data.members,
-        store.orgData[orgID].data.viewers,
-    ]);
+    const owner = orgData((store) => store.orgData[orgID].data.owner)
+    const admins = orgData((store) => store.orgData[orgID].data.admins)
+    const editors = orgData((store) => store.orgData[orgID].data.editors)
+    const members = orgData((store) => store.orgData[orgID].data.members)
+    const viewers = orgData((store) => store.orgData[orgID].data.viewers)
 
     const arr = []
 
@@ -71,13 +68,12 @@ const organizationMemberListHook = (orgID) => {
 }
 
 const organizationMemberSetHook = (orgID) => {
-    const [owner, admins, editors, members, viewers] = orgData((store) => [
-        store.orgData[orgID].data.owner,
-        store.orgData[orgID].data.admins,
-        store.orgData[orgID].data.editors,
-        store.orgData[orgID].data.members,
-        store.orgData[orgID].data.viewers,
-    ]);
+    const owner = orgData((store) => store.orgData[orgID].data.owner)
+    const admins = orgData((store) => store.orgData[orgID].data.admins)
+    const editors = orgData((store) => store.orgData[orgID].data.editors)
+    const members = orgData((store) => store.orgData[orgID].data.members)
+    const viewers = orgData((store) => store.orgData[orgID].data.viewers)
+
 
     const set = new Set()
 

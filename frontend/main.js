@@ -12,7 +12,6 @@ const CalendarLoader = lazy(() => import("./pages/calendar"));
 const CreateOrg = lazy(() => import("./pages/create-org"));
 const Error404 = lazy(() => import("./pages/error-404"));
 const MyMeetings = lazy(() => import("./pages/my-meetings"));
-import "./index.css";
 const Faq = lazy(() => import("./pages/faq"));
 const OrgLoader = lazy(() => import("./pages/organization"));
 const MyInvitations = lazy(() => import("./pages/my-invitations"));
@@ -29,51 +28,16 @@ function App() {
         {
             path: "/",
             element: (
-                <>
+                <div className='flex flex-col min-h-screen min-w-screen'>
                     <div className="relative">
                         <Navbar />
                     </div>
-                    <div className="relative grow">
-                        <Outlet />
-                    </div>
-                    <div className="absolute h-full w-full pointer-events-none">
-                        <div className="relative">
-                            <Transition appear show={dialogueStatus.display} as={Fragment}>
-                                <Dialog onClose={dialogueStatus.closePanel}>
-                                    <TransitionChild
-                                        as={Fragment}
-                                        enter="ease-out duration-300"
-                                        enterFrom="opacity-0"
-                                        enterTo="opacity-100"
-                                        leave="ease-in duration-200"
-                                        leaveFrom="opacity-100"
-                                        leaveTo="opacity-0"
-                                    >
-                                        <div className="fixed inset-0 bg-black/25" />
-                                    </TransitionChild>
-
-                                    <div className="fixed inset-0 overflow-y-auto">
-                                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                                            <TransitionChild
-                                                as={Fragment}
-                                                enter="ease-out duration-300"
-                                                enterFrom="opacity-0 scale-95"
-                                                enterTo="opacity-100 scale-100"
-                                                leave="ease-in duration-200"
-                                                leaveFrom="opacity-100 scale-100"
-                                                leaveTo="opacity-0 scale-95"
-                                            >
-                                                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                                    {dialogueStatus.panel}
-                                                </DialogPanel>
-                                            </TransitionChild>
-                                        </div>
-                                    </div>
-                                </Dialog>
-                            </Transition>
+                    <div className="relative grow flex">
+                        <div className='grow'>
+                            <Outlet />
                         </div>
                     </div>
-                </>
+                </div>
             ),
             errorElement: <ErrorPage />,
             children: [
@@ -207,8 +171,44 @@ function App() {
 
     return (
         <>
-            <div className="flex flex-col w-full h-full">
+            <div className="flex flex-col min-w-screen min-h-screen">
                 <RouterProvider router={router} />
+                <div className="absolute h-full w-full pointer-events-none">
+                    <div className="relative">
+                        <Transition appear show={dialogueStatus.display} as={Fragment}>
+                            <Dialog open={dialogueStatus.display} onClose={dialogueStatus.closePanel}>
+                                <TransitionChild
+                                    as={Fragment}
+                                    enter="ease-out duration-300"
+                                    enterFrom="opacity-0"
+                                    enterTo="opacity-100"
+                                    leave="ease-in duration-200"
+                                    leaveFrom="opacity-100"
+                                    leaveTo="opacity-0"
+                                >
+                                    <div className="fixed inset-0 bg-black/25" />
+                                </TransitionChild>
+                                <div className="fixed inset-0 overflow-y-auto">
+                                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                                        <TransitionChild
+                                            as={Fragment}
+                                            enter="ease-out duration-300"
+                                            enterFrom="opacity-0 scale-95"
+                                            enterTo="opacity-100 scale-100"
+                                            leave="ease-in duration-200"
+                                            leaveFrom="opacity-100 scale-100"
+                                            leaveTo="opacity-0 scale-95"
+                                        >
+                                            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                                {dialogueStatus.panel}
+                                            </DialogPanel>
+                                        </TransitionChild>
+                                    </div>
+                                </div>
+                            </Dialog>
+                        </Transition>
+                    </div>
+                </div>
             </div>
         </>
     );

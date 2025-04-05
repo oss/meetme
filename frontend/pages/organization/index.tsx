@@ -27,13 +27,12 @@ function OrgLoader() {
     const netID = authStore((store)=>store.userData.user.uid);
 
     const orgData = orgStore((store)=>store.orgData[orgID]) //optimize this state
-    const addOrg = orgStore((store)=>store.addOrg)
-    const fetchOrg = orgStore((store)=>store.fetchOrgData)
-    const isLoaded = (() => {
-        if (orgData === undefined)
-            return false;
-        return orgData.isLoaded
-    })()
+    const isLoaded = orgStore((store)=>{
+
+        if(orgID in store.orgData) return store.orgData[orgID].isLoaded;
+        store.addOrg(orgID);
+        return false;
+    })
 
     const orgRole = (() => {
         if (!isLoaded) return null;
@@ -55,14 +54,6 @@ function OrgLoader() {
         const isViewer = organization.viewers.some((uname) => uname._id === netID)
         if (isViewer) return ORG_ROLES.VIEWER
     })()
-
-    useEffect(() => {
-        if(orgData === undefined)
-            addOrg(orgID)
-        else
-            fetchOrg(orgID)
-    },[])
-
 
     if (!isLoaded) {
         return <div>Loading</div>;

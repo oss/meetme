@@ -10,16 +10,17 @@ case $BUILD in
     dev|DEV)
         params="$params--mode development "
         params="$params--stats verbose "
+        params="$params--config webpack.dev.js "
         export BUILD='dev'
         export API_URL='https://api.localhost.edu'
         export WEBSITE_URL='https://localhost.edu'
     ;;
     prod|PROD)
         params="$params--mode production "
-        params="$params--config webpack.dev.js "
+        params="$params--config webpack.prod.js "
         export BUILD='prod'
-        export API_URL='https://api.localhost.edu'
-        export WEBSITE_URL='https://localhost.edu'
+        export API_URL='https://api.meetme.oss.rutgers.edu'
+        export WEBSITE_URL='https://meetme.oss.rutgers.edu'
     ;;
     *)
         echo 'invalid build env'
@@ -27,7 +28,7 @@ case $BUILD in
     ;;
 esac
 
-npx tailwindcss -i ./input.css -o index.css
+npx @tailwindcss/cli -i ./input.css -o index.css
 
 if [ $BUILD = "dev" ]; then
     echo "starting build"

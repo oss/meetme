@@ -1,4 +1,4 @@
-// server.js File
+// json5 stuff to load config. Use json5 so we can have comments in json
 const express = require('express'); // Importing express module
 const fs = require('fs');
 const app = express(); // Creating an express object
@@ -11,8 +11,10 @@ const mongoose = require('mongoose');
 const logger = require('./logging');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
-mongoose.connect(process.env.MONGO_URL);
 const random_ip_list = require("./random_ip_list.json");
+const config = require('#config');
+const build = require('#build');
+mongoose.connect(config.mongo_url);
 
 app.set('trust proxy', 1);
 router.use((req, res, next) => {
@@ -39,10 +41,10 @@ app.use((error, req, res, next) => {
 
 app.use(
   cookieSession({
-    keys: new Keygrip(['secret1',"secret2"],'sha512'),
+    keys: new Keygrip(require(config.auth.keygrip_secret_file),'sha512'),
     resave: true,
     saveUninitialized: false,
-    domain: 'localhost.edu',
+    domain: config.auth.cookie_domain,
   })
 );
 
@@ -69,13 +71,13 @@ app.use(function(request, response, next) {
 //inside unsecure bc we use nginx magic
 const samlStrategy = new saml.Strategy(
   {
-    callbackUrl: 'https://api.localhost.edu/login',
-    entryPoint: process.env.LOGIN_URL,
-    issuer: 'https://api.localhost.edu/shibboleth',
+    callbackUrl: `${config.backend_domain}/login`,
+    entryPoint: config.auth.login_url,
+    issuer: config.auth.issuer,
     identifierFormat: null,
-    decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf8'),
-    privateCert: fs.readFileSync('./certs/cert.pem', 'utf8'),
-    idpCert: fs.readFileSync('./certs/idp.pem', 'utf8'),
+    decryptionPvk: fs.readFileSync(config.auth.shib_key.private, 'utf8'),
+    privateCert: fs.readFileSync(config.auth.shib_key.public, 'utf8'),
+    idpCert: fs.readFileSync(config.auth.idp_cert, 'utf8'),
 //    validateInResponseTo: false,
     disableRequestedAuthnContext: true,
     wantAssertionsSigned: false
@@ -95,85 +97,53 @@ app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
-//set up paths
-const router_config = require('./router_config.json');
-for (let i = 0; i < router_config.length; i++) {
-  let dir = router_config[i]['dir'];
-  let top_endpoint = router_config[i]['route'];
-  let files = fs.readdirSync(dir);
+const enabled_routes = config['routers']
+for (let i = 0; i < enabled_routes.length; i++) {
+    const enabled_route = enabled_routes[i];
 
-  for (let j = 0; j < files.length; j++) {
-    if (!files[j].includes('schema') && files[j].endsWith('.js')) {
-      console.log('loading file ---> ' + files[j]);
-      router.use(top_endpoint, require('./' + dir + '/' + files[j]));
-    }
-  }
-
-  if (process.env.DEV === 'true') {
-    if (fs.existsSync('./' + dir + '/testing')) {
-      const testing_files = fs.readdirSync('./' + dir + '/testing');
-      for (let j = 0; j < testing_files.length; j++) {
-        console.log('loading test file ---> ' + testing_files[j]);
-        router.use(
-          '/test',
-          require('./' + dir + '/testing/' + testing_files[j])
-        );
-      }
-    }
-  }
+    const prefix = enabled_route['prefix'];
+    const router_location = enabled_route['router_file'];
+    const router_obj = require(router_location)
+    router.use(prefix, router_obj);
+    router_obj.router_prefix = prefix;
+    if(prefix === '/')
+        router_obj.router_prefix = prefix.substring(1);
 }
 
-router.get('/', function (req, res) {
-    let routes=[]
-    function print (path, layer) {
-        if (layer.route) {
-            layer.route.stack.forEach(print.bind(null, path.concat(split(layer.route.path))))
-        } else if (layer.name === 'router' && layer.handle.stack) {
-            layer.handle.stack.forEach(print.bind(null, path.concat(split(layer.regexp))))
-        } else if (layer.method) {
-            routes.push(layer.method.toUpperCase()+" /"+path.concat(split(layer.regexp)).filter(Boolean).join('/'))
-        }
-    }
-      
-    function split (thing) {
-        if (typeof thing === 'string') {
-            return thing.split('/')
-        } else if (thing.fast_slash) {
-            return ''
-        } else {
-            var match = thing.toString()
-            .replace('\\/?', '')
-            .replace('(?=\\/|$)', '$')
-            .match(/^\/\^((?:\\[.*+?^${}()|[\]\\\/]|[^.*+?^${}()|[\]\\\/])*)\$\//)
-            return match
-            ? match[1].replace(/\\(.)/g, '$1').split('/')
-            : '<complex:' + thing.toString() + '>'
-        }
-    }
-    
-    if(process.env.DEV === 'true'){
-        app._router.stack.forEach(print.bind(null, []))
+const routes = [];
 
-        res.json({
-            Status: 'ok',
-            build_time: new Date(),
-            git_branch: process.env.GIT_BRANCH,
-            git_hash: process.env.GIT_HASH,
-            build: 'dev',
-            paths: [...new Set(routes)]
-        });    
-    } 
-    else {
-        res.json({
-            Status: 'ok',
-            build: 'prod',
-            git_branch: process.env.GIT_BRANCH,
-            git_hash: process.env.GIT_HASH
-        });
-    }
+router.get('/', function (req, res) {
+    res.json({
+        Status: 'ok',
+        time: new Date(),
+        git_branch: process.env.GIT_BRANCH,
+        git_hash: process.env.GIT_HASH,
+        paths: routes
+    });
 });
 
 app.use('/', router);
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).json({"error": "TODO: make better error logs"})
+})
+
+
+function printRegisteredRoutes(routerStack, parentPath) {
+    console.log('routerstack',routerStack)
+    routerStack.forEach((middleware) => {
+        if (middleware.route) {
+            routes.push(
+                `${middleware.route.stack[0].method.toUpperCase()} ${parentPath}${middleware.route.path}`
+            );
+        } else if (middleware.name === 'router') {
+            console.log(middleware.handle.router_prefix)
+            printRegisteredRoutes(middleware.handle.stack,`${parentPath}${middleware.handle.router_prefix || ''}`);
+        }
+    });
+}
+
+printRegisteredRoutes(app.router.stack,'');
 
 // Starting server using listen function
 app.listen(port, function (err) {

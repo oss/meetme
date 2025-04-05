@@ -1,5 +1,4 @@
 import FaqCollapse from '../components/utils/faq-collapse';
-import '../index.css';
 
 function Faq() {
     return (

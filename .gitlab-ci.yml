@@ -114,16 +114,17 @@ build-backend:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
+  variables: 
+    GIT_BRANCH: ${CI_COMMIT_BRANCH}
+    GIT_HASH: ${CI_COMMIT_SHA}
   stage: build
   script:
     - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/backend"
+      --context "${CI_PROJECT_DIR}/backend"
       --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_TAG}"
-      --build-arg=GIT_BRANCH="${CI_COMMIT_BRANCH}"
-      --build-arg=GIT_HASH="${CI_COMMIT_SHA}"
-      --build-arg=DEV="true"
-      --build-arg=LOGIN_URL="https://idp.localhost.edu/idp/profile/SAML2/Redirect/SSO"
+      --build-arg GIT_BRANCH
+      --build-arg GIT_HASH
 
 build-frontend:
   image:

@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "#build": "./build.json",
+        "#config": "./config.js"
+    }
+}

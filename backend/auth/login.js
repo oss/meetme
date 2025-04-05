@@ -5,7 +5,7 @@ const {
 } = require('../user/helpers/modify_user');
 
 const passport = require('passport');
-
+const config = require("#config");
 const express = require('express');
 const router = express.Router();
 
@@ -33,16 +33,13 @@ router.post('/login',
             }
         }
         await update_last_login(req.user.uid);
-        req.session.time = Math.floor(Date.now() / (1000 * 60));
-        res.redirect('https://localhost.edu' + (req.body.RelayState || ''));
+        req.session.time = Math.floor(Date.now() / config.auth.session.update_unit);
+        res.redirect(config.frontend_domain + (req.body.RelayState || ''));
     }
 );
 
 router.get('/login',
     async function (req, res, next) {
-        console.log('-----------------------------');
-        console.log('/Start login handler for get');
-        console.log('(');
         req.query.RelayState = req.query.dest;
         next();
     },
