@@ -10,13 +10,6 @@ RUN npm install express mongoose cookie-parser passport body-parser @node-saml/p
 RUN echo $GIT_HASH
 RUN echo $GIT_BRANCH
 
-COPY <<EOF build.json
-{
-    "GIT_HASH": "$GIT_HASH",
-    "GIT_BRANCH": "$GIT_BRANCH"
-}
-EOF
-
 COPY . .
 COPY config.json5 /etc/meetme/
 CMD ["node","main.js"]
