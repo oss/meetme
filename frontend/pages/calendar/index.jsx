@@ -113,6 +113,7 @@ function CalendarLoader() {
 
     const fetchCalendarMetadata = calendarMetadataStore((store) => store.fetchCalendarMetadata)
     const fetchCalendarMaindata = calendarMaindataStore((store) => store.fetchCalendarMaindata)
+    const fetchGoogleEmail = googleStore((store) => store.fetchGoogleEmail);
 
     // disable all google stuff for now
     //const fetchGoogleValidate = googleStore((store) => store.fetchGoogleValidate);

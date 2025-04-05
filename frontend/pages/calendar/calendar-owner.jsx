@@ -10,10 +10,12 @@ import LocationDialogue from '@components/stateful/dialogues/locationDialogue';
 import MeetingTimeDialogue from '@components/stateful/dialogues/meetingTimeDialogue';
 
 import GlobalCalendar from './calendarPanels/globalCalendar';
+import GoogleCalendar from './calendarPanels/googleCalendar';
 import UserCalendar from './calendarPanels/userCalendar';
 
 import calendarMetadata from '@store/calendarMetadata';
 import calendarMaindata from '@store/calendarMaindata';
+import googleStore from '@store/googleStore'
 import dialogueStore from '@store/dialogueStore';
 import { hoveredUsersStore } from './calendarPanels/globalCalendar/state';
 import memberListStore from './store';
@@ -201,6 +203,7 @@ function CalendarOwner({ calID }) {
                     <CollaboratorTile />
                     <FinalMeetingTile/>
                     <LocationTile/>
+                    <GoogleTile/>
                 </div>
 
                 <div className='p-1' />
