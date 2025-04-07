@@ -84,7 +84,7 @@ get_all_endpoints_in_code(){
             fi
 
             local backend_folder=$( sed -r 's/^\/project\/backend\/(.*)\/.*.js$/\1/g' <<< "$file" )
-            local route_prefix=$(json5 "${PROJECT_DIR}/backend/router_config.json" | jq -r ".[] | select(.dir == \"$backend_folder\") | .route ")
+            local route_prefix=$(json5 "${PROJECT_DIR}/backend/config.json5" | jq -r ".routers | .[] | select(.router_file == \"./$backend_folder/router.js\") | .prefix ")
 
             if [ -z $route_prefix ]; then
                 route_prefix='/'
