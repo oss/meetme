@@ -228,3 +228,25 @@ build-puppeteer:
       --dockerfile "Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/puppeteer:${CI_COMMIT_TAG}"
 
+build-docs:
+  stage: build
+    image:
+      name: gcr.io/kaniko-project/executor:debug
+      entrypoint: ['']
+    script:
+      - /kaniko/executor
+        --context "dir://${CI_PROJECT_DIR}/docs"
+        --dockerfile "${CI_PROJECT_DIR}/docs/Dockerfile"
+        --destination "${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_TAG}"
+
+upload-docs:
+  stage: deploy
+  image:
+    name: ${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_TAG}
+    entrypoint: ['']
+  script:
+    - mkdocs build
+  artifacts:
+    when: always
+    paths:
+      - /root/site
