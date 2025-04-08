@@ -249,5 +249,6 @@ upload-docs:
     - mkdocs build -f docs/mkdocs.yml -d ${CI_PROJECT_DIR}/.build/${CI_COMMIT_SHA}
   artifacts:
     when: always
+    name: "website"
     paths:
       - ${CI_PROJECT_DIR}/.build/${CI_COMMIT_SHA}
