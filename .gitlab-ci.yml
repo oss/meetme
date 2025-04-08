@@ -127,8 +127,8 @@ build-docs-testing:
   script:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/testing/docs"
-      --dockerfile "${CI_PROJECT_DIR/testing/docs/Dockerfile"
-      --destionation "${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_TAG}"
+      --dockerfile "${CI_PROJECT_DIR}/testing/docs/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_TAG}"
 
 build-backend:
   image:
