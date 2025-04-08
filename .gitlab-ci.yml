@@ -251,4 +251,4 @@ upload-docs:
   artifacts:
     when: always
     paths:
-      - /tmp/${CI_COMMIT_SHA}
+      - /tmp/${CI_COMMIT_SHA}/
