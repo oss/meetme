@@ -1,4 +1,6 @@
-PROJECT_DIR="/project"
+#PROJECT_DIR="/project"
+PROJECT_DIR=${PROJECT_DIR:-"/project"}
+
 backend_has_no_changes(){
     if [[ $(git -C "$PROJECT_DIR" status --porcelain backend) ]]; then
         return 1
