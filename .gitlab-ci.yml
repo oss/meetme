@@ -247,7 +247,6 @@ upload-docs:
     entrypoint: ['']
   script:
     - mkdocs build -f docs/mkdocs.yml -d /tmp/${CI_COMMIT_SHA}
-    - sleep 300000
   artifacts:
     when: always
     paths:
