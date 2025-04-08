@@ -246,6 +246,9 @@ upload-docs:
     name: ${CI_REGISTRY_IMAGE}/docs
     entrypoint: ['']
   script:
+    - ls
+    - pwd
+    - sleep 300000
     - mkdocs build
   artifacts:
     when: always
