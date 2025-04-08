@@ -245,7 +245,9 @@ upload-docs:
   image:
     name: ${CI_REGISTRY_IMAGE}/docs
     entrypoint: ['']
+  script:
+    - mkdocs build -f docs/mkdocs.yml -d /tmp/${CI_COMMIT_TAG}
   artifacts:
     when: always
     paths:
-      - /root/site
+      - /tmp/${CI_COMMIT_TAG}
