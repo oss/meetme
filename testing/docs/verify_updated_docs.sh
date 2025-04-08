@@ -158,7 +158,7 @@ main(){
             local second_hash=$(jq -rn --argjson x "$diff_pair" '$x[1].hash')
             local second_source=$(jq -rn --argjson x "$diff_pair" '$x[1].source')
 
-            echo "hash mismatch                                 $endpoint $method $first_source=$first_hash $second_source=$second_hash"
+            echo "hash mismatch                                 $endpoint $method $first_source=$first_hash $second_source=$second_hash" && echo "mismatch" >> /tmp/error_count
 
             continue;
         fi
@@ -167,16 +167,23 @@ main(){
         local available_source=$(jq -rn --argjson x "$diff_pair" '$x[0].source')
 
         if [ "$available_source" = markdown ]; then
-            echo "extra endpoint found in markdown docs         $endpoint $method git hash: $available_hash"
+            echo "extra endpoint found in markdown docs         $endpoint $method git hash: $available_hash" && echo "extra md" >> /tmp/error_count
             continue
         fi
 
         if [ "$available_source" = code ]; then
-            echo "markdown docs missing endpoint                $endpoint $method git hash: $available_hash"
+            echo "markdown docs missing endpoint                $endpoint $method git hash: $available_hash" && echo "missing md" >> /tmp/error_count
             continue
         fi
 
     done
+
+
+    grep -m 1 -E '^[a-zA-Z0-9\ ]+$' /tmp/error_count >/dev/null || return 0 #no errors
+
+    error_count=$(wc -l < /tmp/error_count | sed -r 's/\ +//g' )
+    echo "Errors found: $error_count"
+    return 1
     
     #verify_frontend
     #summary_hash_latest "backend/main.js" || exit 1

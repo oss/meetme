@@ -109,6 +109,26 @@ frontend-lint:
     - build-frontend
     - build-eslint
 
+backend-docs-uptodate:
+  image:
+    name: ${CI_REGISTRY_IMAGE}/test-docs
+    entrypoint: []
+  needs: [ "build-docs-testing" ]
+  stage: test
+  script:
+    - PROJECT_DIR="${CI_PROJECT_DIR}" /bin/bash /root/verify_updated_docs.sh
+
+
+build-docs-testing:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: ['']
+  stage: build
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/testing/docs"
+      --dockerfile "${CI_PROJECT_DIR/testing/docs/Dockerfile"
+      --destionation "${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_TAG}"
 
 build-backend:
   image:
