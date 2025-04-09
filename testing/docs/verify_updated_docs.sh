@@ -1,4 +1,6 @@
-PROJECT_DIR="/project"
+#PROJECT_DIR="/project"
+PROJECT_DIR=${PROJECT_DIR:-"/project"}
+
 backend_has_no_changes(){
     if [[ $(git -C "$PROJECT_DIR" status --porcelain backend) ]]; then
         return 1
@@ -84,7 +86,7 @@ get_all_endpoints_in_code(){
             fi
 
             local backend_folder=$( sed -r 's/^\/project\/backend\/(.*)\/.*.js$/\1/g' <<< "$file" )
-            local route_prefix=$(jq -r ".[] | select(.dir == \"$backend_folder\") | .route " "${PROJECT_DIR}/backend/router_config.json")
+            local route_prefix=$(json5 "${PROJECT_DIR}/backend/config.json5" | jq -r ".routers | .[] | select(.router_file == \"./$backend_folder/router.js\") | .prefix ")
 
             if [ -z $route_prefix ]; then
                 route_prefix='/'
@@ -156,7 +158,7 @@ main(){
             local second_hash=$(jq -rn --argjson x "$diff_pair" '$x[1].hash')
             local second_source=$(jq -rn --argjson x "$diff_pair" '$x[1].source')
 
-            echo "hash mismatch                                 $endpoint $method $first_source=$first_hash $second_source=$second_hash"
+            echo "hash mismatch                                 $endpoint $method $first_source=$first_hash $second_source=$second_hash" && echo "mismatch" >> /tmp/error_count
 
             continue;
         fi
@@ -165,16 +167,23 @@ main(){
         local available_source=$(jq -rn --argjson x "$diff_pair" '$x[0].source')
 
         if [ "$available_source" = markdown ]; then
-            echo "extra endpoint found in markdown docs         $endpoint $method git hash: $available_hash"
+            echo "extra endpoint found in markdown docs         $endpoint $method git hash: $available_hash" && echo "extra md" >> /tmp/error_count
             continue
         fi
 
         if [ "$available_source" = code ]; then
-            echo "markdown docs missing endpoint                $endpoint $method git hash: $available_hash"
+            echo "markdown docs missing endpoint                $endpoint $method git hash: $available_hash" && echo "missing md" >> /tmp/error_count
             continue
         fi
 
     done
+
+
+    grep -m 1 -E '^[a-zA-Z0-9\ ]+$' /tmp/error_count >/dev/null || return 0 #no errors
+
+    error_count=$(wc -l < /tmp/error_count | sed -r 's/\ +//g' )
+    echo "Errors found: $error_count"
+    return 1
     
     #verify_frontend
     #summary_hash_latest "backend/main.js" || exit 1
