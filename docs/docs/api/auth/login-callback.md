@@ -4,7 +4,7 @@ properties: !!set
 endpoint-info:
     http-method: POST
     url: '/login'
-    latest-hash: 3c0650f976665e14eb96fc6ede8dcde7f19cfffd
+    latest-hash: ccd0be62a3e7b6f336ceaad60a104711d0210db2
 ---
 
 # Login Callback
