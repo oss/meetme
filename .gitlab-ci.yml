@@ -218,7 +218,7 @@ build-saml:
       --destination "${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_TAG}"
 
 build-test:
-  stage: build
+  stage: build-env
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
@@ -229,7 +229,7 @@ build-test:
       --destination "${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_TAG}"
 
 build-eslint:
-  stage: build
+  stage: build-env
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
