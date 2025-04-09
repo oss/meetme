@@ -1,6 +1,6 @@
-variables:
-  FF_NETWORK_PER_BUILD: 1
-  CI_DEBUG_SERVICES: 1
+#variables:
+#  FF_NETWORK_PER_BUILD: 1
+#  CI_DEBUG_SERVICES: 1
 
 stages:
   - build-env
