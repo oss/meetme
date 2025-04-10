@@ -52,14 +52,14 @@ stages:
           node main.js;
 
     - name: bitnami/openldap:2
-      alias: openldap
+      alias: openldap ldap.localhost.edu
       variables:
         LDAP_ADMIN_USERNAME: admin
         LDAP_ADMIN_PASSWORD: adminpassword
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx localhost.edu api.localhost.edu ldap.localhost.edu
+      alias: nginx localhost.edu api.localhost.edu
 
 backend-api:
   <<: *job_configuration
@@ -238,17 +238,6 @@ build-eslint:
       --context "dir://${CI_PROJECT_DIR}/testing/frontend/linter"
       --dockerfile "${CI_PROJECT_DIR}/testing/frontend/linter/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_TAG}"
-
-build-puppeteer:
-  stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/testing/puppeteer"
-      --dockerfile "Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/puppeteer:${CI_COMMIT_TAG}"
 
 build-docs:
   stage: build
