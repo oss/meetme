@@ -277,4 +277,5 @@ typecheck-frontend:
     entrypoint: ['']
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
+  needs: ['build-tsc-env','build-frontend']
 
