@@ -273,7 +273,7 @@ build-tsc-env:
 typecheck-frontend:
   stage: test
   image:
-    name: tscheck
+    name: ${CI_REGISTRY_IMAGE}/tscheck
     entrypoint: ['']
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
