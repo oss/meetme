@@ -19,8 +19,8 @@ function isAuthenticated(req, res, next) {
         req.session = null;
 
         //do this to unset invalid cookie, by default passort js sends valid signed, but empty session
-        req.set('set-cookie','session=\'\'')
-        req.set('set-cookie','session.sig=\'\'')
+        res.set('set-cookie','session=\'\'')
+        res.set('set-cookie','session.sig=\'\'')
 
 
         res.status(401).json({

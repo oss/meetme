@@ -1,5 +1,5 @@
 function get_user {
-    MONGO_URI='mongodb://localhost:27017/meetme'
+    MONGO_URI='mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0'
     if [ -v GITLAB_CI ]; then
         MONGO_URI='mongodb://mongo:27017/meetme'
     fi
@@ -8,7 +8,7 @@ function get_user {
 }
 
 function create_user {
-    MONGO_URI='mongodb://localhost:27017/meetme'
+    MONGO_URI='mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0'
     if [ -v GITLAB_CI ]; then
         MONGO_URI='mongodb://mongo:27017/meetme'
     fi
@@ -17,7 +17,7 @@ function create_user {
 }
 
 function mongo_dump {
-    MONGO_URI='mongodb://localhost:27017/meetme'
+    MONGO_URI='mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0'
     if [ -v GITLAB_CI ]; then
         MONGO_URI='mongodb://mongo:27017/meetme'
     fi

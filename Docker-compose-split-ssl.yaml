@@ -9,8 +9,11 @@ services:
     depends_on:
       - proxy
     networks:
-      - no-internet
-      - authnet
+      no-internet:
+        aliases:
+          - api.localhost.edu
+          - localhost.edu
+      authnet:
 
   proxy:
     image: nginx-internal-oss-meetme
@@ -122,7 +125,9 @@ services:
       - LDAP_PASSWORDS=rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
       - BITNAMI_DEBUG=true
     networks:
-      - authnet
+      authnet:
+        aliases:
+          - ldap.localhost.edu
     volumes:
       - ./openldap_data:/bitnami/openldap
       - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
@@ -131,12 +136,14 @@ services:
   shibboleth:
     image: shibboleth-idp-meetme
     networks:
-      - authnet
-      - no-internet
+      authnet:
+      no-internet:
+        aliases:
+          - idp.localhost.edu
     environment:
       - JAVA_OPTS=-Djava.security.egd=file:/dev/urandom -Xmx3000m
     ports:
-      - 4443:443
+      - 4443:4443
 
 networks:
   no-internet:
