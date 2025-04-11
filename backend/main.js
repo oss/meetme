@@ -126,11 +126,6 @@ router.get('/', function (req, res) {
     });
 });
 
-router.post('/coolfunc',function(req,res){
-    console.log(req.body)
-    res.json(req.body)
-})
-
 app.use('/', router);
 
 app.use((err, req, res, next) => {
