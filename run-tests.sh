@@ -7,24 +7,10 @@ fi
 
 #docker-compose --file Docker-swarm.yml up --build -d
 
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.dropDatabase()'
-
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("users")' &
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_mains")' &
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("calendar_metas")' &
-docker run --rm --network host mongo mongosh meetme --quiet --eval 'db.createCollection("organizations")' &
-
-wait
-
-COOKIE_NETID1=""
-COOKIE_NETID2=""
-COOKIE_NETID3=""
-COOKIE_NETID4=""
-COOKIE_NETID5=""
-COOKIE_NETID6=""
+docker run --rm --network meetme_mongo-net mongo mongosh "mongodb://mongo:27017,mongo-jr:27017,mongo-the-third:27017/meetme?replicaSet=rs0" --quiet --eval 'db.dropDatabase()'
 
 docker run \
-    --network host \
+    --network meetme_mongo-net --network meetme_no-internet --network meetme_authnet \
     meetme-test-suite
 
 #docker container create meetme-test-suite

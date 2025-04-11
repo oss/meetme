@@ -1,16 +1,18 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-  CI_DEBUG_SERVICES: 1
+#  CI_DEBUG_SERVICES: 1
+
+stages:
+  - build-env
+  - build
+  - pre-test
+  - test
 
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml
       alias: saml idp.localhost.edu
-      variables:
-        SIMPLESAMLPHP_SP_ENTITY_ID: saml-poc
-        SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://api.localhost.edu/login
-        SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: https://api.localhost.edu/logout
     - name: ${CI_REGISTRY_IMAGE}/frontend
       alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket
@@ -46,19 +48,14 @@ variables:
           node main.js;
 
     - name: bitnami/openldap:2
-      alias: openldap
+      alias: openldap ldap.localhost.edu
       variables:
         LDAP_ADMIN_USERNAME: admin
         LDAP_ADMIN_PASSWORD: adminpassword
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
     - name: ${CI_REGISTRY_IMAGE}/proxy
-      alias: nginx localhost.edu api.localhost.edu ldap.localhost.edu
-
-stages:
-  - build
-  - pre-test
-  - test
+      alias: nginx localhost.edu api.localhost.edu
 
 backend-api:
   <<: *job_configuration
@@ -83,6 +80,7 @@ backend-api:
     - sed -i 's/^<?xml version="1.0" encoding="UTF-8"?>$//g;s/<testsuites time="[0-9]\+\.[0-9]\+">//g;s/<\/testsuites>//g;/^$/d' ${CI_PROJECT_DIR}/merged.xml
     - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
+  needs: [ "build-backend", "build-frontend", "build-nginx", "build-mongo", "build-websocket", "build-saml" ]
 
   artifacts:
     when: always
@@ -93,6 +91,7 @@ backend-api:
       junit: ${CI_PROJECT_DIR}/merged.xml
 
 frontend-lint:
+  stage: test
   image:
     name: ${CI_REGISTRY_IMAGE}/frontend-lint
     entrypoint: ['']
@@ -105,9 +104,7 @@ frontend-lint:
       - ${CI_PROJECT_DIR}/linter_results.xml
     reports:
       junit: ${CI_PROJECT_DIR}/linter_results.xml
-  dependencies:
-    - build-frontend
-    - build-eslint
+  needs: ["build-frontend", "build-eslint"]
 
 backend-docs-uptodate:
   image:
@@ -216,7 +213,7 @@ build-saml:
       --destination "${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_TAG}"
 
 build-test:
-  stage: build
+  stage: build-env
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
@@ -227,7 +224,7 @@ build-test:
       --destination "${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_TAG}"
 
 build-eslint:
-  stage: build
+  stage: build-env
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
@@ -237,19 +234,8 @@ build-eslint:
       --dockerfile "${CI_PROJECT_DIR}/testing/frontend/linter/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_TAG}"
 
-build-puppeteer:
-  stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/testing/puppeteer"
-      --dockerfile "Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/puppeteer:${CI_COMMIT_TAG}"
-
-build-docs:
-  stage: build
+build-docs-env:
+  stage: build-env
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: ['']
@@ -259,9 +245,9 @@ build-docs:
       --dockerfile "${CI_PROJECT_DIR}/docs/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_TAG}"
 
-upload-docs:
+build-docs:
   stage: build
-  needs: ["build-docs"]
+  needs: ["build-docs-env"]
   image:
     name: ${CI_REGISTRY_IMAGE}/docs
     entrypoint: ['']
@@ -271,3 +257,25 @@ upload-docs:
     when: always
     paths:
       - ${CI_PROJECT_DIR}/build/
+
+
+
+build-tsc-env:
+  stage: build-env
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: ['']
+  script:
+    - /kaniko/executor
+      --dockerfile "${CI_PROJECT_DIR}/testing/frontend/type_checking/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_TAG}"
+
+typecheck-frontend:
+  stage: test
+  image:
+    name: ${CI_REGISTRY_IMAGE}/tscheck
+    entrypoint: ['']
+  script:
+    - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
+  needs: ['build-tsc-env','build-frontend']
+

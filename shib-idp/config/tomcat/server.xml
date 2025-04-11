@@ -6,7 +6,7 @@
   <Service name="Catalina">
   
     <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
-               port="443" 
+               port="4443" 
                maxThreads="200"
                scheme="https"
                secure="true" 

@@ -6,9 +6,17 @@ setup() {
 
 
 setup_file() {
+    load 'test_helper/bats-support/load'
+    load 'test_helper/bats-assert/load'
     load 'test_helper/lib/load'
+
+    echo "loaded setup file" >> /tmp/logs
+
     NETID=$(create_ldap_user)
+    echo "create ldap" >> /tmp/logs
+
     COOKIE_NETID=$(getcookie "${NETID}")
+    echo "got cookie" >> /tmp/logs
 
     export NETID
     export COOKIE_NETID

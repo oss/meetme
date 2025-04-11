@@ -25,6 +25,8 @@ nav:
               - api/calendar/location/patch.md
           - Sharing:
               - api/calendar/sharing/accept-invite.md
+      - Organizations:
+              - api/organizations/accept.md
   - Testing:
       - testing/backend-test.md
       - testing/testing-docs.md
