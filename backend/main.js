@@ -116,8 +116,7 @@ router.get('/', function (req, res) {
     res.json({
         Status: 'ok',
         time: new Date(),
-        git_branch: process.env.GIT_BRANCH,
-        git_hash: process.env.GIT_HASH,
+        build: build,
         paths: routes
     });
 });

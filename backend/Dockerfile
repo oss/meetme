@@ -5,10 +5,14 @@ ARG GIT_BRANCH
 EXPOSE 8000
 
 WORKDIR /root
-RUN npm install express mongoose cookie-parser passport body-parser @node-saml/passport-saml cookie-session cjsldap winston keygrip json5 --save
+COPY install_dependencies.sh .
+RUN bash install_dependencies.sh
 
-RUN apt-get update -y && apt-get install jq -y && jq -rn --arg hash $GIT_HASH --arg branch $GIT_BRANCH '{ "GIT_HASH": $hash , "GIT_BRANCH": $branch }' > build.json
+RUN apt-get update -y
+RUN apt-get install jq -y
 
 COPY . .
 COPY config.json5 /etc/meetme/
+RUN jq -rn --arg hash $GIT_HASH --arg branch $GIT_BRANCH '{ "GIT_HASH": $hash , "GIT_BRANCH": $branch }' > build.json
+
 CMD ["node","main.js"]

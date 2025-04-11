@@ -17,8 +17,6 @@ services:
 
   proxy:
     image: nginx-internal-oss-meetme
-    volumes:
-      - /var/log/meetme/nginx/api.log:/logs/api.log
     networks:
       - no-internet
       - authnet
@@ -91,6 +89,9 @@ services:
       - authnet
     depends_on:
       - mongoinit
+    volumes:
+      - ./backend:/root
+    command: bash -c "./install_dependencies.sh && node --watch main.js"
     deploy:
       mode: replicated
       replicas: 1
