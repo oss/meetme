@@ -27,7 +27,6 @@ const logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
         capitalize_level(),
-        add_readable_log(),
         winston.format.json()
     ),
     transports: [
