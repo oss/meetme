@@ -1,4 +1,4 @@
-FROM node:18.20.8-bookworm-slim as build-stage
+FROM node as build-stage
 
 RUN mkdir /root/build
 WORKDIR /root
