@@ -4,5 +4,6 @@
     },
     "collectCoverage": true,
     "coverageDirectory": "/coverage",
-    "coverageProvider": "babel"
+    "coverageProvider": "babel",
+    "testEnvironment": "jsdom"
 }
