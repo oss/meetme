@@ -8,7 +8,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
-const logger = require('./logging');
+const logger = require('#logger');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
@@ -19,9 +19,8 @@ mongoose.connect(config.mongo_url);
 app.set('trust proxy', 1);
 router.use((req, res, next) => {
   //console.log('backend: %s %s %s', req.method, req.url, req.path);
-  req.request_id = crypto.randomUUID();
-  //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
-  logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
+  logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
+  //logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
   next();
 });
 
@@ -29,7 +28,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use((error, req, res, next) => {
   if (error !== null) {
-    console.log(error.body);
+    logger.info('error parsing body',req)
     res.json({
       Status: 'error',
       error: 'error parsing body',
@@ -97,6 +96,12 @@ app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
+app.use(async function(req,res,next){
+    //this makes it so that we don't send an empty invalid session and session.sig on non-authenticated requests
+    if(!req.isAuthenticated())
+        req.session = {}
+    next();
+})
 const enabled_routes = config['routers']
 for (let i = 0; i < enabled_routes.length; i++) {
     const enabled_route = enabled_routes[i];
@@ -121,7 +126,13 @@ router.get('/', function (req, res) {
     });
 });
 
+router.post('/coolfunc',function(req,res){
+    console.log(req.body)
+    res.json(req.body)
+})
+
 app.use('/', router);
+
 app.use((err, req, res, next) => {
     console.error(err.stack)
     res.status(500).json({"error": "TODO: make better error logs"})
