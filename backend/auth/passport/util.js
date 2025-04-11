@@ -16,13 +16,6 @@ function isAuthenticated(req, res, next) {
             req.session.time = new_time;
         next();
     } else {
-        req.session = null;
-
-        //do this to unset invalid cookie, by default passort js sends valid signed, but empty session
-        res.set('set-cookie','session=\'\'')
-        res.set('set-cookie','session.sig=\'\'')
-
-
         res.status(401).json({
             Status: 'error',
             error: 'Invalid or Missing Credentials',
