@@ -1,2 +1,2 @@
-docker build --file 'testing/frontend/jest/Dockerfile' -t meetme-jest 'testing/frontend/jest/.'
-docker run -v $(pwd):/root/work -v $(pwd)/frontend/package.json:/root/work/frontend/package.json:ro meetme-jest "$@"
+docker build --file 'testing/frontend/jest/Dockerfile' -t meetme-jest 'testing/frontend/jest/.' || exit 1
+docker run -v $(pwd):/root/work:ro meetme-jest "$@"
