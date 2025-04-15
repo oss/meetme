@@ -1,0 +1,234 @@
+version: '3'
+
+services:
+  entrypoint:
+    image: nginx-ssl-oss-meetme
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - proxy
+    networks:
+      no-internet:
+        aliases:
+          - api.localhost.edu
+          - localhost.edu
+      authnet:
+
+  proxy:
+    image: nginx-internal-oss-meetme
+    networks:
+      - no-internet
+      - authnet
+    depends_on:
+      - backend
+      - socket
+      - mongo
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mongo:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+  mongo-jr:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    depends_on:
+      - mongo
+  mongo-the-third:
+    image: database-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    depends_on:
+      - mongo
+
+  mongoinit:
+    image: mongo # this container will exit after executing the command
+    restart: 'no'
+    depends_on:
+      - mongo
+      - mongo-jr
+      - mongo-the-third
+    networks:
+      - mongo-net
+    command: >
+      mongosh --host mongo:27017 --eval 'rs.initiate({
+          "_id" : "rs0",
+          "members" : [
+            {
+              "_id" : 0,
+              "host" : "mongo:27017",
+              "priority": 5
+            },
+            {
+              "_id" : 1,
+              "host" : "mongo-jr:27017",
+              "priority": 1
+            },
+            {
+              "_id" : 2,
+              "host" : "mongo-the-third:27017",
+              "priority": 1
+            }
+          ]
+        });
+        '
+
+  backend:
+    image: backend-meetme
+    environment:
+      - COOKIE_DURATION=100000
+    networks:
+      - no-internet
+      - authnet
+    depends_on:
+      - mongoinit
+    volumes:
+      - ./backend:/root
+      - /var/log/meetme:/logs
+    command: bash -c "./install_dependencies.sh && node --watch main.js"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  frontend:
+    image: frontend-meetme-webpack
+    networks:
+      - no-internet
+    depends_on:
+      - mongoinit
+    volumes:
+      - ./frontend:/root
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  socket:
+    image: websocket-meetme
+    networks:
+      - no-internet
+      - mongo-net
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  openldap:
+    image: bitnami/openldap:2
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=adminpassword
+      - LDAP_USERS=netid1,netid2,netid3,netid4,netid5,netid6
+      - LDAP_PASSWORDS=rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
+      - BITNAMI_DEBUG=true
+    networks:
+      authnet:
+        aliases:
+          - ldap.localhost.edu
+    volumes:
+      - ./openldap_data:/bitnami/openldap
+      - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
+      - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
+
+  shibboleth:
+    image: shibboleth-idp-meetme
+    networks:
+      authnet:
+      no-internet:
+        aliases:
+          - idp.localhost.edu
+    environment:
+      - JAVA_OPTS=-Djava.security.egd=file:/dev/urandom -Xmx3000m
+    ports:
+      - 4443:4443
+
+  filebeat:
+    image: filebeat-meetme
+    user: root
+    networks:
+      - monitor-net
+    volumes:
+      - ./opensearch/certs/ca/ca.pem:/etc/pki/ca.pem
+      - ./opensearch/certs/fluent-bit/fluent-bit.pem:/etc/pki/client/cert.pem
+      - ./opensearch/certs/fluent-bit/fluent-bit.key:/etc/pki/client/cert.key
+      #- /var/lib/docker:/var/lib/docker:ro
+      #- /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/meetme:/logs
+    depends_on:
+      - os01
+
+  os01:
+    image: opensearchproject/opensearch
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      JAVA_HOME: /usr/share/opensearch/jdk
+      DISABLE_INSTALL_DEMO_CONFIG: true
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "f821]2198hwv90j3vb90&*&T^b9843y-=1R2HR"
+    ulimits: 
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "./opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml"
+      - "./opensearch/certs:/usr/share/opensearch/config/certificates:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    networks:
+      - monitor-net
+
+  graphana:
+    image: graphana-oss-meetme
+    networks:
+      - monitor-net
+      - mongo-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    volumes:
+      - ./opensearch/certs/ca/ca.pem:/etc/grafana/provisioning/certs/ca.pem
+      - ./opensearch/certs/grafana/grafana.pem:/etc/grafana/provisioning/certs/grafana.pem
+      - ./opensearch/certs/grafana/grafana.key:/etc/grafana/provisioning/certs/grafana.key
+    ports:
+      - 127.0.0.1:3000:3000
+
+  prometheus:
+    image: prometheus-oss-meetme
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - monitor-net
+      - mongo-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  no-internet:
+    driver: overlay
+    attachable: true
+  authnet:
+    driver: overlay
+    attachable: true
+  mongo-net:
+    driver: overlay
+    attachable: true
+  socat-net:
+    driver: overlay
+    attachable: true
+  monitor-net:
+    driver: overlay
+    attachable: true
