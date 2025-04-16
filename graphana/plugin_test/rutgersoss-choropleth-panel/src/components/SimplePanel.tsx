@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, Fragment } from 'react';
 import { DataFrameView, FieldType, PanelProps } from '@grafana/data';
 import { SimpleOptions } from 'types';
 import { css, cx } from '@emotion/css';
@@ -8,6 +8,8 @@ import 'leaflet/dist/leaflet.css';
 import { FeatureCollection, Polygon } from 'geojson';
 import { toNumber } from 'lodash';
 import CustomControl, {update_control} from './CustomControl';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
+
 import L from 'leaflet';
 const featureCollection: FeatureCollection<Polygon> = require('../static/us-states.json');
 
@@ -118,8 +120,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         if( log_percent === 100)
             log_percent --;
 
-        console.log('color',state_request_count,gradient_arr, log_percent,log_val , log_max)
-
         return {
             fillColor: gradient_arr[log_percent],
             weight: 0.5,
@@ -130,15 +130,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     }
 
     
-    function print_data(){
-        const view = new DataFrameView(frame);
-        console.log(stateField,valueField);
-        console.log(view);
-        return <></>;
-    }
 
     function highlightFeature(e){
-        console.log(e)
         const layer = e.target;
 
         layer.setStyle({
@@ -150,17 +143,11 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
 
         layer.bringToFront();
         const view = new DataFrameView(frame);
-        console.log(stateField,valueField);
-        console.log(view);
-        console.log(e);
         const state = e.target.feature.properties;
-        console.log("count",state_map)
         update_control({region: state.name.long, count: state_map[state.name.short]})
     }
 
     function resetHighlight(e) {
-        console.log(e)
-        //l.resetStyle(f)
         geoJsonRef.current.resetStyle(e.target);
         update_control({});
     }
@@ -171,6 +158,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                 mouseout: resetHighlight
             });
         }
+
+
     
       
   return (
@@ -180,19 +169,20 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             css`
               width: ${width}px;
               height: ${height}px;
-              display: flex
+              display: flex;
+              flex-direction: column;
             `
           )}
     >
-        <div className={styles.textBox}>
-            <div>Text option value: {options.text}</div>
-            <div>
-                {print_data()}
-            </div>
-        </div>
-      <MapContainer className={cx(css`
-        flex: 1
-      `)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
+        <TabGroup as={Fragment}>
+            <TabList>
+                <Tab>x</Tab>
+                <Tab>Tab 2</Tab>
+            </TabList>
+            <TabPanels className={css`display: flex; flex: 1;`}>
+                <TabPanel id="tabpanel" className={css`display: flex; flex: 1;`}>
+                    <div className={cx(css`display: flex; flex: 1`)}>
+                        <MapContainer className={cx(css`flex: 1`)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
             <Force_reload />
             <CustomControl />
             <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
@@ -202,6 +192,29 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
             />
         </MapContainer>
+                    </div>
+                </TabPanel>
+                
+                <TabPanel>
+                    <div>Tab 2</div>
+                </TabPanel>
+            </TabPanels>
+        </TabGroup>
+        
     </div>
   );
 };
+
+/*
+        <MapContainer className={cx(css`flex: 1`)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
+            <Force_reload />
+            <CustomControl />
+            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                //url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+            />
+        </MapContainer>
+
+*/
