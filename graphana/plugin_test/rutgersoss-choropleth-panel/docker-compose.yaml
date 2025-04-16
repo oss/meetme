@@ -7,9 +7,40 @@ services:
       context: ./.config
       args:
         grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
-        grafana_version: ${GRAFANA_VERSION:-10.0.3}
+        grafana_version: ${GRAFANA_VERSION:-11.6.0}
     ports:
       - 3000:3000/tcp
     volumes:
       - ./dist:/var/lib/grafana/plugins/rutgersoss-choropleth-panel
       - ./provisioning:/etc/grafana/provisioning
+  os01:
+    image: opensearchproject/opensearch
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      JAVA_HOME: /usr/share/opensearch/jdk
+      DISABLE_INSTALL_DEMO_CONFIG: true
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "f821]2198hwv90j3vb90&*&T^b9843y-=1R2HR"
+    ulimits: 
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "../../../opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml"
+      - "../../../opensearch/certs:/usr/share/opensearch/config/certificates:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+  fluentbit:
+    image: filebeat-meetme
+    user: root
+    volumes:
+      - ../../../opensearch/certs/ca/ca.pem:/etc/pki/ca.pem
+      - ../../../opensearch/certs/fluent-bit/fluent-bit.pem:/etc/pki/client/cert.pem
+      - ../../../opensearch/certs/fluent-bit/fluent-bit.key:/etc/pki/client/cert.key
+      #- /var/lib/docker:/var/lib/docker:ro
+      #- /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/meetme:/logs
+    depends_on:
+      - os01
