@@ -80,7 +80,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     logger.info("set meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: meeting_time });
     res.json({
       Status: 'ok',
-      time: meeting_time,
+      meeting_time: meeting_time,
     });
     return;
   }
