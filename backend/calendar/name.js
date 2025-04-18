@@ -3,8 +3,9 @@ const router = express.Router();
 const Calendar_schema_metadata = require('./calendar_schema_meta');
 const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
+const logger = require('#logger');
 
-//renames calendars
+// Renames a calendar
 router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
   const new_name = req.body.new_name;
@@ -26,6 +27,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
+  const old_name = cal.name;
   if (cal.owner.owner_type === 'organization') {
     const org = await Org_schema.findOne({
       _id: calendar_id,
@@ -67,12 +69,14 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
+  logger.info("set name of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, old_name: old_name, new_name: new_name });
   res.json({
     Status: 'ok',
     new_name: new_name,
   });
 });
 
+// Gets the name of a calendar
 router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
 
@@ -115,6 +119,7 @@ router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
     }
   }
 
+  logger.info("fetched name of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, name: cal.name });
   res.json({
     Status: 'ok',
     name: cal.name,
