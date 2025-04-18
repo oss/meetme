@@ -5,8 +5,9 @@ const Org_schema = require('../organizations/organization_schema');
 const Calendar_schema_meta = require('./calendar_schema_meta');
 const { isAuthenticated } = require('../auth/passport/util');
 const User = require('../user/user_schema');
+const logger = require('#logger');
 
-//renames calendars
+// Sets the location of the calendar
 router.patch('/:calendar_id/location', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
     if (req.body.location === undefined || req.body.location === null) {
@@ -58,6 +59,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
       { $set: { location: req.body.location } }
     );
 
+    logger.info("set location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: req.body.location });
     res.json({
       Status: 'ok',
       location: req.body.location,
@@ -66,6 +68,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
   }
 );
 
+// Gets the location of the calendar
 router.get('/:calendar_id/location', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
     const cal = await Calendar_schema_meta.findOne({
@@ -108,6 +111,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
       }
     }
 
+    logger.info("fetched location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: cal.location });
     res.json({
       Status: 'ok',
       location: cal.location,
