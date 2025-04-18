@@ -472,7 +472,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
         maindata: maindata,
       });
   }
-  logger.info("fetched calendar main", req, { uid: req.user.uid, owner: cal_meta.owner, calendar_id: req.params.calendar_id });
+  logger.info("fetched calendar main", req, { uid: req.user.uid, owner: maindata.owner, calendar_id: req.params.calendar_id });
 });
 
 router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
