@@ -8,6 +8,7 @@ const User_schema = require('../user/user_schema');
 const { createHash } = require('crypto');
 const { isAuthenticated } = require('../auth/passport/util');
 const User = require('../user/user_schema');
+const logger = require('#logger');
 
 //TODO: delete calendar for org schema
 //TODO: implement /dump
@@ -214,6 +215,7 @@ router.post('/', isAuthenticated, async function (req, res) {
       Status: 'ok',
       calendar: { ...recieved_meta, ...recieved_main }._doc, //idk what ._doc does but it gives us what we need
     });
+    logger.info("created calendar", req, { uid: req.user.uid, owner: owner, calendar_id: calendar_id });
   } catch (error) {
     console.log(error);
 
@@ -260,6 +262,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
           { _id: { $in: cal.pendingUsers.map((value) => value._id) } },
           { $pull: { pendingCalendars: { _id: calendar_id } } }
         );
+	logger.info("deleted calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id });
       } else {
         res.json({
           Status: 'error',
@@ -311,6 +314,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       );
     }
     res.json({ Status: 'ok' });
+    logger.info("deleted calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id });
     return;
   } catch (e) {
     console.log(e);
@@ -369,30 +373,34 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
       ],
     });
 
-    if (org === null)
+    if (org === null) {
       if (
         (await User_schema.findOne({
           _id: req.user.uid,
           'calendars._id': req.params.calendar_id,
         })) === null
-      )
+      ) {
         //owner is org but shared based on individual
         res.json({
           Status: 'error',
           error:
             'Calendar does not exist or you do not have access to this calendar',
         });
-      else
+	return;
+      } else {
         res.json({
           Status: 'ok',
           metadata: cal_meta,
         });
-    else
+      }
+    } else {
       res.json({
         Status: 'ok',
         metadata: cal_meta,
       });
+    }
   }
+  logger.info("fetched calendar meta", req, { uid: req.user.uid, owner: cal_meta.owner, calendar_id: req.params.calendar_id });
 });
 
 router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
@@ -443,28 +451,37 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
           _id: req.user.uid,
           'calendars._id': req.params.calendar_id,
         })) === null
-      )
+      ) {
         res.json({
           Status: 'error',
           error:
             'Calendar does not exist or you do not have access to this calendar',
         });
-      else
+	return;
+      } else {
         res.json({
           Status: 'ok',
           metadata: await Calendar_schema_meta.findOne({
             _id: req.params.calendar_id,
           }),
         });
+      }
     } else
       res.json({
         Status: 'ok',
         maindata: maindata,
       });
   }
+  logger.info("fetched calendar main", req, { uid: req.user.uid, owner: cal_meta.owner, calendar_id: req.params.calendar_id });
 });
 
 router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
+  res.json({
+    Status: 'error',
+    error:
+    'Not implemented',
+  });
+  return;
   try {
     const links = await Calendar_schema_main.aggregate([
       {
@@ -489,6 +506,7 @@ router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {
       Status: 'ok',
       calendar: links,
     });
+    logger.info("fetched calendar links", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
   } catch (e) {
     res.json({
       Status: 'error',
