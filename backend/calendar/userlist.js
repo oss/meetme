@@ -70,7 +70,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
       memberlist.push({ _id: all_individual_shared[i], type: 'user' });
     }
 
-    logger.info("set owner of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, members: memberlist });
+    logger.info("fetched userlist of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, members: memberlist });
     res.json({
       Status: 'ok',
       memberlist: memberlist,
