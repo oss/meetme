@@ -4,6 +4,7 @@ const Calendar_schema_main = require('./calendar_schema_main');
 const Org_schema = require('../organizations/organization_schema');
 const User_schema = require('../user/user_schema');
 const { isAuthenticated } = require('../auth/passport/util');
+const logger = require('#logger');
 
 //gets a list of users in a calendar is used to calculate color for time selections
 router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res) {
@@ -69,6 +70,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
       memberlist.push({ _id: all_individual_shared[i], type: 'user' });
     }
 
+    logger.info("set owner of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, members: memberlist });
     res.json({
       Status: 'ok',
       memberlist: memberlist,
