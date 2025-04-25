@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
 const User = require('../user/user_schema');
+const logger = require('#logger');
 
 //creates new calendars
 router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
@@ -91,6 +92,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
 
   const users = calendar_data.users;
 
+  logger.info("fetched users of calendar", req, { uid: req.user.uid, owner: calendar_data.owner, calendar_id: calendar_id, users: calendar_data.users });
   res.json({
     Status: 'ok',
     users: calendar_data.users,
@@ -203,6 +205,7 @@ router.post('/:calendar_id/meetme/me',
       },
     ]);
 
+    logger.info("set user's timeline for calendar", req, { uid: req.user.uid, owner: calendar_data.owner, calendar_id: calendar_id, timeline: calendar_data_sending });
     res.json({
       Status: 'ok',
       timeline: calendar_data_sending,
