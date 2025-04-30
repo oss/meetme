@@ -9,6 +9,7 @@ import { FeatureCollection, Polygon } from 'geojson';
 import { toNumber } from 'lodash';
 import CustomControl, {update_control} from './CustomControl';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
+import USPanel from './USPanel';
 
 import L from 'leaflet';
 const featureCollection: FeatureCollection<Polygon> = require('../static/us-states.json');
@@ -79,89 +80,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     const frame = data.series[0];
     const stateField = frame.fields.find((field) => field.type === FieldType.string);
     const valueField = frame.fields.find((field) => field.type === FieldType.number);
+    let max_req_count = valueField.values[0]
 
-    const state_map = {}
-    let max_count = valueField.values[0];
-    for(let i=0;i<stateField.values.length;i++){
-        const state_abreviation = stateField.values[i]
-        let state_request_count = valueField.values[i]
-        
-        //for testing purposes
-        state_request_count = Math.floor(Math.abs(state_request_count * Math.random() * 1000))
-        
-        state_map[state_abreviation] = state_request_count
+    const state_map = Object.fromEntries( stateField.values.map((state_abreviation, idx) => { 
+        max_req_count = Math.max(max_req_count, valueField.values[idx])
+        return [state_abreviation, valueField.values[idx]]
+    }));
 
-        if(max_count < state_request_count){
-            max_count = state_request_count
-        }
-    }
-
-    React.useEffect(() => {        
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-          iconUrl: require("leaflet/dist/images/marker-icon.png"),
-          shadowUrl: require("leaflet/dist/images/marker-shadow.png")
-        });        
-    }, []);
-
-    function Force_reload() {
-        const map = useMap();
-        map.whenReady(()=>{
-            map.invalidateSize();
-        });
-        return null;
-    }
-
-    function style(feature: any) {
-        const state_request_count = state_map[feature.properties.name.short]
-        const log_val = Math.log(state_request_count) 
-        const log_max = Math.log(max_count);
-        let log_percent = Math.floor(100 * (log_val / log_max))
-        if( log_percent === 100)
-            log_percent --;
-
-        return {
-            fillColor: gradient_arr[log_percent],
-            weight: 0.5,
-            opacity: 1,
-            color: 'white',
-            fillOpacity: 0.7
-        };
-    }
-
-    
-
-    function highlightFeature(e){
-        const layer = e.target;
-
-        layer.setStyle({
-            weight: 5,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        layer.bringToFront();
-        const view = new DataFrameView(frame);
-        const state = e.target.feature.properties;
-        update_control({region: state.name.long, count: state_map[state.name.short]})
-    }
-
-    function resetHighlight(e) {
-        geoJsonRef.current.resetStyle(e.target);
-        update_control({});
-    }
-
-        function onEachFeature(feature, layer) {
-            layer.on({
-                mouseover: highlightFeature,
-                mouseout: resetHighlight
-            });
-        }
-
-
-    
-      
   return (
     <div
         className={cx(
@@ -176,25 +101,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     >
         <TabGroup as={Fragment}>
             <TabList>
-                <Tab>x</Tab>
-                <Tab>Tab 2</Tab>
+                <Tab>US Map</Tab>
+                <Tab>Global Map</Tab>
             </TabList>
             <TabPanels className={css`display: flex; flex: 1;`}>
-                <TabPanel id="tabpanel" className={css`display: flex; flex: 1;`}>
-                    <div className={cx(css`display: flex; flex: 1`)}>
-                        <MapContainer className={cx(css`flex: 1`)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
-            <Force_reload />
-            <CustomControl />
-            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                //url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-            />
-        </MapContainer>
-                    </div>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <USPanel state_map={state_map} max_req_count={max_req_count}/>
                 </TabPanel>
-                
                 <TabPanel>
                     <div>Tab 2</div>
                 </TabPanel>

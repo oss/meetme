@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "grafana-opensearch-datasource",
-        "uid": "aej0ve4ncg3y8c"
+        "uid": "fej14xqfewfeod"
       },
       "fieldConfig": {
         "defaults": {},
