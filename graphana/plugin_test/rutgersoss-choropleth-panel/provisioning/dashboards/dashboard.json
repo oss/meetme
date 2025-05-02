@@ -31,8 +31,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 13,
+        "w": 11,
         "x": 0,
         "y": 0
       },
@@ -73,11 +73,44 @@
           ],
           "query": "country_iso:US",
           "queryType": "lucene",
-          "refId": "A",
+          "refId": "US States",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "country_iso.keyword",
+              "id": "2",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "datasource": {
+            "type": "grafana-opensearch-datasource",
+            "uid": "fej14xqfewfeod"
+          },
+          "format": "table",
+          "hide": false,
+          "luceneQueryType": "Metric",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "_exists_:country_iso",
+          "queryType": "lucene",
+          "refId": "Countries",
           "timeField": "@timestamp"
         }
       ],
-      "title": "Panel Title",
+      "title": "",
       "type": "rutgersoss-choropleth-panel"
     }
   ],
@@ -96,5 +129,5 @@
   "timezone": "",
   "title": "Provisioned choropleth dashboard",
   "uid": "fej0vcdelzu2of",
-  "version": 1
+  "version": 5
 }
