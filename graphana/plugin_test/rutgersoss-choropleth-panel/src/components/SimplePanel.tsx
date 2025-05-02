@@ -5,13 +5,14 @@ import { css, cx } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import { MapContainer, TileLayer, useMap, GeoJSON } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
+import './LeafletOveride.css';
 import { FeatureCollection, Polygon } from 'geojson';
 import { toNumber } from 'lodash';
 import CustomControl, {update_control} from './CustomControl';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import USPanel from './USPanel';
+import CountryPanel from './CountryPanel';
 
-import L from 'leaflet';
 const featureCollection: FeatureCollection<Polygon> = require('../static/us-states.json');
 
 interface Props extends PanelProps<SimpleOptions> {}
@@ -72,12 +73,15 @@ const gradient_arr: string[] = (()=>{
     return colorGradient;
 })()
 
-export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
-  //const theme = useTheme2();
-    const styles = useStyles2(getStyles);
-    const geoJsonRef = useRef();
+const parse_refid = (data,refString) => {
+    return data.series.find((e) => e.refId === refString);
+}
 
-    const frame = data.series[0];
+const parse_US_States = (data) => {
+    const frame = parse_refid(data, 'US States' );
+    if(!frame)
+        throw new Error('coudnt find US State entry')
+
     const stateField = frame.fields.find((field) => field.type === FieldType.string);
     const valueField = frame.fields.find((field) => field.type === FieldType.number);
     let max_req_count = valueField.values[0]
@@ -86,6 +90,40 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         max_req_count = Math.max(max_req_count, valueField.values[idx])
         return [state_abreviation, valueField.values[idx]]
     }));
+
+    return {
+        max: max_req_count,
+        obj: state_map
+    }
+}
+
+const parse_Countries = (data) => {
+    const frame = parse_refid(data, 'Countries' );
+    if(!frame)
+        throw new Error('coudnt find Countries entry')
+
+    const countryField = frame.fields.find((field) => field.type === FieldType.string);
+    const valueField = frame.fields.find((field) => field.type === FieldType.number);
+
+    let max_req_count = valueField.values[0]
+
+    const country_map = Object.fromEntries( countryField.values.map((country_iso_string, idx) => { 
+        max_req_count = Math.max(max_req_count, valueField.values[idx])
+        return [country_iso_string, valueField.values[idx]]
+    }));
+
+    return {
+        max: max_req_count,
+        obj: country_map
+    }
+}
+
+export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
+  //const theme = useTheme2();
+    const styles = useStyles2(getStyles);
+    const geoJsonRef = useRef();
+    const { max: us_state_max_req_count, obj: us_state_map } = parse_US_States(data);
+    const { max: country_max_req_count, obj: country_map } = parse_Countries(data);
 
   return (
     <div
@@ -96,6 +134,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               height: ${height}px;
               display: flex;
               flex-direction: column;
+              background: #262626;
             `
           )}
     >
@@ -106,10 +145,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             </TabList>
             <TabPanels className={css`display: flex; flex: 1;`}>
                 <TabPanel className={css`display: flex; flex: 1;`}>
-                    <USPanel state_map={state_map} max_req_count={max_req_count}/>
+                    <USPanel state_map={us_state_map} max_req_count={us_state_max_req_count}/>
                 </TabPanel>
-                <TabPanel>
-                    <div>Tab 2</div>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <CountryPanel country_map={country_map} max_req_count={country_max_req_count}/>
                 </TabPanel>
             </TabPanels>
         </TabGroup>
