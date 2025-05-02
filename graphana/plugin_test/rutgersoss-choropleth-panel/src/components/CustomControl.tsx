@@ -54,7 +54,6 @@ const update_control = ({region, count}) =>{
 
     
     //console.log(<><div>sometext</div></>)
-    console.log(region, count);
 };
 
 // Pass the control instance to the React-Leaflet createControlComponent hook:
