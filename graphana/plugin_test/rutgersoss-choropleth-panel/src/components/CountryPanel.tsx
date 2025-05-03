@@ -48,9 +48,10 @@ const gradient_arr: string[] = (()=>{
 })()
 
 const map_borders = [
-  [-90, -180],
-  [90, 180],
+  [-85.0511, -180], [85.0511, 180]
 ]
+
+
 
 const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
     const geoJsonRef = useRef();
@@ -112,7 +113,7 @@ const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
 
     return(
         <div className={cx(css`display: flex; flex: 1`)}>
-            <MapContainer className={cx(css`flex: 1`)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
+            <MapContainer className={cx(css`flex: 1`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
             <Force_reload />
             <CustomControl />
             <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
