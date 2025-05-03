@@ -57,9 +57,13 @@ const map_borders = [
 const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
     
     const geoJsonRef = useRef();
+    function filter(feature: any){
+        return (state_map[feature.properties.name.short] && true)
+    }
 
     function style(feature: any) {
         const state_request_count = state_map[feature.properties.name.short]
+
         const log_val = Math.log(state_request_count) 
         const log_max = Math.log(max_req_count);
         let log_percent = Math.floor(100 * (log_val / log_max))
@@ -77,7 +81,7 @@ const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
 
     function highlightFeature(e){
         const layer = e.target;
-        console.log('highlight feature',e.target.feature.properties)
+        const state = e.target.feature.properties;
 
         layer.setStyle({
             weight: 5,
@@ -87,7 +91,6 @@ const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
         });
 
         layer.bringToFront();
-        const state = e.target.feature.properties;
         console.log(state.name, state_map)
         update_control({region: state.name.long, count: state_map[state.name.short] || 0 })
     }
@@ -109,7 +112,6 @@ const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
         map.whenReady(()=>{
             map.invalidateSize();
         });
-        map.setMinZoom(4)
         return null;
     }
     //min-width: 750px; min-height: 430px
@@ -117,10 +119,10 @@ const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
     //scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false} boxZoom={false}
     return(
         <div className={cx(css`display: flex; flex: 1;`)}>
-            <MapContainer className={cx(css`flex: 1; background-color: #262626`)} center={[37.8,-96]} zoomControl={false} zoom={4} minZoom={4} maxBounds={map_borders} maxBoundsViscosity={1}>
+            <MapContainer className={cx(css`flex: 1; background-color: #262626`)} center={[37.8,-96]} zoomControl={false} zoom={4} minZoom={4} maxBounds={map_borders} maxBoundsViscosity={1} keepBuffer={20}>
                 <Force_reload />
                 <CustomControl />
-                <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
+                <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter}/>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
