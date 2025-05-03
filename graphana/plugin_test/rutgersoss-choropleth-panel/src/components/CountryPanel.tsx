@@ -56,6 +56,11 @@ const map_borders = [
 const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
     const geoJsonRef = useRef();
 
+    function filter(feature: any){
+        return (country_map[feature.properties['ISO3166-1-Alpha-2']] && true)
+    }
+
+
     function style(feature: any) {
         const country_req_count = country_map[feature.properties['ISO3166-1-Alpha-2']]
         const log_val = Math.log(country_req_count) 
@@ -116,7 +121,7 @@ const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
             <MapContainer className={cx(css`flex: 1`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
             <Force_reload />
             <CustomControl />
-            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
+            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter}/>
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
