@@ -119,7 +119,7 @@ const USPanel: React.FC<Props> = ({ state_map, max_req_count }) => {
     //scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false} boxZoom={false}
     return(
         <div className={cx(css`display: flex; flex: 1;`)}>
-            <MapContainer className={cx(css`flex: 1; background-color: #262626`)} center={[37.8,-96]} zoomControl={false} zoom={4} minZoom={4} maxBounds={map_borders} maxBoundsViscosity={1} keepBuffer={20}>
+            <MapContainer className={cx(css`flex: 1; background-color: #262626`)} center={[37.8,-96]} zoom={4} minZoom={4} maxBounds={map_borders} maxBoundsViscosity={1} keepBuffer={20}>
                 <Force_reload />
                 <CustomControl />
                 <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter}/>
