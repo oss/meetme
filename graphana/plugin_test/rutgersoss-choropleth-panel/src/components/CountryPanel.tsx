@@ -3,9 +3,7 @@ import { MapContainer, TileLayer, useMap, GeoJSON } from 'react-leaflet';
 import React, { useRef, Fragment } from 'react';
 import { css, cx } from '@emotion/css';
 import { DataFrameView, FieldType, PanelProps } from '@grafana/data';
-
 const featureCollection: FeatureCollection<Polygon> = require('../static/countries.json');
-
 
 type Props = {
     country_map: any,
@@ -118,10 +116,10 @@ const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
 
     return(
         <div className={cx(css`display: flex; flex: 1`)}>
-            <MapContainer className={cx(css`flex: 1`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
+            <MapContainer id="map" className={cx(css`flex: 1; background: #000;`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
             <Force_reload />
             <CustomControl />
-            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter}/>
+            <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter} renderer={L.svg({ padding: 100 })}/>
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
