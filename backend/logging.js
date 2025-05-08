@@ -14,7 +14,7 @@ const capitalize_level = winston.format(({level, ...otherstuff}) => {
 const add_readable_log = winston.format(({level,request_id,request_method,message,...otherstuff})=>{
     const human_friendly_message = `[${level}][${request_id}][${request_method}]: ${message}`;
     return {
-        human_friendly_message: human_friendly_message,
+        summary: human_friendly_message,
         level: level,
         request_id: request_id,
         message: message,
@@ -27,6 +27,7 @@ const logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
         capitalize_level(),
+        add_readable_log(),
         winston.format.json()
     ),
     transports: [
