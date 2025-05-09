@@ -13,6 +13,7 @@ RUN apt-get install jq -y
 
 COPY . .
 COPY config.json5 /etc/meetme/
+COPY ./auth/shibboleth/metadata.xml /etc/meetme/security/shibboleth_metadata.xml
 RUN jq -rn --arg hash $GIT_HASH --arg branch $GIT_BRANCH '{ "GIT_HASH": $hash , "GIT_BRANCH": $branch }' > build.json
 
 CMD ["node","main.js"]

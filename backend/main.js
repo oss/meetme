@@ -96,6 +96,15 @@ app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
+app.use(async function(req,res,next){
+    // this makes it so that we don't send an empty invalid session and session.sig on non-authenticated requests
+    // exlcude the unauthed login endpoint
+    console.log(req.isAuthenticated(), req.baseUrl, req.method)
+    if(!req.isAuthenticated() && !(req.url === '/login' && req.method === 'POST'))
+        req.session = {}
+    next();
+})
+
 const enabled_routes = config['routers']
 for (let i = 0; i < enabled_routes.length; i++) {
     const enabled_route = enabled_routes[i];
