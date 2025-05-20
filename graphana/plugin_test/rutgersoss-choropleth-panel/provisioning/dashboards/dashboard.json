@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "grafana-opensearch-datasource",
-        "uid": "fej14xqfewfeod"
+        "uid": "A1YSTYS4N4QK2F2C4N"
       },
       "fieldConfig": {
         "defaults": {},
@@ -129,5 +129,5 @@
   "timezone": "",
   "title": "Provisioned choropleth dashboard",
   "uid": "fej0vcdelzu2of",
-  "version": 5
+  "version": 1
 }

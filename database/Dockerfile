@@ -6,9 +6,10 @@ RUN make build
 
 FROM mongo:latest
 
+RUN apt-get update -y && apt-get install socat -y
 WORKDIR /root
 COPY scripts/*.sh .
 COPY --from=build-stage /go/mongodb_exporter/mongodb_exporter /root/mongodb_exporter
-RUN chmod +x mongodb_exporter *.sh
+RUN mkdir /var/run/external && chmod +x mongodb_exporter *.sh
 
 CMD ./docker-entrypoint.sh
