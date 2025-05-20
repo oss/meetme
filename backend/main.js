@@ -8,7 +8,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
@@ -17,19 +17,36 @@ const build = require('#build');
 mongoose.connect(config.mongo_url);
 
 app.set('trust proxy', 1);
-router.use((req, res, next) => {
+app.use((req, res, next) => {
   //console.log('backend: %s %s %s', req.method, req.url, req.path);
   //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
-  logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
-  next();
+    const start_time = new Date().valueOf();
+    res.on('finish', function() {
+        const now = new Date().valueOf();
+        _baseLogger.log({
+            message: `status: ${res.statusCode} @ ${req.url} in ${now - start_time} ms`,
+            level: res.statusCode === 500 ? 'error' : 'info',
+            duration: now-start_time,
+            path: req.url,
+            ip: req.headers['x-forwarded-for'],
+            request_id: req.headers['x-request-id'],
+            user_agent: req.headers['user-agent'],
+            response_code: res.statusCode,
+            container_id: process.env.HOSTNAME,
+            request_method: req.method,
+            // latitude -> added by fluent-bit
+            // longitude -> added by fluent-bit
+        })
+    });
+    //logger.info('request received',req,{path: req.url,ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)], user_agent: req.headers['user-agent']});
+    next();
 });
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use((error, req, res, next) => {
   if (error !== null) {
-    logger.info('error parsing body',req)
-    res.json({
+    res.status(400).json({
       Status: 'error',
       error: 'error parsing body',
       trace: error,
@@ -99,9 +116,9 @@ passport.use('samlStrategy', samlStrategy);
 app.use(async function(req,res,next){
     // this makes it so that we don't send an empty invalid session and session.sig on non-authenticated requests
     // exlcude the unauthed login endpoint
-    console.log(req.isAuthenticated(), req.baseUrl, req.method)
     if(!req.isAuthenticated() && !(req.url === '/login' && req.method === 'POST'))
         req.session = {}
+
     next();
 })
 
@@ -131,27 +148,35 @@ router.get('/', function (req, res) {
 
 app.use('/', router);
 
+app.use((req, res) => {
+    //logger.info('')
+    throw new Error('test error')
+    res.status(404).json({status: 'error', error: 'invalid path'})
+})
+
 app.use((err, req, res, next) => {
-    console.error(err.stack)
+    traceLogger.verbose('uncaught error encountered',req,{error_message: err.message, error_stack: err.stack})
     res.status(500).json({"error": "TODO: make better error logs"})
 })
 
 
 function printRegisteredRoutes(routerStack, parentPath) {
-    console.log('routerstack',routerStack)
     routerStack.forEach((middleware) => {
         if (middleware.route) {
             routes.push(
-                `${middleware.route.stack[0].method.toUpperCase()} ${parentPath}${middleware.route.path}`
+                {
+                    method: middleware.route.stack[0].method.toUpperCase(),
+                    path: `${parentPath}${middleware.route.path}`
+                }
             );
         } else if (middleware.name === 'router') {
-            console.log(middleware.handle.router_prefix)
             printRegisteredRoutes(middleware.handle.stack,`${parentPath}${middleware.handle.router_prefix || ''}`);
         }
     });
 }
 
 printRegisteredRoutes(app.router.stack,'');
+console.log(routes)
 
 // Starting server using listen function
 app.listen(port, function (err) {
