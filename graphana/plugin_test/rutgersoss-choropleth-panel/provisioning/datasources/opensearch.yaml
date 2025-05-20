@@ -14,6 +14,7 @@ datasources:
       tlsAuth: true
       tlsConfigurationMethod: file-path
       logMessageField: summary
+      logLevelField: level
     secureJsonData:
       tlsCACert: $__file{/etc/grafana/provisioning/certs/ca.pem}
       tlsClientCert: $__file{/etc/grafana/provisioning/certs/grafana.pem}

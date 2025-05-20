@@ -13,6 +13,9 @@ services:
     volumes:
       - ./dist:/var/lib/grafana/plugins/rutgersoss-choropleth-panel
       - ./provisioning:/etc/grafana/provisioning
+      - ../../../opensearch/certs/ca/ca.pem:/etc/grafana/provisioning/certs/ca.pem
+      - ../../../opensearch/certs/grafana/grafana.pem:/etc/grafana/provisioning/certs/grafana.pem
+      - ../../../opensearch/certs/grafana/grafana.key:/etc/grafana/provisioning/certs/grafana.key
   os01:
     image: opensearchproject/opensearch
     environment:
@@ -27,6 +30,7 @@ services:
     volumes:
       - "../../../opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml"
       - "../../../opensearch/certs:/usr/share/opensearch/config/certificates:ro"
+      - ../../../opensearch/pipelines.yml:/usr/share/data-prepper/pipelines/pipeline.yml
     logging:
       driver: "json-file"
       options:
@@ -41,6 +45,6 @@ services:
       - ../../../opensearch/certs/fluent-bit/fluent-bit.key:/etc/pki/client/cert.key
       #- /var/lib/docker:/var/lib/docker:ro
       #- /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/log/meetme:/logs
+      - /var/log/meetme/backend:/logs/backend
     depends_on:
       - os01

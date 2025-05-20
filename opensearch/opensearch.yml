@@ -20,7 +20,7 @@ plugins.security.ssl.http.pemcert_filepath: certificates/os01/os01.pem
 plugins.security.ssl.http.pemkey_filepath: certificates/os01/os01.key
 
 plugins.security.allow_default_init_securityindex: true
-
+plugins.calcite.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 
 plugins.security.authcz.admin_dn:
@@ -32,4 +32,4 @@ plugins.security.authcz.admin_dn:
 plugins.security.nodes_dn:
   - "CN=os01,O=EXAMPLE,L=PARIS,ST=IDF,C=FR"
 
-plugins.security.ssl.http.clientauth_mode: OPTIONAL
+plugins.security.ssl.http.clientauth_mode: REQUIRE
