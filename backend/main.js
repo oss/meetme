@@ -150,7 +150,6 @@ app.use('/', router);
 
 app.use((req, res) => {
     //logger.info('')
-    throw new Error('test error')
     res.status(404).json({status: 'error', error: 'invalid path'})
 })
 
