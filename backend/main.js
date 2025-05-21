@@ -35,7 +35,8 @@ app.use((req, res, next) => {
             response_code: res.statusCode,
             container_id: process.env.HOSTNAME,
             request_method: req.method,
-            netid: req.isAuthenticated() ? req.user.uid : null
+            netid: req.isAuthenticated() ? req.user.uid : null,
+            version: build.GIT_HASH,
             // latitude -> added by fluent-bit
             // longitude -> added by fluent-bit
         })
