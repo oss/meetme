@@ -157,7 +157,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
     traceLogger.verbose('uncaught error encountered',req,{error_message: err.message, error_stack: err.stack})
-    res.status(500).json({"error": "TODO: make better error logs"})
+    res.status(500).json({"error": "An unexpected error occured. Please email oss@oit.rutgers.edu along with the request id for help.", message: err.message,request_id: req.headers['x-request-id']})
 })
 
 
