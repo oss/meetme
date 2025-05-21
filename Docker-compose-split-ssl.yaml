@@ -122,6 +122,8 @@ services:
     networks:
       - no-internet
       - mongo-net
+    depends_on:
+      - backend
     deploy:
       mode: replicated
       replicas: 1
