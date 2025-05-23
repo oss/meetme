@@ -6,7 +6,7 @@ const Organization_schema = require('./organization_schema');
 const Calendar_schema_main = require('../calendar/calendar_schema_main');
 const Calendar_schema_meta = require('../calendar/calendar_schema_meta');
 const User_schema = require('../user/user_schema');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.post('/', isAuthenticated, async function (req, res) {
   if (req.body === undefined) {
@@ -39,7 +39,7 @@ router.post('/', isAuthenticated, async function (req, res) {
       { _id: req.user.uid },
       { $push: { organizations: { _id: Organization._id } } }
     );
-    logger.info("created org", req, { uid: req.user.uid, org_id: Organization._id });
+    traceLogger.verbose("created org", req, { uid: req.user.uid, org_id: Organization._id });
     res.json({
       Status: 'ok',
       organization: received_org,
@@ -76,7 +76,7 @@ router.get('/:organization_id', isAuthenticated, async function (req, res) {
       return;
     }
 
-    logger.info("fetched org", req, { uid: req.user.uid, org_id: org_id });
+    traceLogger.verbose("fetched org", req, { uid: req.user.uid, org_id: org_id });
     res.json({
       Status: 'ok',
       organization: org,
@@ -138,7 +138,7 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
     //delete org from database
     await Organization_schema.deleteOne(org);
 
-    logger.info("deleted org", req, { uid: req.user.uid, org_id: organization_id });
+    traceLogger.verbose("deleted org", req, { uid: req.user.uid, org_id: organization_id });
     res.json({
       Status: 'ok',
       org: {
@@ -192,7 +192,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
       }
     );
 
-    logger.info("left org", req, { uid: req.user.uid, org_id: org_id });
+    traceLogger.verbose("left org", req, { uid: req.user.uid, org_id: org_id });
     res.json({
       Status: 'ok',
     });

@@ -5,7 +5,7 @@ const Org_schema = require('../organizations/organization_schema');
 const Calendar_schema_meta = require('./calendar_schema_meta');
 const { isAuthenticated } = require('../auth/passport/util');
 const User = require('../user/user_schema');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 // sets the sharelink for the given calendar
 router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, res) {
@@ -67,7 +67,7 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
       { $set: { shareLink: req.body.shareLink } }
     );
 
-    logger.info("set shareLink of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, shareLink: req.body.shareLink });
+    traceLogger.verbose("set shareLink of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, shareLink: req.body.shareLink });
     res.json({
       Status: 'ok',
       shareLink: req.body.shareLink,
@@ -118,7 +118,7 @@ router.get('/:calendar_id/shareLink', isAuthenticated, async function (req, res)
       }
     }
 
-    logger.info("fetched shareLink of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, shareLink: cal.shareLink });
+    traceLogger.verbose("fetched shareLink of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, shareLink: cal.shareLink });
     res.json({
       Status: 'ok',
       shareLink: cal.shareLink,

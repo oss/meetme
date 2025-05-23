@@ -8,7 +8,7 @@ const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
 const { valid_netid } = require('../auth/util/LDAP_utils');
 const { create_user } = require('../user/helpers/modify_user');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 //invite users
 router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
@@ -127,7 +127,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
         { $push: { pendingCalendars: { _id: req.params.calendar_id } } }
     );
 
-    logger.info("added users to calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, payload: payload });
+    traceLogger.verbose("added users to calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, payload: payload });
     res.json({
         Status: 'ok',
         user_list: payload,
@@ -238,7 +238,7 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
         { $pull: { calendars: { _id: req.params.calendar_id } } }
     );
 
-    logger.info("removed users from calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, payload: payload });
+    traceLogger.verbose("removed users from calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, payload: payload });
     res.json({
         Status: 'ok',
         user_list: payload,
@@ -279,7 +279,7 @@ router.patch('/:calendar_id/accept', isAuthenticated, async function (req, res) 
         }
     );
 
-    logger.info("accepted calendar invite", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
+    traceLogger.verbose("accepted calendar invite", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
     res.json({
         Status: 'ok',
         calendar: req.params.calendar_id,
@@ -333,7 +333,7 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
         }
     );
 
-    logger.info("accepted calendar invite via shareLink", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
+    traceLogger.verbose("accepted calendar invite via shareLink", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
     res.json({
         Status: 'ok',
         calendar: req.params.calendar_id,
@@ -363,7 +363,7 @@ router.patch('/:calendar_id/decline', isAuthenticated, async function (req, res)
             { _id: req.params.calendar_id },
             { $pull: { pendingUsers: { _id: req.user.uid } } }
         );
-	logger.info("declined calendar invite", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
+	traceLogger.verbose("declined calendar invite", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
         res.json({
             Status: 'ok',
             calendar: cal._id,
@@ -407,7 +407,7 @@ router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
             $pull: { users: { _id: req.user.uid } },
         }
     );
-    logger.info("left calendar", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
+    traceLogger.verbose("left calendar", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
     res.json({
         Status: 'ok',
         calendar: req.params.calendar_id,

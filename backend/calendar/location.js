@@ -5,7 +5,7 @@ const Org_schema = require('../organizations/organization_schema');
 const Calendar_schema_meta = require('./calendar_schema_meta');
 const { isAuthenticated } = require('../auth/passport/util');
 const User = require('../user/user_schema');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 // Sets the location of the calendar
 router.patch('/:calendar_id/location', isAuthenticated, async function (req, res) {
@@ -59,7 +59,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
       { $set: { location: req.body.location } }
     );
 
-    logger.info("set location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: req.body.location });
+    traceLogger.verbose("set location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: req.body.location });
     res.json({
       Status: 'ok',
       location: req.body.location,
@@ -111,7 +111,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
       }
     }
 
-    logger.info("fetched location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: cal.location });
+    traceLogger.verbose("fetched location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: cal.location });
     res.json({
       Status: 'ok',
       location: cal.location,

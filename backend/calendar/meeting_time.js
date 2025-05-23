@@ -5,7 +5,7 @@ const Org_schema = require('../organizations/organization_schema');
 const Calendar_schema_main = require('./calendar_schema_main');
 const Calendar_schema_meta = require('./calendar_schema_meta');
 const { isAuthenticated } = require('../auth/passport/util');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 // Sets the meeting time of a calendar
 router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, res) {
@@ -77,7 +77,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       { $set: { meetingTime: meeting_time } }
     );
 
-    logger.info("set meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: meeting_time });
+    traceLogger.verbose("set meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: meeting_time });
     res.json({
       Status: 'ok',
       meeting_time: meeting_time,
@@ -129,7 +129,7 @@ router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
       }
     }
 
-    logger.info("fetched meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: cal.meetingTime });
+    traceLogger.verbose("fetched meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: cal.meetingTime });
     res.json({
       Status: 'ok',
       meeting_time: cal.meetingTime,

@@ -5,7 +5,7 @@ const User_schema = require('../user/user_schema');
 const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
@@ -119,7 +119,7 @@ router.get('/:calendar_id/timeblocks', isAuthenticated, async function (req, res
             return;
         }
     }
-    logger.info("fetched calendar timeblocks", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: cal.blocks });
+    traceLogger.verbose("fetched calendar timeblocks", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: cal.blocks });
     res.json({
         Status: 'ok',
         timeblocks: cal.blocks,
@@ -152,7 +152,7 @@ async function repmode(netid, calendar_id, res, timeblocks) {
         { _id: calendar_id },
         { $set: { blocks: timeblocks } }
     );
-    logger.info("set calendar timeblocks for calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: timeblocks });
+    traceLogger.verbose("set calendar timeblocks for calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: timeblocks });
     res.json({
         Status: 'ok',
     });

@@ -6,7 +6,7 @@ const Calendar_schema_meta = require('./calendar_schema_meta');
 const User_schema = require('../user/user_schema');
 const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.patch('/:calendar_id/me', async function (req, res) {
   const calendar_id = req.params.calendar_id;
@@ -184,7 +184,7 @@ async function repmode(netid, calendar_id, res, timeblocks) {
           { $set: { modified: current_time} }
       );
 
-      logger.info("set user timeblocks for calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: timeblocks });
+      traceLogger.verbose("set user timeblocks for calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: timeblocks });
       return res.json({
         Status: 'ok',
       });

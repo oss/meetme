@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Org_schema = require('./organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.get('/:organization_id/memberlist', isAuthenticated, async function (req, res) {
   const org = await Org_schema.findOne(
@@ -32,7 +32,7 @@ router.get('/:organization_id/memberlist', isAuthenticated, async function (req,
     });
     return;
   }
-  logger.info("fetched memberlist of org", req, { uid: req.user.uid, org_id: req.params.organization_id });
+  traceLogger.verbose("fetched memberlist of org", req, { uid: req.user.uid, org_id: req.params.organization_id });
   res.json({
     Status: 'ok',
     memberlist: org,

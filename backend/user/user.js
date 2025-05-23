@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const { isAuthenticated } = require('../auth/passport/util');
 const { valid_netid } = require('../auth/util/LDAP_utils');
 const { create_user } = require('./helpers/modify_user');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 //full access
 router.get('/me', isAuthenticated, async function (req, res) {
@@ -19,7 +19,7 @@ router.get('/me', isAuthenticated, async function (req, res) {
       error: 'Student not found',
     });
   else
-    logger.info("fetched user info", req, { uid: req.user.uid, });
+    traceLogger.verbose("fetched user info", req, { uid: req.user.uid, });
     res.json({
       Status: 'ok',
       data: target_usr,
@@ -50,7 +50,7 @@ router.get('/:netid', isAuthenticated, async function (req, res) {
     }
   }
 
-  logger.info("fetched user info from netid", req, { uid: req.user.uid, netid: netid });
+  traceLogger.verbose("fetched user info from netid", req, { uid: req.user.uid, netid: netid });
   res.json({
     Status: 'ok',
     data: target_usr,

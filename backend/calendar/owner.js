@@ -5,7 +5,7 @@ const Calendar_schema_maindata = require('./calendar_schema_main');
 const User_schema = require('../user/user_schema');
 const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
-const logger = require('#logger');
+const { traceLogger, _baseLogger } = require('#logger');
 
 //sets a new owner of a calendar
 router.patch('/:calendar_id/owner', async function (req, res) {
@@ -101,7 +101,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     return;
   }
 
-  logger.info("set owner of calendar", req, { uid: req.user.uid, calendar_id: calendar_id, new_owner: newowner });
+  traceLogger.verbose("set owner of calendar", req, { uid: req.user.uid, calendar_id: calendar_id, new_owner: newowner });
   res.json({
     Status: 'ok',
   });
