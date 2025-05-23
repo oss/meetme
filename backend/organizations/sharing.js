@@ -7,6 +7,7 @@ const Org_schema = require('./organization_schema');
 const { valid_netid } = require('../auth/util/LDAP_utils');
 const { create_user } = require('../user/helpers/modify_user');
 const { isAuthenticated } = require('../auth/passport/util');
+const logger = require('#logger');
 
 router.patch('/:organization_id/share', isAuthenticated, async function (req, res) {
   const org_id = req.params.organization_id;
@@ -107,6 +108,7 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
 
   await target_org.save();
 
+  logger.info("shared org with users", req, { uid: req.user.uid, org_id: org_id, user_list: return_payload });
   res.json({
     Status: 'ok',
     user_list: return_payload,
@@ -143,6 +145,7 @@ router.patch('/:organization_id/decline', isAuthenticated, async function (req, 
     { $pull: { pendingOrganizations: { _id: org_id } } }
   );
 
+  logger.info("declined org invite", req, { uid: req.user.uid, org_id: org_id });
   res.json({
     Status: 'ok',
     org: req.params.organization_id,
@@ -181,6 +184,7 @@ router.patch('/:organization_id/accept', isAuthenticated, async function (req, r
     }
   );
 
+  logger.info("accepted org invite", req, { uid: req.user.uid, org_id: org_id });
   res.json({
     Status: 'ok',
     org: req.params.organization_id,
