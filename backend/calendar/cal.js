@@ -452,9 +452,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
       else
         res.json({
           Status: 'ok',
-          metadata: await Calendar_schema_meta.findOne({
-            _id: req.params.calendar_id,
-          }),
+          maindata: maindata,
         });
     } else
       res.json({
