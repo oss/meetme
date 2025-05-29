@@ -58,7 +58,6 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
-  // TODO(ivan): remove try catch?
   try {
     traceLogger.verbose("updating name of calendar...", req, {});
     await Calendar_schema_metadata.updateOne(

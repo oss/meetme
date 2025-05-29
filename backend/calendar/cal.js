@@ -50,7 +50,7 @@ router.post('/', isAuthenticated, async function (req, res) {
 
   //verify owner data is ok and able to create calendar
   if (owner.type === 'individual') {
-    traceLogger.verbose("owner is individual, checking if owner is the requester...", req, { owner = owner.id });
+    traceLogger.verbose("checking if owner is individual...", req, { owner = owner.id });
     if (owner.id !== req.user.uid) {
       res.json({
         Status: 'error',
@@ -58,7 +58,6 @@ router.post('/', isAuthenticated, async function (req, res) {
       });
       return;
     }
-    // TODO(ivan): ??????
     const netid = owner.id;
   } else {
     traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: owner.id });
