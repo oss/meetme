@@ -18,6 +18,7 @@ router.post('/', isAuthenticated, async function (req, res) {
   }
 
   try {
+    traceLogger.verbose("initializing organization...", req, {});
     //assigns values to the organization
     const Organization = new Organization_schema();
     Organization.name = req.body.name || 'unnamed organization';
@@ -33,13 +34,14 @@ router.post('/', isAuthenticated, async function (req, res) {
     Organization.pendingMembers = [];
     Organization.viewers = [];
 
+    traceLogger.verbose("creating organization...", req, {});
     await Organization.save();
     const received_org = await Organization_schema.findOne(Organization);
     await User_schema.updateOne(
       { _id: req.user.uid },
       { $push: { organizations: { _id: Organization._id } } }
     );
-    traceLogger.verbose("created org", req, { uid: req.user.uid, org_id: Organization._id });
+    traceLogger.verbose("created org", req, { org_id: Organization._id });
     res.json({
       Status: 'ok',
       organization: received_org,
@@ -57,6 +59,7 @@ router.get('/:organization_id', isAuthenticated, async function (req, res) {
   const org_id = req.params.organization_id;
   const netid = req.user.uid;
   try {
+    traceLogger.verbose("finding org and checking if requester has permission...", req, { org: org_id });
     const org = await Organization_schema.findOne({
       _id: org_id,
       $or: [
@@ -93,6 +96,7 @@ router.get('/:organization_id', isAuthenticated, async function (req, res) {
 router.delete('/:organization_id', isAuthenticated, async function (req, res) {
   const organization_id = req.params.organization_id;
   try {
+    traceLogger.verbose("finding org and checking if requester has permission...", req, { org: organization_id });
     const org = await Organization_schema.findOne({
       _id: organization_id,
       owner: req.user.uid,
@@ -108,15 +112,17 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
     }
 
     //delete calendars owned by org
+    traceLogger.verbose("deleting calendar data...", req, {});
     await Calendar_schema_meta.deleteMany({ _id: { $in: org.calendar } });
     await Calendar_schema_main.deleteMany({ _id: { $in: org.calendar } });
 
-    //remove org from owner
+    traceLogger.verbose("removing org from owner...", req, {});
     await User_schema.updateOne(
       { _id: org.owner },
       { $pull: { organizations: { _id: organization_id } } }
     );
-    //remove org from editors
+
+    traceLogger.verbose("removing org from editors...", req, {});
     await User_schema.updateMany(
       { _id: { $in: org.editors } },
       {
@@ -124,21 +130,23 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
         $pull: { calendars: { $in: org.calendars } },
       }
     );
-    //remove org from members
+
+    traceLogger.verbose("removing org from members...", req, {});
     await User_schema.updateMany(
       { _id: { $in: org.members } },
       { $pull: { organizations: { _id: organization_id } } }
     );
-    //remove org from viewers
+
+    traceLogger.verbose("removing org from viewers...", req, {});
     await User_schema.updateMany(
       { _id: { $in: org.viewers } },
       { $pull: { organizations: { _id: organization_id } } }
     );
 
-    //delete org from database
+    traceLogger.verbose("deleting org...", req, {});
     await Organization_schema.deleteOne(org);
 
-    traceLogger.verbose("deleted org", req, { uid: req.user.uid, org_id: organization_id });
+    traceLogger.verbose("deleted org", req, { org_id: organization_id });
     res.json({
       Status: 'ok',
       org: {
@@ -167,6 +175,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
       return;
     }
 
+    traceLogger.verbose("finding org and checking if requester has permission...", req, { org: org_id });
     const target_org = await Organization_schema.findOne({
       _id: org_id,
       $or: [{ owner: req.user.uid }, { admins: { _id: req.user.uid } }],
@@ -181,6 +190,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
       return;
     }
 
+    traceLogger.verbose("leaving organization...", req, {});
     await Organization_schema.updateOne(
       { _id: org_id },
       {
@@ -192,7 +202,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
       }
     );
 
-    traceLogger.verbose("left org", req, { uid: req.user.uid, org_id: org_id });
+    traceLogger.verbose("left org", req, { org_id: org_id });
     res.json({
       Status: 'ok',
     });
