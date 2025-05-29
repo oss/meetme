@@ -7,7 +7,7 @@ services:
     ports:
       - 127.0.0.1:3000:3000
     volumes:
-      #- ./dist:/var/lib/grafana/plugins/rutgersoss-choropleth-panel
+      - ./graphana/plugin_test/rutgersoss-choropleth-panel/dist:/var/lib/grafana/plugins/rutgersoss-choropleth-panel
       #- ./provisioning:/etc/grafana/provisioning
       - ./opensearch/certs/ca/ca.pem:/etc/grafana/provisioning/certs/ca.pem
       - ./opensearch/certs/grafana/grafana.pem:/etc/grafana/provisioning/certs/grafana.pem
