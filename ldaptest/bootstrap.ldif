@@ -10,7 +10,7 @@ objectClass: organizationalUnit
 ou: users
 
 # User netid1 creation
-dn: cn=netid1,ou=users,dc=example,dc=org
+dn: uid=netid1,ou=users,dc=example,dc=org
 cn: User1
 sn: Last1
 givenName: First1
@@ -26,7 +26,7 @@ homeDirectory: /home/netid1
 eduPersonNickname: netid6nick
 
 # User netid2 creation
-dn: cn=netid2,ou=users,dc=example,dc=org
+dn: uid=netid2,ou=users,dc=example,dc=org
 cn: User2
 sn: Last2
 givenName: First2
@@ -40,7 +40,7 @@ gidNumber: 1001
 homeDirectory: /home/netid2
 
 # User netid3 creation
-dn: cn=netid3,ou=users,dc=example,dc=org
+dn: uid=netid3,ou=users,dc=example,dc=org
 cn: User3
 sn: Last3
 givenName: First3
@@ -54,7 +54,7 @@ gidNumber: 1002
 homeDirectory: /home/netid3
 
 # User netid4 creation
-dn: cn=netid4,ou=users,dc=example,dc=org
+dn: uid=netid4,ou=users,dc=example,dc=org
 cn: User4
 sn: Last4
 givenName: First4
@@ -68,7 +68,7 @@ gidNumber: 1003
 homeDirectory: /home/netid4
 
 # User netid5 creation
-dn: cn=netid5,ou=users,dc=example,dc=org
+dn: uid=netid5,ou=users,dc=example,dc=org
 cn: User5
 sn: Last5
 givenName: First5
@@ -82,7 +82,7 @@ gidNumber: 1004
 homeDirectory: /home/netid5
 
 # User netid6 creation
-dn: cn=netid6,ou=users,dc=example,dc=org
+dn: uid=netid6,ou=users,dc=example,dc=org
 sn: Last6
 givenName: First6
 objectClass: inetOrgPerson
@@ -95,13 +95,13 @@ gidNumber: 1005
 homeDirectory: /home/netid6
 
 # Group creation
-dn: cn=readers,ou=users,dc=example,dc=org
+dn: uid=readers,ou=users,dc=example,dc=org
 cn: readers
 objectClass: groupOfNames
 # User group membership
-member: cn=netid1,ou=users,dc=example,dc=org
-member: cn=netid2,ou=users,dc=example,dc=org
-member: cn=netid3,ou=users,dc=example,dc=org
-member: cn=netid4,ou=users,dc=example,dc=org
-member: cn=netid5,ou=users,dc=example,dc=org
-member: cn=netid6,ou=users,dc=example,dc=org
+member: uid=netid1,ou=users,dc=example,dc=org
+member: uid=netid2,ou=users,dc=example,dc=org
+member: uid=netid3,ou=users,dc=example,dc=org
+member: uid=netid4,ou=users,dc=example,dc=org
+member: uid=netid5,ou=users,dc=example,dc=org
+member: uid=netid6,ou=users,dc=example,dc=org

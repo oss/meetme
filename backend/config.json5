@@ -10,7 +10,7 @@
         "uri": "ldap://openldap:1389",
         "scope": "subtree",
         "bind_dn": "cn=admin,dc=example,dc=org",
-        "base": "dc=example,dc=org",
+        "base": "ou=users,dc=example,dc=org",
         "password_file": "./security/private/ldap_credential"
     },
 
