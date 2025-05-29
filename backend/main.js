@@ -22,6 +22,7 @@ app.use((req, res, next) => {
   //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
     const start_time = new Date().valueOf();
     res.on('finish', function() {
+
         const now = new Date().valueOf();
         _baseLogger.log({
             message: `status: ${res.statusCode} @ ${req.url} in ${now - start_time} ms`,
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
             url: req.url,
             route: req.baseUrl + ( req.route ? req.route.path : req.path ),
             ip: req.headers['x-real-ip'],
+            //ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)],
             request_id: req.headers['x-request-id'],
             user_agent: req.headers['user-agent'],
             response_code: res.statusCode,
@@ -37,6 +39,8 @@ app.use((req, res, next) => {
             request_method: req.method,
             netid: req.isAuthenticated() ? req.user.uid : null,
             version: build.GIT_HASH,
+            bytesIn: req.socket.bytesRead,
+            bytesOut: req.socket.bytesWritten
             // latitude -> added by fluent-bit
             // longitude -> added by fluent-bit
         })
@@ -178,7 +182,6 @@ function printRegisteredRoutes(routerStack, parentPath) {
 }
 
 printRegisteredRoutes(app.router.stack,'');
-console.log(routes)
 
 // Starting server using listen function
 app.listen(port, function (err) {
