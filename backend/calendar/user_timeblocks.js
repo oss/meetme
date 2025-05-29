@@ -85,7 +85,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
       }
 
       try {
-        await repmode(req.user.uid, calendar_id, res, timeblocks);
+        await repmode(req, req.user.uid, calendar_id, res, timeblocks);
       } catch (e) {
         return res.json({
           Status: 'error',
@@ -105,7 +105,7 @@ async function submode() {
   return;
 }
 
-async function repmode(netid, calendar_id, res, timeblocks) {
+async function repmode(req, netid, calendar_id, res, timeblocks) {
   const calendarMetadata = await Calendar_schema_meta.findOne({
     _id: calendar_id
   });
