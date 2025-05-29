@@ -116,7 +116,7 @@ const USPanel: React.FC<Props> = ({ country_map, max_req_count }) => {
 
     return(
         <div className={cx(css`display: flex; flex: 1`)}>
-            <MapContainer id="map" className={cx(css`flex: 1; background: #000;`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
+            <MapContainer className={cx(css`flex: 1; background: #000;`)} center={[0,0]} zoom={1} maxZoom={4} scrollWheelZoom={true} maxBounds={map_borders} maxBoundsViscosity={1}>
             <Force_reload />
             <CustomControl />
             <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef} filter={filter} renderer={L.svg({ padding: 100 })}/>

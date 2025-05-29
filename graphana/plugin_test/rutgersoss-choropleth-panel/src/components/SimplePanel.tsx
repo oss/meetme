@@ -122,8 +122,34 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   //const theme = useTheme2();
     const styles = useStyles2(getStyles);
     const geoJsonRef = useRef();
-    const { max: us_state_max_req_count, obj: us_state_map } = parse_US_States(data);
-    const { max: country_max_req_count, obj: country_map } = parse_Countries(data);
+
+    //if(data.series.length === 0) return <NoData />
+
+    const MapComponent = () => {
+        const { max: us_state_max_req_count, obj: us_state_map } = parse_US_States(data);
+        const { max: country_max_req_count, obj: country_map } = parse_Countries(data);
+
+        return(
+            <TabGroup as={Fragment}>
+            <TabList>
+                <Tab>US Map</Tab>
+                <Tab>Global Map</Tab>
+            </TabList>
+            <TabPanels className={css`display: flex; flex: 1; background: #262626;`}>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <USPanel state_map={us_state_map} max_req_count={us_state_max_req_count}/>
+                </TabPanel>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <CountryPanel country_map={country_map} max_req_count={country_max_req_count}/>
+                </TabPanel>
+            </TabPanels>
+        </TabGroup>
+        )
+    }
+
+    const NoData = () => {
+        return <p>No Data</p>
+    }
 
   return (
     <div
@@ -134,24 +160,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               height: ${height}px;
               display: flex;
               flex-direction: column;
-              background: #262626;
             `
           )}
     >
-        <TabGroup as={Fragment}>
-            <TabList>
-                <Tab>US Map</Tab>
-                <Tab>Global Map</Tab>
-            </TabList>
-            <TabPanels className={css`display: flex; flex: 1;`}>
-                <TabPanel className={css`display: flex; flex: 1;`}>
-                    <USPanel state_map={us_state_map} max_req_count={us_state_max_req_count}/>
-                </TabPanel>
-                <TabPanel className={css`display: flex; flex: 1;`}>
-                    <CountryPanel country_map={country_map} max_req_count={country_max_req_count}/>
-                </TabPanel>
-            </TabPanels>
-        </TabGroup>
+        {data.series.length === 0 ? <NoData /> : <MapComponent />}
         
     </div>
   );
