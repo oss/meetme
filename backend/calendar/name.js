@@ -10,6 +10,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
   const new_name = req.body.new_name;
 
+  traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
   const cal = await Calendar_schema_metadata.findOne({
     _id: calendar_id,
     $or: [
@@ -27,8 +28,8 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
-  const old_name = cal.name;
   if (cal.owner.owner_type === 'organization') {
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
     const org = await Org_schema.findOne({
       _id: calendar_id,
       $or: [
@@ -48,6 +49,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
   }
 
   //basic name restrictions maybe implement more
+  traceLogger.verbose("validating new name...", req, { name: new_name });
   if (!(await valid_name(new_name))) {
     res.json({
       Status: 'error',
@@ -56,7 +58,9 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
+  // TODO(ivan): remove try catch?
   try {
+    traceLogger.verbose("updating name of calendar...", req, {});
     await Calendar_schema_metadata.updateOne(
       { _id: calendar_id },
       { name: new_name }
@@ -69,7 +73,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
-  traceLogger.verbose("set name of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, old_name: old_name, new_name: new_name });
+  traceLogger.verbose("updated name of calendar", req, { calendar_id: calendar_id, new_name: new_name });
   res.json({
     Status: 'ok',
     new_name: new_name,
@@ -80,6 +84,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
 router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
 
+  traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
   const cal = await Calendar_schema_metadata.findOne({
     _id: calendar_id,
     $or: [
@@ -99,6 +104,7 @@ router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
   }
 
   if (cal.owner.owner_type === 'organization') {
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
     const org = await Org_schema.findOne({
       _id: cal.owner._id,
       $or: [
@@ -119,7 +125,7 @@ router.get('/:calendar_id/name', isAuthenticated, async function (req, res) {
     }
   }
 
-  traceLogger.verbose("fetched name of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, name: cal.name });
+  traceLogger.verbose("fetched name of calendar", req, { calendar_id: calendar_id, name: cal.name });
   res.json({
     Status: 'ok',
     name: cal.name,

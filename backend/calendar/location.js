@@ -18,6 +18,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
       return;
     }
 
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
@@ -36,6 +37,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: calendar_id,
         $or: [
@@ -54,12 +56,13 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
       }
     }
 
+    traceLogger.verbose("updating location of calendar...", req, {});
     await Calendar_schema_meta.updateOne(
       { _id: calendar_id },
       { $set: { location: req.body.location } }
     );
 
-    traceLogger.verbose("set location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: req.body.location });
+    traceLogger.verbose("updated location of calendar", req, { calendar_id: calendar_id, location: req.body.location });
     res.json({
       Status: 'ok',
       location: req.body.location,
@@ -71,6 +74,7 @@ router.patch('/:calendar_id/location', isAuthenticated, async function (req, res
 // Gets the location of the calendar
 router.get('/:calendar_id/location', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
@@ -91,6 +95,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [
@@ -111,7 +116,7 @@ router.get('/:calendar_id/location', isAuthenticated, async function (req, res) 
       }
     }
 
-    traceLogger.verbose("fetched location of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, location: cal.location });
+    traceLogger.verbose("fetched location of calendar", req, { calendar_id: calendar_id, location: cal.location });
     res.json({
       Status: 'ok',
       location: cal.location,

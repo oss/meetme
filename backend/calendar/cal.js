@@ -14,6 +14,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 //TODO: implement /dump
 
 router.post('/', isAuthenticated, async function (req, res) {
+  traceLogger.verbose("validating calendar public status...", req, {});
   if (
     req.body.public !== undefined &&
     !req.body.public.toString().match('true|false')
@@ -38,7 +39,9 @@ router.post('/', isAuthenticated, async function (req, res) {
     */
 
   let owner = req.body.owner;
+  traceLogger.verbose("checking for owner...", req, {});
   if (owner === undefined) {
+    traceLogger.verbose("no owner specified, defaulting to requester as owner", req, {});
     const netid = req.user.uid;
     owner = { type: 'individual', id: netid };
   }
@@ -47,6 +50,7 @@ router.post('/', isAuthenticated, async function (req, res) {
 
   //verify owner data is ok and able to create calendar
   if (owner.type === 'individual') {
+    traceLogger.verbose("owner is individual, checking if owner is the requester...", req, { owner = owner.id });
     if (owner.id !== req.user.uid) {
       res.json({
         Status: 'error',
@@ -54,8 +58,10 @@ router.post('/', isAuthenticated, async function (req, res) {
       });
       return;
     }
+    // TODO(ivan): ??????
     const netid = owner.id;
   } else {
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: owner.id });
     const target_org = await Org_schema.findOne({
       _id: owner.id,
       $or: [
@@ -75,6 +81,7 @@ router.post('/', isAuthenticated, async function (req, res) {
   }
 
   let timeblocks = req.body.timeblocks;
+  traceLogger.verbose("checking if timeblocks exist...", req, {});
   if (timeblocks === undefined) {
     res.json({
       Status: 'error',
@@ -83,6 +90,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     return;
   }
 
+  traceLogger.verbose("validating timeblocks...", req, {});
   try {
     if (timeblocks.length === 0) {
       res.json({
@@ -115,6 +123,7 @@ router.post('/', isAuthenticated, async function (req, res) {
         '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
       )
     ) {
+      traceLogger.verbose("invalid timeblock", req, { timeblock: timeblock });
       res.json({
         Status: 'error',
         error: 'Invalid timeblock',
@@ -147,6 +156,7 @@ router.post('/', isAuthenticated, async function (req, res) {
   }
 
   try {
+    traceLogger.verbose("inserting calendar...", req, {});
     const calendar_maindata = new Calendar_schema_main();
     const calendar_metadata = new Calendar_schema_meta();
 
@@ -215,7 +225,7 @@ router.post('/', isAuthenticated, async function (req, res) {
       Status: 'ok',
       calendar: { ...recieved_meta, ...recieved_main }._doc, //idk what ._doc does but it gives us what we need
     });
-    traceLogger.verbose("created calendar", req, { uid: req.user.uid, owner: owner, calendar_id: calendar_id });
+    traceLogger.verbose("created calendar", req, { calendar_id: calendar_id });
   } catch (error) {
     console.log(error);
 
@@ -229,6 +239,7 @@ router.post('/', isAuthenticated, async function (req, res) {
 router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
   try {
+    traceLogger.verbose("finding calendar...", req, {});
     const cal = await Calendar_schema_main.findOne({ _id: calendar_id });
     if (cal === null) {
       res.json({
@@ -239,8 +250,10 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
     }
 
     if (cal.owner.owner_type === 'individual') {
+      traceLogger.verbose("owner is indvidual checking if user is owner...", req, {});
       if (req.user.uid === cal.owner._id) {
         //delete calendar from database
+	traceLogger.verbose("deleting calendar...", req, {});
         await Calendar_schema_main.deleteOne({ _id: calendar_id });
         await Calendar_schema_meta.deleteOne({ _id: calendar_id });
 
@@ -262,8 +275,9 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
           { _id: { $in: cal.pendingUsers.map((value) => value._id) } },
           { $pull: { pendingCalendars: { _id: calendar_id } } }
         );
-	traceLogger.verbose("deleted calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id });
+	traceLogger.verbose("deleted calendar", req, { calendar_id: calendar_id });
       } else {
+	traceLogger.verbose("unable to delete calender, user is not owner", req, { owner: cal.owner_id });
         res.json({
           Status: 'error',
           error: 'Not able to delete calendar',
@@ -272,6 +286,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       }
     } else {
       //org delete need to implement
+      traceLogger.verbose("owner is org, checking if user has permission to delete...", req, { owner: cal.owner_id });
       const allow = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [{ owner: req.user.uid }, { 'admins._id': req.user.uid }],
@@ -284,6 +299,8 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
         });
         return;
       }
+
+      traceLogger.verbose("deleting calendar...", req, {});
       //delete cal from org
       await Org_schema.updateOne(
         { _id: cal.owner._id },
@@ -314,7 +331,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       );
     }
     res.json({ Status: 'ok' });
-    traceLogger.verbose("deleted calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id });
+    traceLogger.verbose("deleted calendar", req, { calendar_id: calendar_id });
     return;
   } catch (e) {
     console.log(e);
@@ -326,6 +343,7 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
 });
 
 router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
+  traceLogger.verbose("finding calendar...", req, { calendar_id: req.params.calendar_id });
   //individual cal or made time in org cal
   const cal_meta = await Calendar_schema_meta.findOne(
     { _id: req.params.calendar_id },
@@ -342,6 +360,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
   }
 
   if (cal_meta.owner.owner_type === 'individual') {
+    traceLogger.verbose("owner is individual, checking if calendar is owned by requester...", req, {});
     const usr = await User_schema.findOne({
       _id: req.user.uid,
       $or: [
@@ -363,6 +382,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
     });
   } else {
     //org
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal_meta.owner._id });
     const org = await Org_schema.findOne({
       _id: cal_meta.owner._id,
       $or: [
@@ -374,6 +394,7 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
     });
 
     if (org === null) {
+      traceLogger.verbose("requester is not in org, but checking if calendar is shared with requester...", req, {});
       if (
         (await User_schema.findOne({
           _id: req.user.uid,
@@ -400,10 +421,11 @@ router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
       });
     }
   }
-  traceLogger.verbose("fetched calendar meta", req, { uid: req.user.uid, owner: cal_meta.owner, calendar_id: req.params.calendar_id });
+  traceLogger.verbose("fetched calendar meta", req, { calendar_id: req.params.calendar_id });
 });
 
 router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
+  traceLogger.verbose("finding calendar...", req, { calendar_id: req.params.calendar_id });
   const maindata = await Calendar_schema_main.findOne({
     _id: req.params.calendar_id,
   });
@@ -418,6 +440,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
   }
 
   if (maindata.owner.owner_type === 'individual') {
+    traceLogger.verbose("owner is individual, checking if calendar is owned by requester...", req, {});
     const usr = await User_schema.findOne({
       _id: req.user.uid,
       'calendars._id': req.params.calendar_id,
@@ -436,6 +459,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
     });
   } else {
     //org
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: maindata.owner._id });
     const org = await Org_schema.findOne({
       _id: maindata.owner._id,
       $or: [
@@ -472,7 +496,7 @@ router.get('/:calendar_id/main', isAuthenticated, async function (req, res) {
         maindata: maindata,
       });
   }
-  traceLogger.verbose("fetched calendar main", req, { uid: req.user.uid, owner: maindata.owner, calendar_id: req.params.calendar_id });
+  traceLogger.verbose("fetched calendar main", req, { calendar_id: req.params.calendar_id });
 });
 
 router.get('/:calendar_id/links', isAuthenticated, async function (req, res) {

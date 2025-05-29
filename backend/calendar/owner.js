@@ -12,6 +12,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
   const calendar_id = req.params.calendar_id;
 
   const newowner = req.body;
+  traceLogger.verbose("validating parameters...", req, {});
   if (newowner === undefined) {
     res.json({
       Status: 'error',
@@ -26,6 +27,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
       '{"id":"[a-zA-Z0-9]+"(?:,"owner_type":"individual")}'
     )
   ) {
+    traceLogger.verbose("invalid new owner", req, { newowner: newowner });
     res.json({
       Status: 'error',
       error: 'invalid body format',
@@ -33,6 +35,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     return;
   }
 
+  traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
   const target_cal = await Calendar_schema_maindata.findOne({
     _id: calendar_id,
     $or: [
@@ -48,6 +51,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     });
     return;
   } else if (target_cal.owner.owner_type === 'organization') {
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: target_cal.owner._id });
     const org = await Org_schema.findOne({
       _id: target_cal.owner._id,
       owner: req.user.uid,
@@ -66,6 +70,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     newowner.owner_type === undefined ||
     newowner.owner_type === 'individual'
   ) {
+    traceLogger.verbose("new owner is individual, checking if user exists...", req, { owner: newowner._id });
     if ((await User_schema.findOne({ _id: newowner.id })) === null) {
       res.json({
         Stauts: 'error',
@@ -74,6 +79,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
       return;
     }
   } else {
+    traceLogger.verbose("new owner is org, checking if org exists...", req, { owner: newowner._id });
     if ((await Org_schema.findOne({ _id: newowner.id })) === null) {
       res.json({
         Status: 'error',
@@ -101,7 +107,7 @@ router.patch('/:calendar_id/owner', async function (req, res) {
     return;
   }
 
-  traceLogger.verbose("set owner of calendar", req, { uid: req.user.uid, calendar_id: calendar_id, new_owner: newowner });
+  traceLogger.verbose("updated owner of calendar", req, { calendar_id: calendar_id, new_owner: newowner });
   res.json({
     Status: 'ok',
   });

@@ -10,6 +10,8 @@ const { traceLogger, _baseLogger } = require('#logger');
 // sets the sharelink for the given calendar
 router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
+
+    traceLogger.verbose("validating parameters...", req, {});
     if (req.body.shareLink === undefined || req.body.shareLink === null) {
       res.json({
         Status: 'error',
@@ -26,6 +28,7 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
         return;
     }
 
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
@@ -44,6 +47,7 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: calendar_id,
         $or: [
@@ -78,6 +82,8 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
 
 router.get('/:calendar_id/shareLink', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
+
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
@@ -98,6 +104,7 @@ router.get('/:calendar_id/shareLink', isAuthenticated, async function (req, res)
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [
@@ -118,7 +125,7 @@ router.get('/:calendar_id/shareLink', isAuthenticated, async function (req, res)
       }
     }
 
-    traceLogger.verbose("fetched shareLink of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, shareLink: cal.shareLink });
+    traceLogger.verbose("fetched shareLink of calendar", req, { calendar_id: calendar_id, shareLink: cal.shareLink });
     res.json({
       Status: 'ok',
       shareLink: cal.shareLink,

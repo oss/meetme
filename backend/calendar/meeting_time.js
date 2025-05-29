@@ -10,6 +10,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 // Sets the meeting time of a calendar
 router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("validating parameters...", req, {});
     if (
       req.body.start === undefined ||
       req.body.end === undefined ||
@@ -29,6 +30,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     };
 
     if (meeting_time.start > meeting_time.end) {
+      traceLogger.verbose("start end time conflict", req, { times: meet_time });
       res.json({
         Status: 'error',
         error: 'Start/End time conflict',
@@ -36,6 +38,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       return;
     }
 
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_meta.findOne({
       _id: calendar_id,
       $or: [
@@ -54,6 +57,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [
@@ -72,12 +76,13 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
       }
     }
 
+    traceLogger.verbose("updating meeting time of calendar...", req, { });
     await Calendar_schema_meta.updateOne(
       { _id: calendar_id },
       { $set: { meetingTime: meeting_time } }
     );
 
-    traceLogger.verbose("set meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: meeting_time });
+    traceLogger.verbose("updated meeting time of calendar", req, { calendar_id: calendar_id, meeting_time: meeting_time });
     res.json({
       Status: 'ok',
       meeting_time: meeting_time,
@@ -89,6 +94,7 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
 // Gets the meeting time of a calendar
 router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
     const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_main.findOne({
       _id: calendar_id,
       $or: [
@@ -109,6 +115,7 @@ router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [
@@ -129,7 +136,7 @@ router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {
       }
     }
 
-    traceLogger.verbose("fetched meeting time of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, meeting_time: cal.meetingTime });
+    traceLogger.verbose("fetched meeting time of calendar", req, { calendar_id: calendar_id, meeting_time: cal.meetingTime });
     res.json({
       Status: 'ok',
       meeting_time: cal.meetingTime,

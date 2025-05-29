@@ -11,6 +11,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 router.patch('/:calendar_id/me', async function (req, res) {
   const calendar_id = req.params.calendar_id;
   const mode = req.body.mode;
+  traceLogger.verbose("validating operation...", req, { operation: mode });
   if (mode === undefined || !mode.toString().match('add|subtract|replace')) {
     res.json({
       Status: 'error',
@@ -28,6 +29,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
       await submode();
       break;
     case 'replace':
+      traceLogger.verbose("replace mode", req, { });
       for (let i = 0; i < timeblocks.length; i++) {
         if (timeblocks[i] == null) {
           return res.json({
@@ -104,12 +106,12 @@ async function submode() {
 }
 
 async function repmode(netid, calendar_id, res, timeblocks) {
-  
   const calendarMetadata = await Calendar_schema_meta.findOne({
     _id: calendar_id
   });
 
   if (calendarMetadata.owner.owner_type == "individual") {
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const calendar = await Calendar_schema_main.findOne({
       _id: calendar_id,
       'users._id': netid,
@@ -129,7 +131,7 @@ async function repmode(netid, calendar_id, res, timeblocks) {
       { _id: calendar_id, 'users._id': netid },
       { $set: { 'users.$.times': timeblocks } }
     );
-    
+
     const current_time = new Date().getTime()
 
     //update modified time in the metadata
@@ -138,13 +140,12 @@ async function repmode(netid, calendar_id, res, timeblocks) {
         { $set: { modified: current_time} }
     );
 
-
     return res.json({
       Status: 'ok',
     });
   }
   else if(calendarMetadata.owner.owner_type == "organization"){
-    
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendarMetadata.owner._id });
     const ownerOrg = await Org_schema.findOne({
       _id: calendarMetadata.owner._id,
     })
@@ -158,7 +159,7 @@ async function repmode(netid, calendar_id, res, timeblocks) {
     if(hasEditPermission){
       // if the user does not exist in the current array of users, then add it and then set the timeblocks
       // if the user already exists, then just set the timeblocks
-      
+
       // TODO: have to change this to one query instead of two seperate querys. Not sure if it is possible.
       const calendar = await Calendar_schema_main.findOne({
         _id: calendar_id,
@@ -184,7 +185,7 @@ async function repmode(netid, calendar_id, res, timeblocks) {
           { $set: { modified: current_time} }
       );
 
-      traceLogger.verbose("set user timeblocks for calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: timeblocks });
+      traceLogger.verbose("updated user timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
       return res.json({
         Status: 'ok',
       });

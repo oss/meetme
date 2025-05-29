@@ -11,6 +11,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 //creates new calendars
 router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
+  traceLogger.verbose("validating parameters...", req, {});
   if (
     req.body === undefined ||
     req.body.timezone === null ||
@@ -43,6 +44,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
     return;
   }
 
+  traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
   const calendar_data = await Calendar_schema_main.findOne({
     _id: calendar_id,
     $or: [
@@ -63,6 +65,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   }
 
   if (calendar_data.owner.owner_type === 'organization') {
+    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar_data.owner._id });
     const org_owner = await Org_schema.findOne({
       _id: calendar_data.owner._id,
       $or: [
@@ -92,7 +95,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
 
   const users = calendar_data.users;
 
-  traceLogger.verbose("fetched users of calendar", req, { uid: req.user.uid, owner: calendar_data.owner, calendar_id: calendar_id, users: calendar_data.users });
+  traceLogger.verbose("fetched users of calendar", req, { calendar_id: calendar_id });
   res.json({
     Status: 'ok',
     users: calendar_data.users,
@@ -103,6 +106,7 @@ router.post('/:calendar_id/meetme/me',
   isAuthenticated,
   async function (req, res) {
     const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("validating parameters...", req, {});
     if (
       req.body === undefined ||
       req.body.timezone === null ||
@@ -129,6 +133,7 @@ router.post('/:calendar_id/meetme/me',
       return;
     }
 
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const calendar_data = await Calendar_schema_main.findOne({
       _id: calendar_id,
       $or: [
@@ -158,6 +163,7 @@ router.post('/:calendar_id/meetme/me',
     }
 
     if (calendar_data.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar_data.owner._id });
       const org_owner = await Org_schema.findOne({
         _id: calendar_data.owner._id,
         $or: [
@@ -205,7 +211,7 @@ router.post('/:calendar_id/meetme/me',
       },
     ]);
 
-    traceLogger.verbose("set user's timeline for calendar", req, { uid: req.user.uid, owner: calendar_data.owner, calendar_id: calendar_id, timeline: calendar_data_sending });
+    traceLogger.verbose("fetched user's timeline for calendar", req, { calendar_id: calendar_id });
     res.json({
       Status: 'ok',
       timeline: calendar_data_sending,

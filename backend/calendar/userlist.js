@@ -6,9 +6,10 @@ const User_schema = require('../user/user_schema');
 const { isAuthenticated } = require('../auth/passport/util');
 const { traceLogger, _baseLogger } = require('#logger');
 
-//gets a list of users in a calendar is used to calculate color for time selections
+// gets a list of users in a calendar is used to calculate color for time selections
 router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_main.findOne({
       _id: calendar_id,
       $or: [
@@ -29,6 +30,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
     }
 
     if (cal.owner.owner_type === 'organization') {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
       const org = await Org_schema.findOne({
         _id: cal.owner._id,
         $or: [
@@ -48,6 +50,8 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
         return;
       }
     }
+
+    traceLogger.verbose("creating memberlist...", req, {});
     const memberlist = [];
     const nin_arr = [];
     if (cal.owner.owner_type === 'individual') {
@@ -70,7 +74,7 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
       memberlist.push({ _id: all_individual_shared[i], type: 'user' });
     }
 
-    traceLogger.verbose("fetched userlist of calendar", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, members: memberlist });
+    traceLogger.verbose("fetched userlist of calendar", req, { calendar_id: calendar_id, members: memberlist });
     res.json({
       Status: 'ok',
       memberlist: memberlist,
