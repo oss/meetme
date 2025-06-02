@@ -97,15 +97,8 @@ router.patch('/:calendar_id/owner', async function (req, res) {
         org to org
     */
 
-  try {
-    //not implmeneting for now but all pre-checks good
-  } catch (e) {
-    res.json({
-      Status: 'error',
-      error: 'Error occred when updating owner',
-    });
-    return;
-  }
+  // not implmeneting for now but all pre-checks good
+  // TODO: implementing updating owner
 
   traceLogger.verbose("updated owner of calendar", req, { calendar_id: calendar_id, new_owner: newowner });
   res.json({

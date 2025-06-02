@@ -58,19 +58,11 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
     return;
   }
 
-  try {
-    traceLogger.verbose("updating name of calendar...", req, {});
-    await Calendar_schema_metadata.updateOne(
-      { _id: calendar_id },
-      { name: new_name }
-    );
-  } catch (e) {
-    res.json({
-      Status: 'error',
-      error: e,
-    });
-    return;
-  }
+  traceLogger.verbose("updating name of calendar...", req, {});
+  await Calendar_schema_metadata.updateOne(
+    { _id: calendar_id },
+    { name: new_name }
+  );
 
   traceLogger.verbose("updated name of calendar", req, { calendar_id: calendar_id, new_name: new_name });
   res.json({

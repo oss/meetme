@@ -84,14 +84,7 @@ router.patch('/:calendar_id/me', async function (req, res) {
         }
       }
 
-      try {
-        await repmode(req, req.user.uid, calendar_id, res, timeblocks);
-      } catch (e) {
-        return res.json({
-          Status: 'error',
-          error: e,
-        });
-      }
+      await repmode(req, req.user.uid, calendar_id, res, timeblocks);
 
       break;
   }
