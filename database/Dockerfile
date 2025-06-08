@@ -12,4 +12,4 @@ COPY scripts/*.sh .
 COPY --from=build-stage /go/mongodb_exporter/mongodb_exporter /root/mongodb_exporter
 RUN mkdir /var/run/external && chmod +x mongodb_exporter *.sh
 
-CMD ./docker-entrypoint.sh
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
