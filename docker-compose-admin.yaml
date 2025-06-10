@@ -54,9 +54,9 @@ services:
     image: nginx
     volumes:
       - ./prometheus/mongo-socket-proxy.conf:/etc/nginx/conf.d/mongo-socket-proxy.conf
-      - /var/run/meetme/mongo/exporter.sock:/mongo-sockets/mongo.sock
-      - /var/run/meetme/mongo-jr/exporter.sock:/mongo-sockets/mongo-jr.sock
-      - /var/run/meetme/mongo-the-third/exporter.sock:/mongo-sockets/mongo-the-third.sock
+      - /var/run/meetme/mongo:/mongo-sockets/mongo
+      - /var/run/meetme/mongo-jr:/mongo-sockets/mongo-jr
+      - /var/run/meetme/mongo-the-third:/mongo-sockets/mongo-the-third
 
     networks:
       default:
