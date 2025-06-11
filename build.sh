@@ -8,7 +8,7 @@ $CR build 'proxy/.' -t nginx-oss-meetme || exit 1
 $CR build 'proxy-ssl-upgrade/.' -t nginx-ssl-oss-meetme || exit 1
 $CR build 'proxy-internal/.' -t nginx-internal-oss-meetme || exit 1
 
-
+$CR build 'opensearch/.' -t opensearch-meetme || exit 1
 $CR build 'proxy-docker/.' -t nginx-oss-docker || exit 1
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) || exit 1
