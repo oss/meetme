@@ -13,6 +13,8 @@ GIT_HASH=$(git rev-parse HEAD) || exit 1
 docker build 'backend/.' -t backend-meetme --build-arg GIT_BRANCH="$GIT_BRANCH" --build-arg GIT_HASH="$GIT_HASH" --build-arg DEV="true" --build-arg LOGIN_URL='https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO' || exit 1
 docker build 'frontend/.' -t frontend-meetme --build-arg BUILD="prod" || exit 1
 docker build 'graphana/.' -t graphana-oss-meetme || exit 1
+docker build 'opensearch/.' -t opensearch-meetme || exit 1
+
 docker build 'database/.' -t database-meetme || exit 1
 docker build 'websocket/.' -t websocket-meetme || exit 1
 docker build --file 'frontend/webpack.Dockerfile' -t frontend-meetme-webpack 'frontend/.' || exit 1
