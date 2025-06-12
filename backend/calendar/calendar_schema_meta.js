@@ -17,7 +17,7 @@ let calendar = new Schema({
     owner_type: String,
     _id: String,
   },
-  descritpion: [
+  description: [
     {
       name: String,
       data: String,
