@@ -8,6 +8,7 @@ const passport = require('passport');
 const config = require("#config");
 const express = require('express');
 const router = express.Router();
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.post('/login',
     async function (req, res, next) {
@@ -23,6 +24,7 @@ router.post('/login',
         const user = await User_schema.findOne({ _id: req.user.uid });
         //create a new user account if user doesnt exist
         if (user === null) {
+	    traceLogger.verbose('creating new user', req, { uid: req.user.uid });
             const create_usr_resp = await create_user(req.user.uid);
             console.log('finished creating new user');
             if (create_usr_resp.Status === 'Error') {
@@ -31,8 +33,10 @@ router.post('/login',
                 });
                 return;
             }
+	    traceLogger.verbose('created new user', req, { uid: req.user.uid });
         }
         await update_last_login(req.user.uid);
+	traceLogger.verbose('user login', req, { user: req.user.uid });
         req.session.time = Math.floor(Date.now() / config.auth.session.update_unit);
         res.redirect(config.frontend_domain + (req.body.RelayState || ''));
     }
@@ -40,6 +44,7 @@ router.post('/login',
 
 router.get('/login',
     async function (req, res, next) {
+	traceLogger.verbose('started login session', req);
         req.query.RelayState = req.query.dest;
         next();
     },

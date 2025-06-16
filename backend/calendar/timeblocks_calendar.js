@@ -5,10 +5,12 @@ const User_schema = require('../user/user_schema');
 const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
+const { traceLogger, _baseLogger } = require('#logger');
 
 router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
     const operation = req.body.operation;
+    traceLogger.verbose("validating operation...", req, { operation: operation });
     if (operation === undefined || operation === null) {
         res.json({
             Status: 'error',
@@ -26,6 +28,7 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
     }
 
     let timeblocks = req.body.timeblocks;
+    traceLogger.verbose("validating timeblocks...", req, { timeblocks: timeblocks });
     if (timeblocks === undefined || timeblocks === null) {
         res.json({
             Status: 'error',
@@ -42,7 +45,9 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
             await submode();
             return;
         case 'replace':
+	    traceLogger.verbose("replace mode", req, { });
             for (let i = 0; i < timeblocks.length; i++) {
+		traceLogger.verbose("validating timeblock...", req, { timeblock: timeblocks[i] });
                 if (timeblocks[i].start >= timeblocks[i].end) {
                     res.json({
                         Status: 'e',
@@ -65,6 +70,7 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
 
             for (let i = 1; i < timeblocks.length; i++) {
                 if (timeblocks[i - 1].end > timeblocks[i].start) {
+		    traceLogger.verbose("timeblock conflict...", req, { timeblock1: timeblocks[i - 1], timeblock2: timeblocks[i] });
                     res.json({
                         Status: 'error',
                         error: 'Invalid timeblocks',
@@ -72,7 +78,7 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
                     return;
                 }
             }
-            await repmode(netid, calendar_id, res, timeblocks);
+            await repmode(req, netid, calendar_id, res, timeblocks);
             return;
     }
 });
@@ -118,6 +124,7 @@ router.get('/:calendar_id/timeblocks', isAuthenticated, async function (req, res
             return;
         }
     }
+    traceLogger.verbose("fetched calendar timeblocks", req, { uid: req.user.uid, owner: cal.owner, calendar_id: calendar_id, timeblocks: cal.blocks });
     res.json({
         Status: 'ok',
         timeblocks: cal.blocks,
@@ -129,9 +136,9 @@ async function addmode() { }
 
 async function submode() { }
 
-async function repmode(netid, calendar_id, res, timeblocks) {
+async function repmode(req, netid, calendar_id, res, timeblocks) {
     //db.calendars.find({_id:"d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", "users.netid": 'abcd'})
-
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const calendar = await Calendar_schema_main.findOne({
         _id: calendar_id,
         'users._id': netid,
@@ -146,10 +153,14 @@ async function repmode(netid, calendar_id, res, timeblocks) {
     }
 
     //db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
+
+    traceLogger.verbose("updating calendar", req, { });
     await Calendar_schema_main.updateOne(
         { _id: calendar_id },
         { $set: { blocks: timeblocks } }
     );
+
+    traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
     res.json({
         Status: 'ok',
     });
