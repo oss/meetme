@@ -1,6 +1,7 @@
 cluster.name: os-cluster
 network.host: 0.0.0.0
 discovery.type: single-node
+node.name: os01
 
 bootstrap.memory_lock: "true" # along with the memlock settings below, disables swapping
 
@@ -8,16 +9,27 @@ cluster.routing.allocation.disk.threshold_enabled: true
 cluster.routing.allocation.disk.watermark.low: 93%
 cluster.routing.allocation.disk.watermark.high: 95%
 
-plugins.security.allow_unsafe_democertificates: true
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.http.pemtrustedcas_filepath: certificates/ca/ca.pem
+plugins.security.ssl.transport.pemcert_filepath: certificates/os01/os01.pem
+plugins.security.ssl.transport.pemkey_filepath: certificates/os01/os01.key
+
 plugins.security.ssl.transport.enabled: true
 plugins.security.ssl.transport.pemtrustedcas_filepath: certificates/ca/ca.pem
+plugins.security.ssl.http.pemcert_filepath: certificates/os01/os01.pem
+plugins.security.ssl.http.pemkey_filepath: certificates/os01/os01.key
+
+plugins.security.allow_default_init_securityindex: true
+plugins.calcite.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 
 plugins.security.authcz.admin_dn:
-  - 'CN=ADMIN,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
-  - 'CN=grafana,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
-  - 'CN=fluent-bit,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
+  - "CN=ADMIN,O=EXAMPLE,L=PARIS,ST=IDF,C=FR"
+  - "CN=grafana,O=EXAMPLE,L=PARIS,ST=IDF,C=FR"
+  - "CN=fluent-bit,O=EXAMPLE,L=PARIS,ST=IDF,C=FR"
+#plugins.security.restapi.admin.enabled: false
+
 plugins.security.nodes_dn:
-  - 'CN=os01,O=EXAMPLE,L=PARIS,ST=IDF,C=FR'
+  - "CN=os01,O=EXAMPLE,L=PARIS,ST=IDF,C=FR"
+
+plugins.security.ssl.http.clientauth_mode: REQUIRE

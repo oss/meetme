@@ -1,0 +1,5 @@
+{
+    "dependencies": {
+        "package-to-test": "file:./work/frontend"
+    }
+}

@@ -12,9 +12,9 @@ const capitalize_level = winston.format(({level, ...otherstuff}) => {
 });
 
 const add_readable_log = winston.format(({level,request_id,request_method,message,...otherstuff})=>{
-    const human_friendly_message = `[${level}][${request_id}][${request_method}]: ${message}`;
+    const human_friendly_message = `[${level}][${request_id.substring(0,4)}...${request_id.slice(-4)}][${request_method}]: ${message}`;
     return {
-        human_friendly_message: human_friendly_message,
+        summary: human_friendly_message,
         level: level,
         request_id: request_id,
         message: message,
@@ -23,7 +23,7 @@ const add_readable_log = winston.format(({level,request_id,request_method,messag
 });
 
 const logger = winston.createLogger({
-    level: process.env.LOG_LEVEL || 'debug',
+    level: 'verbose',
     format: winston.format.combine(
         winston.format.timestamp(),
         capitalize_level(),
@@ -32,14 +32,20 @@ const logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.Console(),
+        new winston.transports.File({ 
+            level: 'error',
+            filename: '/logs/error.log'
+        }),
         new winston.transports.File({
-            filename: "/logs/"+CONTAINER_ID+".log"
+            level: 'verbose',
+            filename: "/logs/requests.log"
         })
     ]
 })
 
-const logger_wrapper = new Proxy({}, {
+const traceLogger = new Proxy({}, {
     get(target, prop){
+
         return function(message, request, optional) {
             //console.log("request",request);
             logger[prop](message,{
@@ -52,4 +58,4 @@ const logger_wrapper = new Proxy({}, {
     }
 });
 
-module.exports = logger_wrapper;
+module.exports = { traceLogger, _baseLogger: logger };

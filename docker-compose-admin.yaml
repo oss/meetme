@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+
+  grafana:
+    image: graphana-oss-meetme
+    ports:
+      - 127.0.0.1:3000:3000
+    volumes:
+      - ./graphana/plugin_test/rutgersoss-choropleth-panel/dist:/var/lib/grafana/plugins/rutgersoss-choropleth-panel
+      #- ./provisioning:/etc/grafana/provisioning
+      - ./opensearch/certs/ca/ca.pem:/etc/grafana/provisioning/certs/ca.pem
+      - ./opensearch/certs/grafana/grafana.pem:/etc/grafana/provisioning/certs/grafana.pem
+      - ./opensearch/certs/grafana/grafana.key:/etc/grafana/provisioning/certs/grafana.key
+
+  os01:
+    image: opensearchproject/opensearch
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      JAVA_HOME: /usr/share/opensearch/jdk
+      DISABLE_INSTALL_DEMO_CONFIG: true
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "f821]2198hwv90j3vb90&*&T^b9843y-=1R2HR"
+    ulimits: 
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "./opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml"
+      - "./opensearch/certs:/usr/share/opensearch/config/certificates:ro"
+      #- "./opensearch/pipelines.yml:/usr/share/data-prepper/pipelines/pipeline.yml:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+
+
+
+  fluentbit:
+    image: filebeat-meetme
+    user: root
+    volumes:
+      - ./opensearch/certs/ca/ca.pem:/etc/pki/ca.pem
+      - ./opensearch/certs/fluent-bit/fluent-bit.pem:/etc/pki/client/cert.pem
+      - ./opensearch/certs/fluent-bit/fluent-bit.key:/etc/pki/client/cert.key
+      #- /var/lib/docker:/var/lib/docker:ro
+      #- /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/meetme/backend:/logs/backend
+    depends_on:
+      - os01
+
+  nginx_soc2http:
+    image: nginx
+    volumes:
+      - ./prometheus/mongo-socket-proxy.conf:/etc/nginx/conf.d/mongo-socket-proxy.conf
+      - /var/run/meetme/mongo/exporter.sock:/mongo-sockets/mongo.sock
+      - /var/run/meetme/mongo-jr/exporter.sock:/mongo-sockets/mongo-jr.sock
+      - /var/run/meetme/mongo-the-third/exporter.sock:/mongo-sockets/mongo-the-third.sock
+
+    networks:
+      default:
+        aliases:
+          - mongo
+          - mongo-jr
+          - mongo-the-third
+
+  prometheus:
+    image: prometheus-oss-meetme

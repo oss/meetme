@@ -11,7 +11,7 @@ scrape_configs:
 
   - job_name: 'grafana'
     static_configs:
-      - targets: ['graphana:3000']
+      - targets: ['grafana:3000']
 
   - job_name: 'node'
     dns_sd_configs:
@@ -30,37 +30,3 @@ scrape_configs:
   - job_name: 'mongo'
     static_configs:
       - targets: ['mongo:9216', 'mongo-jr:9216', 'mongo-the-third:9216']
-
-  # Create a job for Docker daemons.
-  - job_name: 'docker'
-    dockerswarm_sd_configs:
-      - host: http://nginx-docker:2375
-        role: nodes
-    relabel_configs:
-      # Fetch metrics on port 9323.
-      - source_labels: [__meta_dockerswarm_node_manager_leader]
-        regex: true
-        action: replace
-        replacement: host.docker.internal:9323
-        target_label: __address__
-      # Set hostname as instance label
-      - source_labels: [__meta_dockerswarm_node_hostname]
-        target_label: instance
-      - source_labels: [__meta_dockerswarm_node_status]
-        target_label: status
-
-  - job_name: 'dockerswarm'
-    dockerswarm_sd_configs:
-      - host: http://nginx-docker:2375
-        role: services
-    relabel_configs:
-      - source_labels: [__meta_dockerswarm_task_desired_state]
-        regex: running
-        action: keep
-      # Only keep containers that have a `prometheus-job` label.
-      - source_labels: [__meta_dockerswarm_service_label_prometheus_job]
-        regex: .+
-        action: keep
-      # Use the prometheus-job Swarm label as Prometheus job label.
-      - source_labels: [__meta_dockerswarm_service_label_prometheus_job]
-        target_label: job

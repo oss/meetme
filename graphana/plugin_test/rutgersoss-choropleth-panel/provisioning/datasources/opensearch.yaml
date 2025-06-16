@@ -1,0 +1,21 @@
+apiVersion: 1
+
+datasources:
+  - name: OpenSearch
+    type: grafana-opensearch-datasource
+    uid: A1YSTYS4N4QK2F2C4N
+    url: https://os01:9200
+    jsonData:
+      indexName: 'backend-api'
+      timeField: '@timestamp'
+      version: '2.19.1'
+      flavor: 'opensearch'
+      tlsAuthWithCACert: true
+      tlsAuth: true
+      tlsConfigurationMethod: file-path
+      logMessageField: summary
+      logLevelField: level
+    secureJsonData:
+      tlsCACert: $__file{/etc/grafana/provisioning/certs/ca.pem}
+      tlsClientCert: $__file{/etc/grafana/provisioning/certs/grafana.pem}
+      tlsClientKey: $__file{/etc/grafana/provisioning/certs/grafana.key}

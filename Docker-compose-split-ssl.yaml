@@ -17,8 +17,6 @@ services:
 
   proxy:
     image: nginx-internal-oss-meetme
-    volumes:
-      - /var/log/meetme/nginx/api.log:/logs/api.log
     networks:
       - no-internet
       - authnet
@@ -35,6 +33,9 @@ services:
     networks:
       - no-internet
       - mongo-net
+    volumes:
+      - /var/run/meetme/mongo:/var/run/external
+
   mongo-jr:
     image: database-meetme
     networks:
@@ -42,6 +43,9 @@ services:
       - mongo-net
     depends_on:
       - mongo
+    volumes:
+      - /var/run/meetme/mongo-jr:/var/run/external
+
   mongo-the-third:
     image: database-meetme
     networks:
@@ -49,6 +53,8 @@ services:
       - mongo-net
     depends_on:
       - mongo
+    volumes:
+      - /var/run/meetme/mongo-the-third:/var/run/external
 
   mongoinit:
     image: mongo # this container will exit after executing the command
@@ -91,9 +97,13 @@ services:
       - authnet
     depends_on:
       - mongoinit
+    volumes:
+      - ./backend:/root
+      - /var/log/meetme/backend:/logs
+    command: bash -c "./install_dependencies.sh && node --watch main.js"
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 3
 
   frontend:
     image: frontend-meetme-webpack
@@ -112,6 +122,8 @@ services:
     networks:
       - no-internet
       - mongo-net
+    depends_on:
+      - backend
     deploy:
       mode: replicated
       replicas: 1

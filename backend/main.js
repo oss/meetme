@@ -8,7 +8,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
-const logger = require('./logging');
+const { traceLogger, _baseLogger } = require('#logger');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
@@ -17,20 +17,43 @@ const build = require('#build');
 mongoose.connect(config.mongo_url);
 
 app.set('trust proxy', 1);
-router.use((req, res, next) => {
+app.use((req, res, next) => {
   //console.log('backend: %s %s %s', req.method, req.url, req.path);
-  req.request_id = crypto.randomUUID();
   //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
-  logger.info('request received',req,{ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)]});
-  next();
+    const start_time = new Date().valueOf();
+    res.on('finish', function() {
+
+        const now = new Date().valueOf();
+        _baseLogger.log({
+            message: `status: ${res.statusCode} @ ${req.url} in ${now - start_time} ms`,
+            level: res.statusCode === 500 ? 'error' : 'info',
+            duration: now-start_time,
+            url: req.url,
+            route: req.baseUrl + ( req.route ? req.route.path : req.path ),
+            ip: req.headers['x-real-ip'],
+            //ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)],
+            request_id: req.headers['x-request-id'],
+            user_agent: req.headers['user-agent'],
+            response_code: res.statusCode,
+            container_id: process.env.HOSTNAME,
+            request_method: req.method,
+            netid: req.isAuthenticated() ? req.user.uid : null,
+            version: build.GIT_HASH,
+            bytesIn: req.socket.bytesRead,
+            bytesOut: req.socket.bytesWritten
+            // latitude -> added by fluent-bit
+            // longitude -> added by fluent-bit
+        })
+    });
+    //logger.info('request received',req,{path: req.url,ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)], user_agent: req.headers['user-agent']});
+    next();
 });
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use((error, req, res, next) => {
   if (error !== null) {
-    console.log(error.body);
-    res.json({
+    res.status(400).json({
       Status: 'error',
       error: 'error parsing body',
       trace: error,
@@ -97,6 +120,15 @@ app.use(passport.session());
 require('./auth/passport/configure')(passport);
 passport.use('samlStrategy', samlStrategy);
 
+app.use(async function(req,res,next){
+    // this makes it so that we don't send an empty invalid session and session.sig on non-authenticated requests
+    // exlcude the unauthed login endpoint
+    if(!req.isAuthenticated() && !(req.url === '/login' && req.method === 'POST'))
+        req.session = {}
+
+    next();
+})
+
 const enabled_routes = config['routers']
 for (let i = 0; i < enabled_routes.length; i++) {
     const enabled_route = enabled_routes[i];
@@ -116,28 +148,34 @@ router.get('/', function (req, res) {
     res.json({
         Status: 'ok',
         time: new Date(),
-        git_branch: process.env.GIT_BRANCH,
-        git_hash: process.env.GIT_HASH,
+        build: build,
         paths: routes
     });
 });
 
 app.use('/', router);
+
+app.use((req, res) => {
+    //logger.info('')
+    res.status(404).json({status: 'error', error: 'invalid path'})
+})
+
 app.use((err, req, res, next) => {
-    console.error(err.stack)
-    res.status(500).json({"error": "TODO: make better error logs"})
+    traceLogger.verbose('uncaught error encountered',req,{error_message: err.message, error_stack: err.stack})
+    res.status(500).json({"error": "An unexpected error occured. Please email oss@oit.rutgers.edu along with the request id for help.", message: err.message,request_id: req.headers['x-request-id']})
 })
 
 
 function printRegisteredRoutes(routerStack, parentPath) {
-    console.log('routerstack',routerStack)
     routerStack.forEach((middleware) => {
         if (middleware.route) {
             routes.push(
-                `${middleware.route.stack[0].method.toUpperCase()} ${parentPath}${middleware.route.path}`
+                {
+                    method: middleware.route.stack[0].method.toUpperCase(),
+                    path: `${parentPath}${middleware.route.path}`
+                }
             );
         } else if (middleware.name === 'router') {
-            console.log(middleware.handle.router_prefix)
             printRegisteredRoutes(middleware.handle.stack,`${parentPath}${middleware.handle.router_prefix || ''}`);
         }
     });

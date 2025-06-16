@@ -1,14 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, Fragment } from 'react';
 import { DataFrameView, FieldType, PanelProps } from '@grafana/data';
 import { SimpleOptions } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import { MapContainer, TileLayer, useMap, GeoJSON } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
+import './LeafletOveride.css';
 import { FeatureCollection, Polygon } from 'geojson';
 import { toNumber } from 'lodash';
 import CustomControl, {update_control} from './CustomControl';
-import L from 'leaflet';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
+import USPanel from './USPanel';
+import CountryPanel from './CountryPanel';
+
 const featureCollection: FeatureCollection<Polygon> = require('../static/us-states.json');
 
 interface Props extends PanelProps<SimpleOptions> {}
@@ -69,110 +73,84 @@ const gradient_arr: string[] = (()=>{
     return colorGradient;
 })()
 
+const parse_refid = (data,refString) => {
+    return data.series.find((e) => e.refId === refString);
+}
+
+const parse_US_States = (data) => {
+    const frame = parse_refid(data, 'US States' );
+    if(!frame)
+        throw new Error('coudnt find US State entry')
+
+    const stateField = frame.fields.find((field) => field.type === FieldType.string);
+    const valueField = frame.fields.find((field) => field.type === FieldType.number);
+    let max_req_count = valueField.values[0]
+
+    const state_map = Object.fromEntries( stateField.values.map((state_abreviation, idx) => { 
+        max_req_count = Math.max(max_req_count, valueField.values[idx])
+        return [state_abreviation, valueField.values[idx]]
+    }));
+
+    return {
+        max: max_req_count,
+        obj: state_map
+    }
+}
+
+const parse_Countries = (data) => {
+    const frame = parse_refid(data, 'Countries' );
+    if(!frame)
+        throw new Error('coudnt find Countries entry')
+
+    const countryField = frame.fields.find((field) => field.type === FieldType.string);
+    const valueField = frame.fields.find((field) => field.type === FieldType.number);
+
+    let max_req_count = valueField.values[0]
+
+    const country_map = Object.fromEntries( countryField.values.map((country_iso_string, idx) => { 
+        max_req_count = Math.max(max_req_count, valueField.values[idx])
+        return [country_iso_string, valueField.values[idx]]
+    }));
+
+    return {
+        max: max_req_count,
+        obj: country_map
+    }
+}
+
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
   //const theme = useTheme2();
     const styles = useStyles2(getStyles);
     const geoJsonRef = useRef();
 
-    const frame = data.series[0];
-    const stateField = frame.fields.find((field) => field.type === FieldType.string);
-    const valueField = frame.fields.find((field) => field.type === FieldType.number);
+    //if(data.series.length === 0) return <NoData />
 
-    const state_map = {}
-    let max_count = valueField.values[0];
-    for(let i=0;i<stateField.values.length;i++){
-        const state_abreviation = stateField.values[i]
-        let state_request_count = valueField.values[i]
-        
-        //for testing purposes
-        state_request_count = Math.floor(Math.abs(state_request_count * Math.random() * 1000))
-        
-        state_map[state_abreviation] = state_request_count
+    const MapComponent = () => {
+        const { max: us_state_max_req_count, obj: us_state_map } = parse_US_States(data);
+        const { max: country_max_req_count, obj: country_map } = parse_Countries(data);
 
-        if(max_count < state_request_count){
-            max_count = state_request_count
-        }
+        return(
+            <TabGroup as={Fragment}>
+            <TabList>
+                <Tab>US Map</Tab>
+                <Tab>Global Map</Tab>
+            </TabList>
+            <TabPanels className={css`display: flex; flex: 1; background: #262626;`}>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <USPanel state_map={us_state_map} max_req_count={us_state_max_req_count}/>
+                </TabPanel>
+                <TabPanel className={css`display: flex; flex: 1;`}>
+                    <CountryPanel country_map={country_map} max_req_count={country_max_req_count}/>
+                </TabPanel>
+            </TabPanels>
+        </TabGroup>
+        )
     }
 
-    React.useEffect(() => {        
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-          iconUrl: require("leaflet/dist/images/marker-icon.png"),
-          shadowUrl: require("leaflet/dist/images/marker-shadow.png")
-        });        
-    }, []);
-
-    function Force_reload() {
-        const map = useMap();
-        map.whenReady(()=>{
-            map.invalidateSize();
-        });
-        return null;
+    const NoData = () => {
+        return <p>No Data</p>
     }
 
-    function style(feature: any) {
-        const state_request_count = state_map[feature.properties.name.short]
-        const log_val = Math.log(state_request_count) 
-        const log_max = Math.log(max_count);
-        let log_percent = Math.floor(100 * (log_val / log_max))
-        if( log_percent === 100)
-            log_percent --;
-
-        console.log('color',state_request_count,gradient_arr, log_percent,log_val , log_max)
-
-        return {
-            fillColor: gradient_arr[log_percent],
-            weight: 0.5,
-            opacity: 1,
-            color: 'white',
-            fillOpacity: 0.7
-        };
-    }
-
-    
-    function print_data(){
-        const view = new DataFrameView(frame);
-        console.log(stateField,valueField);
-        console.log(view);
-        return <></>;
-    }
-
-    function highlightFeature(e){
-        console.log(e)
-        const layer = e.target;
-
-        layer.setStyle({
-            weight: 5,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        layer.bringToFront();
-        const view = new DataFrameView(frame);
-        console.log(stateField,valueField);
-        console.log(view);
-        console.log(e);
-        const state = e.target.feature.properties;
-        console.log("count",state_map)
-        update_control({region: state.name.long, count: state_map[state.name.short]})
-    }
-
-    function resetHighlight(e) {
-        console.log(e)
-        //l.resetStyle(f)
-        geoJsonRef.current.resetStyle(e.target);
-        update_control({});
-    }
-
-        function onEachFeature(feature, layer) {
-            layer.on({
-                mouseover: highlightFeature,
-                mouseout: resetHighlight
-            });
-        }
-    
-      
   return (
     <div
         className={cx(
@@ -180,19 +158,19 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             css`
               width: ${width}px;
               height: ${height}px;
-              display: flex
+              display: flex;
+              flex-direction: column;
             `
           )}
     >
-        <div className={styles.textBox}>
-            <div>Text option value: {options.text}</div>
-            <div>
-                {print_data()}
-            </div>
-        </div>
-      <MapContainer className={cx(css`
-        flex: 1
-      `)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
+        {data.series.length === 0 ? <NoData /> : <MapComponent />}
+        
+    </div>
+  );
+};
+
+/*
+        <MapContainer className={cx(css`flex: 1`)} center={[37.8,-96]} zoom={4} scrollWheelZoom={true}>
             <Force_reload />
             <CustomControl />
             <GeoJSON attribution="&copy; credits due..." data={featureCollection} style={style} onEachFeature={onEachFeature} ref={geoJsonRef}/>
@@ -202,6 +180,5 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
             />
         </MapContainer>
-    </div>
-  );
-};
+
+*/
