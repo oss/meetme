@@ -10,6 +10,7 @@ router.patch('/alias', isAuthenticated, async function (req, res) {
   const new_alias = req.body.alias;
 
   //check for banned words
+  traceLogger.verbose("validating alias...", req, { alias: new_alias });
   if (!valid_alias(new_alias)) {
     res.json({
       Status: 'error',
@@ -18,15 +19,13 @@ router.patch('/alias', isAuthenticated, async function (req, res) {
     return;
   }
 
-  //updates the userdata schema
-  const user_data = await User_schema.findOne({ _id: req.user.attributes.uid });
-  const old = user_data.alias;
-  user_data.alias = new_alias;
-  await user_data.save();
-  traceLogger.verbose("created alias", req, { uid: req.user.uid, old: old, new: new_alias });
+  traceLogger.verbose("updating user schema...", req, {  });
+  const user = await User_schema.findByIdAndUpdate(req.user.uid, { alias: new_alias });
+
+  traceLogger.verbose("created alias", req, { uid: req.user.uid, old: user.alias, new: new_alias });
   res.json({
     Status: 'Ok',
-    old: old,
+    old: user.alias,
     new: new_alias,
   });
 });
