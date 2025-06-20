@@ -15,6 +15,7 @@ const random_ip_list = require("./random_ip_list.json");
 const config = require('#config');
 const build = require('#build');
 mongoose.connect(config.mongo_url);
+mongoose.set("transactionAsyncLocalStorage", true);
 
 app.set('trust proxy', 1);
 app.use((req, res, next) => {

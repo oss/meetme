@@ -102,9 +102,7 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
   });
 });
 
-router.post('/:calendar_id/meetme/me',
-  isAuthenticated,
-  async function (req, res) {
+router.post('/:calendar_id/meetme/me', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
     traceLogger.verbose("validating parameters...", req, {});
     if (

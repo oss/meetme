@@ -26,59 +26,6 @@ router.post('/', isAuthenticated, async function (req, res) {
     return;
   }
 
-  //impemented default name of 'untitled' below, maybe uncomment to add banned names?
-  /*
-    const name = req.get('name');
-    if (name === undefined) {
-        res.json({
-            Status: "error",
-            error: "No name found"
-        });
-        return;
-    }
-    */
-
-  let owner = req.body.owner;
-  traceLogger.verbose("checking for owner...", req, {});
-  if (owner === undefined) {
-    traceLogger.verbose("no owner specified, defaulting to requester as owner", req, {});
-    const netid = req.user.uid;
-    owner = { type: 'individual', id: netid };
-  }
-
-  console.log(JSON.stringify(owner));
-
-  //verify owner data is ok and able to create calendar
-  if (owner.type === 'individual') {
-    traceLogger.verbose("checking if owner is individual...", req, { owner = owner.id });
-    if (owner.id !== req.user.uid) {
-      res.json({
-        Status: 'error',
-        error: 'Owner does not match session',
-      });
-      return;
-    }
-    const netid = owner.id;
-  } else {
-    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: owner.id });
-    const target_org = await Org_schema.findOne({
-      _id: owner.id,
-      $or: [
-        { owner: { _id: req.user.uid } },
-        { editors: { _id: req.user.uid } },
-        { admins: { _id: req.user.uid } },
-      ],
-    });
-
-    if (target_org === null) {
-      res.json({
-        Status: 'error',
-        error: 'Org not found or not able to add calendar to org',
-      });
-      return;
-    }
-  }
-
   let timeblocks = req.body.timeblocks;
   traceLogger.verbose("checking if timeblocks exist...", req, {});
   if (timeblocks === undefined) {
@@ -137,7 +84,29 @@ router.post('/', isAuthenticated, async function (req, res) {
     }
   }
 
-  traceLogger.verbose("inserting calendar...", req, {});
+  //impemented default name of 'untitled' below, maybe uncomment to add banned names?
+  /*
+    const name = req.get('name');
+    if (name === undefined) {
+        res.json({
+            Status: "error",
+            error: "No name found"
+        });
+        return;
+    }
+    */
+
+  // verify owner data is ok and able to create calendar
+  let owner = req.body.owner;
+  traceLogger.verbose("checking for owner...", req, {});
+  if (owner === undefined) {
+    traceLogger.verbose("no owner specified, defaulting to requester as owner", req, {});
+    const netid = req.user.uid;
+    owner = { type: 'individual', id: netid };
+  }
+  console.log(JSON.stringify(owner));
+
+  traceLogger.verbose("creating calendar...", req, {});
   const calendar_maindata = new Calendar_schema_main();
   const calendar_metadata = new Calendar_schema_meta();
 
@@ -171,59 +140,97 @@ router.post('/', isAuthenticated, async function (req, res) {
     end: null,
   };
 
-  if (owner.type === 'individual') {
-    calendar_maindata.users = [
-      {
+  traceLogger.verbose("inserting calendar...", req, {});
+  await mongoose.connection().transaction(async () => {
+    if (owner.type === 'individual') {
+      if (owner.id !== req.user.uid) {
+	res.json({
+	  Status: 'error',
+	  error: 'Owner does not match session',
+	});
+	return;
+      }
+      calendar_maindata.users = [
+	{
+	  _id: owner.id,
+	  times: [],
+	},
+      ];
+
+      await User_schema.updateOne(
+	{ _id: req.user.uid },
+	{ $push: { calendars: { _id: calendar_id } } }
+      );
+    } else {
+      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: owner.id });
+      const target_org = await Org_schema.findOne({
 	_id: owner.id,
-	times: [],
-      },
-    ];
-    await User_schema.updateOne(
-      { _id: req.user.uid },
-      { $push: { calendars: { _id: calendar_id } } }
+	$or: [
+	  { owner: { _id: req.user.uid } },
+	  { editors: { _id: req.user.uid } },
+	  { admins: { _id: req.user.uid } },
+	],
+      });
+      if (target_org === null) {
+	res.json({
+	  Status: 'error',
+	  error: 'Org not found or not able to add calendar to org',
+	});
+	return;
+      }
+
+      calendar_maindata.users = [];
+      await Org_schema.updateOne(
+	{ _id: owner.id },
+	{ $push: { calendars: { _id: calendar_id } } }
+      );
+    }
+
+    await calendar_metadata.save();
+    await calendar_maindata.save();
+
+    const recieved_meta = await Calendar_schema_meta.findOne(
+      calendar_metadata,
+      { __v: 0 }
     );
-  } else {
-    calendar_maindata.users = [];
-    await Org_schema.updateOne(
-      { _id: owner.id },
-      { $push: { calendars: { _id: calendar_id } } }
+    const recieved_main = await Calendar_schema_main.findOne(
+      calendar_maindata,
+      { __v: 0 }
     );
-  }
 
-  await calendar_metadata.save();
-  await calendar_maindata.save();
-
-  const recieved_meta = await Calendar_schema_meta.findOne(
-    calendar_metadata,
-    { __v: 0 }
-  );
-  const recieved_main = await Calendar_schema_main.findOne(
-    calendar_maindata,
-    { __v: 0 }
-  );
-
-  res.json({
-    Status: 'ok',
-    calendar: { ...recieved_meta, ...recieved_main }._doc, //idk what ._doc does but it gives us what we need
+    res.json({
+      Status: 'ok',
+      calendar: { ...recieved_meta, ...recieved_main }._doc, //idk what ._doc does but it gives us what we need
+    });
+    traceLogger.verbose("created calendar", req, { calendar_id: calendar_id });
   });
-  traceLogger.verbose("created calendar", req, { calendar_id: calendar_id });
 });
 
 router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
   const calendar_id = req.params.calendar_id;
-  traceLogger.verbose("finding calendar...", req, {});
-  const cal = await Calendar_schema_main.findOne({ _id: calendar_id });
-  if (cal === null) {
-    res.json({
-      Status: 'error',
-      error: 'No calendar found',
-    });
-    return;
-  }
 
-  if (cal.owner.owner_type === 'individual') {
-    traceLogger.verbose("owner is indvidual checking if user is owner...", req, {});
-    if (req.user.uid === cal.owner._id) {
+  await mongoose.connection().transaction(async () => {
+    traceLogger.verbose("finding calendar...", req, {});
+    const cal = await Calendar_schema_main.findOne({ _id: calendar_id });
+    if (cal === null) {
+      res.json({
+	Status: 'error',
+	error: 'No calendar found',
+      });
+      return;
+    }
+
+    if (cal.owner.owner_type === 'individual') {
+      traceLogger.verbose("owner is indvidual checking if user is owner...", req, {});
+      if (req.user.uid !== cal.owner._id) {
+	traceLogger.verbose("unable to delete calender, user is not owner", req, { owner: cal.owner_id });
+	res.json({
+	  Status: 'error',
+	  error: 'Not able to delete calendar',
+	});
+	return;
+      }
+
       //delete calendar from database
       traceLogger.verbose("deleting calendar...", req, {});
       await Calendar_schema_main.deleteOne({ _id: calendar_id });
@@ -249,62 +256,54 @@ router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
       );
       traceLogger.verbose("deleted calendar", req, { calendar_id: calendar_id });
     } else {
-      traceLogger.verbose("unable to delete calender, user is not owner", req, { owner: cal.owner_id });
-      res.json({
-	Status: 'error',
-	error: 'Not able to delete calendar',
+      //org delete need to implement
+      traceLogger.verbose("owner is org, checking if user has permission to delete...", req, { owner: cal.owner_id });
+      const allow = await Org_schema.findOne({
+	_id: cal.owner._id,
+	$or: [{ owner: req.user.uid }, { 'admins._id': req.user.uid }],
       });
-      return;
+      if (allow === null) {
+	res.json({
+	  Status: 'error',
+	  error:
+	  'you cannot delete this calendar because you do not have appropriate permissions',
+	});
+	return;
+      }
+
+      traceLogger.verbose("deleting calendar...", req, {});
+      //delete cal from org
+      await Org_schema.updateOne(
+	{ _id: cal.owner._id },
+	{ $pull: { calendars: { _id: calendar_id } } }
+      );
+      //delete calendar from database
+      await Calendar_schema_main.deleteOne({ _id: calendar_id });
+      await Calendar_schema_meta.deleteOne({ _id: calendar_id });
+
+      //delete all individually shared users in org calendar
+      await User_schema.updateOne(
+	{ _id: req.user.uid },
+	{ $pull: { calendars: { _id: calendar_id } } }
+      );
+      //remove calendar from all users
+      await User_schema.updateMany(
+	{ _id: { $in: cal.users._id } },
+	{ $pull: { calendars: { _id: calendar_id } } }
+      );
+      //remove all viewers
+      await User_schema.updateMany(
+	{ _id: { $in: cal.viewers._id } },
+	{ $pull: { calendars: { _id: calendar_id } } }
+      );
+      await User_schema.updateMany(
+	{ _id: { $in: cal.pendingUsers._id } },
+	{ $pull: { pendingCalendars: { _id: calendar_id } } }
+      );
     }
-  } else {
-    //org delete need to implement
-    traceLogger.verbose("owner is org, checking if user has permission to delete...", req, { owner: cal.owner_id });
-    const allow = await Org_schema.findOne({
-      _id: cal.owner._id,
-      $or: [{ owner: req.user.uid }, { 'admins._id': req.user.uid }],
-    });
-    if (allow === null) {
-      res.json({
-	Status: 'error',
-	error:
-	'you cannot delete this calendar because you do not have appropriate permissions',
-      });
-      return;
-    }
-
-    traceLogger.verbose("deleting calendar...", req, {});
-    //delete cal from org
-    await Org_schema.updateOne(
-      { _id: cal.owner._id },
-      { $pull: { calendars: { _id: calendar_id } } }
-    );
-    //delete calendar from database
-    await Calendar_schema_main.deleteOne({ _id: calendar_id });
-    await Calendar_schema_meta.deleteOne({ _id: calendar_id });
-
-    //delete all individually shared users in org calendar
-    await User_schema.updateOne(
-      { _id: req.user.uid },
-      { $pull: { calendars: { _id: calendar_id } } }
-    );
-    //remove calendar from all users
-    await User_schema.updateMany(
-      { _id: { $in: cal.users._id } },
-      { $pull: { calendars: { _id: calendar_id } } }
-    );
-    //remove all viewers
-    await User_schema.updateMany(
-      { _id: { $in: cal.viewers._id } },
-      { $pull: { calendars: { _id: calendar_id } } }
-    );
-    await User_schema.updateMany(
-      { _id: { $in: cal.pendingUsers._id } },
-      { $pull: { pendingCalendars: { _id: calendar_id } } }
-    );
-  }
-
-  res.json({ Status: 'ok' });
-  traceLogger.verbose("deleted calendar", req, { calendar_id: calendar_id });
+    res.json({ Status: 'ok' });
+    traceLogger.verbose("deleted calendar", req, { calendar_id: calendar_id });
+  });
 });
 
 router.get('/:calendar_id/meta', isAuthenticated, async function (req, res) {
