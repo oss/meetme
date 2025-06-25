@@ -2,6 +2,9 @@
 
 FROM node as build-stage
 
+ARG API_URL=https://api.meetme.oss.rutgers.edu
+ARG WEBSITE_URL=https://meetme.oss.rutgers.edu
+
 RUN mkdir /root/build
 WORKDIR /root
 COPY package.json .
@@ -9,7 +12,7 @@ RUN npm install .
 
 COPY --exclude=.npm --exclude=node_modules . .
 
-RUN bash build.sh
+RUN API_URL=${API_URL} WEBSITE_URL=${WEBSITE_URL} ./build.sh
 
 FROM nginx:latest
 

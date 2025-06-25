@@ -59,6 +59,7 @@ services:
     image: backend-meetme
     networks:
       - no-internet
+      - authnet
     deploy:
       mode: replicated
       replicas: 1

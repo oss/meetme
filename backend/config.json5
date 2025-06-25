@@ -16,7 +16,7 @@
 
     "auth": {
         // cookie-session
-        "cookie_domain": "localhost.edu",
+        "cookie_domain": ".localhost.edu",
         "keygrip_secret_file": "./security/private/keygrip.json",
         "session": {
             "update_unit": 60000,               // after when to update in ms, ex. 60000 equals a minute

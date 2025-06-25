@@ -15,7 +15,7 @@ $CR build 'proxy-docker/.' -t nginx-oss-docker || exit 1
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) || exit 1
 GIT_HASH=$(git rev-parse HEAD) || exit 1
 $CR build 'backend/.' -t backend-meetme --build-arg GIT_BRANCH="$GIT_BRANCH" --build-arg GIT_HASH="$GIT_HASH" || exit 1
-$CR build 'frontend/.' -t frontend-meetme || exit 1
+$CR build 'frontend/.' --build-arg API_URL="https://api.localhost.edu" --build-arg WEBSITE_URL="https://localhost.edu" -t frontend-meetme || exit 1
 $CR build 'graphana/.' -t graphana-oss-meetme || exit 1
 $CR build 'database/.' -t database-meetme || exit 1
 $CR build 'websocket/.' -t websocket-meetme || exit 1
