@@ -8,6 +8,7 @@ services:
       - 443:443
     depends_on:
       - frontend
+      - backend-proxy
     networks:
       no-internet:
         aliases:
@@ -28,8 +29,6 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-jr:/var/run/external
 
@@ -38,8 +37,6 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-the-third:/var/run/external
 
@@ -50,6 +47,25 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+
+  backend-proxy:
+    image: meetme-backend-proxy
+    depends_on:
+      - backend
+    networks:
+      - no-internet
+
+  backend:
+    image: backend-meetme
+    networks:
+      - no-internet
+    deploy:
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - mongo
+      - mongo-jr
+      - mongo-the-third
 
   openldap:
     image: bitnami/openldap:2
