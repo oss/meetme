@@ -20,11 +20,26 @@ nav:
           - Calendars:
               - api/calendar/calendar/post.md
               - api/calendar/calendar/delete.md
+              - api/calendar/calendar/main.md
+              - api/calendar/calendar/meta.md
           - Locations:
               - api/calendar/location/get.md
               - api/calendar/location/patch.md
+          - MeetingTime:
+              - api/calendar/meeting_time/get.md
+              - api/calendar/meeting_time/patch.md
+          - Name:
+              - api/calendar/name/get.md
+              - api/calendar/name/patch.md
+          - Owner:
+              - api/calendar/owner/patch.md
+          - shareLink:
+              - api/calendar/shareLink/get.md
+              - api/calendar/shareLink/patch.md
           - Sharing:
               - api/calendar/sharing/accept-invite.md
+          - UserList:
+              - api/calendar/userlist/get.md
       - Organizations:
               - api/organizations/accept.md
   - Testing:
