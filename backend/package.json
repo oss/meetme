@@ -2,6 +2,7 @@
     "imports": {
         "#build": "./build.json",
         "#config": "./config.js",
-        "#logger": "./logging.js"
+        "#logger": "./logging.js",
+        "#util/*": "./util/*.js"
     }
 }
