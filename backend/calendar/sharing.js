@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const Org_schema = require('../organizations/organization_schema');
 const { isAuthenticated } = require('../auth/passport/util');
 const { valid_netid } = require('../auth/util/LDAP_utils');
-const { create_user } = require('../user/helpers/modify_user');
+const { create_user_netid } = require('../user/helpers/modify_user');
 const { traceLogger, _baseLogger } = require('#logger');
 
 //invite users
@@ -104,7 +104,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
         const usr = await User_schema.findOne({ _id: new_user });
         if (usr === null) {
 	    traceLogger.verbose("no user found, creating account for use...", req, { user: new_user });
-            await create_user(new_user);
+            await create_user_netid(new_user);
 	    traceLogger.verbose("user account created and added to payload", req, {});
             payload.added.push(new_user);
             calendar.pendingUsers.push({ _id: new_user });

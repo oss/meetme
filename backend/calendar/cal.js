@@ -50,7 +50,7 @@ router.post('/', isAuthenticated, async function (req, res) {
 
   //verify owner data is ok and able to create calendar
   if (owner.type === 'individual') {
-    traceLogger.verbose("checking if owner is individual...", req, { owner = owner.id });
+    traceLogger.verbose("checking if owner is individual...", req, { owner: owner.id });
     if (owner.id !== req.user.uid) {
       res.json({
         Status: 'error',

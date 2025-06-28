@@ -5,7 +5,7 @@ const User = require('../user/user_schema');
 const User_schema = require('../user/user_schema');
 const Org_schema = require('./organization_schema');
 const { valid_netid } = require('../auth/util/LDAP_utils');
-const { create_user } = require('../user/helpers/modify_user');
+const { create_user_netid } = require('../user/helpers/modify_user');
 const { isAuthenticated } = require('../auth/passport/util');
 const { traceLogger, _baseLogger } = require('#logger');
 
@@ -72,7 +72,7 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
     //null valid users are created and added
     else if ((await User_schema.findOne({ _id: new_user })) === null) {
       traceLogger.verbose("missing user, creating user...", req, { user: new_user });
-      await create_user(new_user);
+      await create_user_netid(new_user);
       traceLogger.verbose("created user, adding to payload...", req, { });
       return_payload.added.push(new_user);
       traceLogger.verbose("updating user data...", req, { });

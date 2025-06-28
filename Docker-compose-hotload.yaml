@@ -7,26 +7,14 @@ services:
       - 80:80
       - 443:443
     depends_on:
-      - proxy
+      - frontend
+      - backend-proxy
     networks:
       no-internet:
         aliases:
           - api.localhost.edu
           - localhost.edu
       authnet:
-
-  proxy:
-    image: nginx-internal-oss-meetme
-    networks:
-      - no-internet
-      - authnet
-    depends_on:
-      - backend
-      - socket
-      - mongo
-    deploy:
-      mode: replicated
-      replicas: 1
 
   mongo:
     image: database-meetme
@@ -41,8 +29,6 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-jr:/var/run/external
 
@@ -51,25 +37,8 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-the-third:/var/run/external
-
-  backend:
-    image: backend-meetme
-    environment:
-      - COOKIE_DURATION=100000
-    networks:
-      - no-internet
-      - authnet
-    volumes:
-      - ./backend:/root
-      - /var/log/meetme/backend:/logs
-    command: bash -c "./install_dependencies.sh && node --watch main.js"
-    deploy:
-      mode: replicated
-      replicas: 3
 
   frontend:
     image: frontend-meetme-webpack
@@ -81,16 +50,30 @@ services:
       mode: replicated
       replicas: 1
 
-  socket:
-    image: websocket-meetme
-    networks:
-      - no-internet
-      - mongo-net
+
+  backend-proxy:
+    image: meetme-backend-proxy
     depends_on:
       - backend
+    networks:
+      - no-internet
+
+  backend:
+    image: backend-meetme
+    networks:
+      - no-internet
+      - authnet
+    volumes:
+      - ./backend:/root
+      - /var/log/meetme/backend:/logs
+    command: bash -c "./install_dependencies.sh && node --watch main.js"
     deploy:
       mode: replicated
       replicas: 1
+    depends_on:
+      - mongo
+      - mongo-jr
+      - mongo-the-third
 
   openldap:
     image: bitnami/openldap:2
