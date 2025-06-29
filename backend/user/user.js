@@ -18,7 +18,7 @@ router.get('/me', isAuthenticated, async function (req, res) {
             Status: 'error',
             error: 'Student not found',
         });
-        return
+        return;
     }
     
     traceLogger.verbose("fetched user info", req, { uid: req.user.uid, });

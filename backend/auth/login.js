@@ -34,11 +34,11 @@ router.post('/login',
 );
 
 router.get('/login', async function (req, res, next) {
-        traceLogger.verbose('started login session', req);
-        req.query.RelayState = req.query.dest;
-        next();
-    },
-    passport.authenticate('samlStrategy')
+    traceLogger.verbose('started login session', req);
+    req.query.RelayState = req.query.dest;
+    next();
+},
+passport.authenticate('samlStrategy')
 );
 
 module.exports = router;

@@ -8,7 +8,7 @@ const crypto =  require("crypto");
 const config = require("#config");
 const fs = require("fs");
 
-const GOOGLE_CREDENTIALS = JSON.parse(fs.readFileSync(config.google_oauth_credentials))
+const GOOGLE_CREDENTIALS = JSON.parse(fs.readFileSync(config.google_oauth_credentials));
 
 async function create_access_token(uid){
 
@@ -26,7 +26,7 @@ async function create_access_token(uid){
             refresh_token: user_data.refresh_token,
             grant_type: "refresh_token"
         }),
-    })
+    });
     const data = await fetch_response.json();
 
     user_data.access_token = data.access_token;
@@ -73,7 +73,7 @@ router.delete('/revoke', isAuthenticated, async function (req, res, next) {
 router.get('/enable', isAuthenticated, async function (req, res, next) {
     const new_nonce =  await create_new_nonce(req.user.uid);
 
-    const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=${config.google_scopes}&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+new_nonce+`&redirect_uri=${config.backend_domain}/integrations/google/callback&client_id=${GOOGLE_CREDENTIALS.client_id}`
+    const link = `https://accounts.google.com/o/oauth2/v2/auth?scope=${config.google_scopes}&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=`+new_nonce+`&redirect_uri=${config.backend_domain}/integrations/google/callback&client_id=${GOOGLE_CREDENTIALS.client_id}`;
 
     res.json({
         Status: 'ok',
@@ -82,7 +82,7 @@ router.get('/enable', isAuthenticated, async function (req, res, next) {
 });
 
 router.post('/validate', isAuthenticated, async function (req, res, next) {
-  const user_data = await Google_schema.findOne({ _id: req.user.uid });
+    const user_data = await Google_schema.findOne({ _id: req.user.uid });
 
     if (user_data == null) {
         res.status(424).json({
@@ -109,16 +109,16 @@ router.post('/validate', isAuthenticated, async function (req, res, next) {
     }
 
     res.status(424).json({
-      Status: 'error',
-      error: "not validated",
+        Status: 'error',
+        error: "not validated",
     });
 });
 
 router.post('/google_cal_dates', isAuthenticated, async function (req, res, next) {
 
-  const user_data = await Google_schema.findOne({ _id: req.user.uid });
+    const user_data = await Google_schema.findOne({ _id: req.user.uid });
 
-  if (user_data == null) {
+    if (user_data == null) {
         res.json({
             Status: 'error',
             error: 'google integration not completed',

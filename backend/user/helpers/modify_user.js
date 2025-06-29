@@ -54,7 +54,7 @@ async function create_user_shib({ uid, firstName, lastName }){
 async function update_last_login(netid) {
     const res = await User_schema.findOneAndUpdate({ _id: netid },{ last_signin: new Date().getTime()});
     if( res === null)
-        throw new Error("could not update login time")
+        throw new Error("could not update login time");
 }
 
 module.exports = { create_user_shib , create_user_ldap, update_last_login };

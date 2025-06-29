@@ -8,7 +8,7 @@ const primitive = Object.freeze({
     symbol: Symbol('symbol'),
     function: Symbol('function'),
     object: Symbol('object')
-})
+});
 
 function is_type(target, desired_type){
 
@@ -16,12 +16,12 @@ function is_type(target, desired_type){
     if(target === null)
         return desired_type === primitive.null;
 
-    return (primitive[typeof target] === desired_type)
+    return (primitive[typeof target] === desired_type);
 }
 
 function assert_type(target, desired_type){
     if ( !is_type(target,desired_type) )
-        throw new Error(`Invalid type; got ${typeof target}, expected ${desired_type.description}`)
+        throw new Error(`Invalid type; got ${typeof target}, expected ${desired_type.description}`);
 }
 
 const netid_regex = /^[0-9a-z]+$/;
@@ -45,4 +45,4 @@ module.exports = {
         validate: is_valid_netid,
         assert: assert_valid_netid
     }
-}
+};

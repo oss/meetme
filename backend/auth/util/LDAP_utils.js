@@ -4,37 +4,37 @@ const config = require('#config');
 const fs = require('fs');
 
 async function valid_netid(netid) {
-  if (!(/^[a-zA-Z0-9]+$/.test(netid)))return false;
-  if ((await User_schema.findOne({ _id: netid })) !== null) return true;
-  return (await getinfo_from_netid(netid)) !== null;
+    if (!(/^[a-zA-Z0-9]+$/.test(netid)))return false;
+    if ((await User_schema.findOne({ _id: netid })) !== null) return true;
+    return (await getinfo_from_netid(netid)) !== null;
 }
 
 async function getinfo_from_netid(netid) {
-    const client = new LDAP({ uri: config.ldap.uri })
+    const client = new LDAP({ uri: config.ldap.uri });
     const bind = await client.bind({
         dn: config.ldap.bind_dn ,
         password: fs.readFileSync(config.ldap.password_file, 'utf8')
-    })
+    });
 
     const search_req = await client.search({
         filter: `uid=${netid}`,
         scope: SEARCH_SCOPES[config.ldap.scope],
         base: config.ldap.base,
         attributes: ["dn","sn","givenName","uid"]
-    })
+    });
 
     const search = search_req.toObject();
-    const close = await client.close()
-    const ldap_dn_string = `uid=${netid},${config.ldap.base}`
+    const close = await client.close();
+    const ldap_dn_string = `uid=${netid},${config.ldap.base}`;
     if ( search[ldap_dn_string] === undefined)
-        return null
+        return null;
 
-    const usr_obj_to_return = {}
+    const usr_obj_to_return = {};
 
     for(const attribute in search[ldap_dn_string] ){
         // all of the stuff we get from ldap are single elements
         // if we deal with stuff with multiple values (like roles), then have to upgrade
-        usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0] 
+        usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0]; 
     }
 
     return usr_obj_to_return;
