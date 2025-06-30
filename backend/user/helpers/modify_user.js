@@ -3,7 +3,7 @@ const router = express.Router();
 const User_schema = require('../user_schema');
 const mongoose = require('mongoose');
 const { getinfo_from_netid } = require('../../auth/util/LDAP_utils');
-const { type_check, netid_check } = require("#util/assert");
+const { typeCheck, netidCheck } = require("#util/assert");
 
 async function create_user_ldap(netid) {
     const extra_user_info = await getinfo_from_netid(netid);
@@ -29,11 +29,11 @@ async function create_user_ldap(netid) {
 }
 
 async function create_user_shib({ uid, firstName, lastName }){
-    type_check.assert(uid,type_check.valid_primitives.string);
-    netid_check.assert(uid);
+    typeCheck.assert(uid,typeCheck.validPrimitives.string);
+    netidCheck.assert(uid);
 
-    type_check.assert(firstName,type_check.valid_primitives.string);
-    type_check.assert(lastName,type_check.valid_primitives.string);
+    typeCheck.assert(firstName,typeCheck.validPrimitives.string);
+    typeCheck.assert(lastName,typeCheck.validPrimitives.string);
 
     const newUser = new User_schema();
     newUser._id = uid;

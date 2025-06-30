@@ -40,7 +40,7 @@ async function getinfo_from_netid(netid) {
     return usr_obj_to_return;
 }
 
-module.exports = { valid_netid, getinfo_from_netid };
+module.exports = { valid_netid, getinfo_from_netid, getInfoFromNetID: getinfo_from_netid };
 
 /*
 conn=1000 op=0 BIND dn="cn=admin,dc=example,dc=org" method=128

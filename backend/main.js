@@ -14,7 +14,7 @@ const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
 const config = require('#config');
 const build = require('#build');
-const { type_check, netid_check } = require("#util/assert");
+const { typeCheck, netidCheck } = require("#util/assert");
 mongoose.connect(config.mongo_url);
 
 app.set('trust proxy', 1);
@@ -107,21 +107,20 @@ const samlStrategy = new saml.Strategy(
         wantAssertionsSigned: false
     },
     async function (profile, done) {
-        console.log("main_js_saml",profile,done);
         const user_serialized = {};
 
         // netid
         user_serialized.uid = profile.attributes['urn:oid:0.9.2342.19200300.100.1.1'];
-        type_check.assert(user_serialized.uid,type_check.valid_primitives.string);
-        await netid_check.assert_at_level(user_serialized.uid,netid_check.scope.string);
+        typeCheck.assert(user_serialized.uid,typeCheck.validPrimitives.string);
+        await netidCheck.assertAtLevel(user_serialized.uid,netidCheck.scope.string);
 
         //firstName
         user_serialized.firstName = profile.attributes['urn:oid:2.5.4.42'];
-        type_check.assert(user_serialized.firstName,type_check.valid_primitives.string);
+        typeCheck.assert(user_serialized.firstName,typeCheck.validPrimitives.string);
 
         //lastName
         user_serialized.lastName = profile.attributes['urn:oid:2.5.4.4'];
-        type_check.assert(user_serialized.lastName,type_check.valid_primitives.string);
+        typeCheck.assert(user_serialized.lastName,typeCheck.validPrimitives.string);
 
         return done(null, user_serialized);
     }
