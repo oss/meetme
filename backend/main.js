@@ -106,14 +106,14 @@ const samlStrategy = new saml.Strategy(
         disableRequestedAuthnContext: true,
         wantAssertionsSigned: false
     },
-    function (profile, done) {
+    async function (profile, done) {
         console.log("main_js_saml",profile,done);
         const user_serialized = {};
 
         // netid
         user_serialized.uid = profile.attributes['urn:oid:0.9.2342.19200300.100.1.1'];
         type_check.assert(user_serialized.uid,type_check.valid_primitives.string);
-        netid_check.assert_at_level(user_serialized.uid,netid_check.scope.string);
+        await netid_check.assert_at_level(user_serialized.uid,netid_check.scope.string);
 
         //firstName
         user_serialized.firstName = profile.attributes['urn:oid:2.5.4.42'];
