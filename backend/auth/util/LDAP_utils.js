@@ -9,7 +9,7 @@ async function valid_netid(netid) {
     return (await getinfo_from_netid(netid)) !== null;
 }
 
-async function getinfo_from_netid(netid) {
+async function getInfoFromNetID(netid) {
     const client = new LDAP({ uri: config.ldap.uri });
     const bind = await client.bind({
         dn: config.ldap.bind_dn ,
@@ -40,7 +40,7 @@ async function getinfo_from_netid(netid) {
     return usr_obj_to_return;
 }
 
-module.exports = { valid_netid, getinfo_from_netid, getInfoFromNetID: getinfo_from_netid };
+module.exports = { valid_netid, getInfoFromNetID };
 
 /*
 conn=1000 op=0 BIND dn="cn=admin,dc=example,dc=org" method=128

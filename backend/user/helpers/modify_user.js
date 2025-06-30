@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const User_schema = require('../user_schema');
 const mongoose = require('mongoose');
-const { getinfo_from_netid } = require('../../auth/util/LDAP_utils');
+const { getInfoFromNetID } = require('../../auth/util/LDAP_utils');
 const { typeCheck, netidCheck } = require("#util/assert");
 
 async function create_user_ldap(netid) {
-    const extra_user_info = await getinfo_from_netid(netid);
+    const extra_user_info = await getInfoFromNetID(netid);
     if(extra_user_info === null)
         throw new Error('invalid netid');
 
