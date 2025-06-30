@@ -35,13 +35,13 @@ const checkLevels = {
     database: Symbol(),
     ldap: Symbol()
 };
-const netIDregex = /^[0-9a-z]+$/;
+const netidRegex = /^[0-9a-z]+$/;
 
 async function validateAtLevel(candidate,checkLevel){
     switch(checkLevel){
 
     case checkLevels.string:
-        return netIDregex.test(candidate);
+        return netidRegex.test(candidate);
 
     case checkLevels.database:
         return await UserSchema.exists({ _id: candidate });
@@ -78,7 +78,7 @@ async function isValidNetid(candidate){
 async function assertValidNetid(candidate){
     if ( ! await validateAtLevel(candidate, checkLevels.string)   ) throw new Error(`netid ${candidate} is not alpha-numeric`);
     if (   await validateAtLevel(candidate, checkLevels.database) ) return;
-    if (   await validateAtLevel(candidate, checkLevels.ldap)     ) throw new Error(`netid ${candidate} not found in ldap`);
+    if ( ! await validateAtLevel(candidate, checkLevels.ldap)     ) throw new Error(`netid ${candidate} not found in ldap`);
 }
 
 module.exports = {

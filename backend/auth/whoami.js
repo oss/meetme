@@ -10,7 +10,7 @@ router.get('/whoami', isAuthenticated, function (req, res, next) {
     res.json({
         Status: 'ok',
         user: req.user,
-        session: req.session
+        time: req.session.time
     });
 });
 
