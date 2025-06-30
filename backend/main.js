@@ -113,7 +113,7 @@ const samlStrategy = new saml.Strategy(
         // netid
         user_serialized.uid = profile.attributes['urn:oid:0.9.2342.19200300.100.1.1'];
         type_check.assert(user_serialized.uid,type_check.valid_primitives.string);
-        netid_check.assert(user_serialized.uid);
+        netid_check.assert_at_level(user_serialized.uid,netid_check.scope.string);
 
         //firstName
         user_serialized.firstName = profile.attributes['urn:oid:2.5.4.42'];
