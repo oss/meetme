@@ -139,7 +139,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
         { $push: { pendingCalendars: { _id: req.params.calendar_id } } }
     );
 
-    traceLogger.verbose("added users to calendar", req, { calendar_id: calendar_id, payload: payload });
+    traceLogger.verbose("added users to calendar", req, { calendar_id: req.params.calendar_id, payload: payload });
     res.json({
         Status: 'ok',
         user_list: payload,
