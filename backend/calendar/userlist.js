@@ -11,75 +11,75 @@ router.get('/:calendar_id/memberlist', isAuthenticated, async function (req, res
     const calendar_id = req.params.calendar_id;
     traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
     const cal = await Calendar_schema_main.findOne({
-      _id: calendar_id,
-      $or: [
-        { 'owner.owner_type': 'organization' },
-        { 'owner._id': req.user.uid },
-        { 'users._id': req.user.uid },
-        { 'viewers._id': req.user.uid },
-      ],
+        _id: calendar_id,
+        $or: [
+            { 'owner.owner_type': 'organization' },
+            { 'owner._id': req.user.uid },
+            { 'users._id': req.user.uid },
+            { 'viewers._id': req.user.uid },
+        ],
     });
 
     if (cal === null) {
-      res.json({
-        Status: 'error',
-        error:
+        res.json({
+            Status: 'error',
+            error:
           'The calendar does not exist or you do not have permission to access this calendar',
-      });
-      return;
+        });
+        return;
     }
 
     if (cal.owner.owner_type === 'organization') {
-      traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
-      const org = await Org_schema.findOne({
-        _id: cal.owner._id,
-        $or: [
-          { owner: req.user.uid },
-          { 'admins._id': req.user.uid },
-          { 'editors._id': req.user.uid },
-          { 'members._id': req.user.uid },
-          { 'viewers._id': req.user.uid },
-        ],
-      });
-      if (org === null) {
-        res.json({
-          Status: 'error',
-          error:
-            'The calendar does not exist or you do not have access to modify this calendar',
+        traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
+        const org = await Org_schema.findOne({
+            _id: cal.owner._id,
+            $or: [
+                { owner: req.user.uid },
+                { 'admins._id': req.user.uid },
+                { 'editors._id': req.user.uid },
+                { 'members._id': req.user.uid },
+                { 'viewers._id': req.user.uid },
+            ],
         });
-        return;
-      }
+        if (org === null) {
+            res.json({
+                Status: 'error',
+                error:
+            'The calendar does not exist or you do not have access to modify this calendar',
+            });
+            return;
+        }
     }
 
     traceLogger.verbose("creating memberlist...", req, {});
     const memberlist = [];
     const nin_arr = [];
     if (cal.owner.owner_type === 'individual') {
-      memberlist.push({ _id: cal.owner._id, type: 'owner' });
-      nin_arr.push(cal.owner._id);
+        memberlist.push({ _id: cal.owner._id, type: 'owner' });
+        nin_arr.push(cal.owner._id);
     }
     for (let i = 0; i < cal.viewers.length; i++) {
-      memberlist.push({ _id: cal.viewers[i]._id, type: 'viewer' });
-      nin_arr.push(cal.viewers[i]._id);
+        memberlist.push({ _id: cal.viewers[i]._id, type: 'viewer' });
+        nin_arr.push(cal.viewers[i]._id);
     }
 
     const all_individual_shared = await User_schema.distinct('_id', {
-      'calendars._id': req.params.calendar_id,
-      _id: {
-        $nin: nin_arr,
-      },
+        'calendars._id': req.params.calendar_id,
+        _id: {
+            $nin: nin_arr,
+        },
     });
 
     for (let i = 0; i < all_individual_shared.length; i++) {
-      memberlist.push({ _id: all_individual_shared[i], type: 'user' });
+        memberlist.push({ _id: all_individual_shared[i], type: 'user' });
     }
 
     traceLogger.verbose("fetched userlist of calendar", req, { calendar_id: calendar_id, members: memberlist });
     res.json({
-      Status: 'ok',
-      memberlist: memberlist,
+        Status: 'ok',
+        memberlist: memberlist,
     });
-  }
+}
 );
 
 module.exports = router;

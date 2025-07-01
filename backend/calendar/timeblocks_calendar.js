@@ -38,48 +38,48 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
     }
 
     switch (operation) {
-        case 'add':
-            await addmode();
-            return;
-        case 'delete':
-            await submode();
-            return;
-        case 'replace':
+    case 'add':
+        await addmode();
+        return;
+    case 'delete':
+        await submode();
+        return;
+    case 'replace':
 	    traceLogger.verbose("replace mode", req, { });
-            for (let i = 0; i < timeblocks.length; i++) {
-		traceLogger.verbose("validating timeblock...", req, { timeblock: timeblocks[i] });
-                if (timeblocks[i].start >= timeblocks[i].end) {
-                    res.json({
-                        Status: 'e',
-                        error: 'Invalid timeblocks',
-                    });
-                    return;
-                }
-                if (
-                    !JSON.stringify(timeblocks[i]).match(
-                        '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
-                    )
-                ) {
-                    res.json({
-                        Status: 'error',
-                        error: 'Invalid timeblock',
-                    });
-                    return;
-                }
+        for (let i = 0; i < timeblocks.length; i++) {
+            traceLogger.verbose("validating timeblock...", req, { timeblock: timeblocks[i] });
+            if (timeblocks[i].start >= timeblocks[i].end) {
+                res.json({
+                    Status: 'e',
+                    error: 'Invalid timeblocks',
+                });
+                return;
             }
+            if (
+                !JSON.stringify(timeblocks[i]).match(
+                    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
+                )
+            ) {
+                res.json({
+                    Status: 'error',
+                    error: 'Invalid timeblock',
+                });
+                return;
+            }
+        }
 
-            for (let i = 1; i < timeblocks.length; i++) {
-                if (timeblocks[i - 1].end > timeblocks[i].start) {
+        for (let i = 1; i < timeblocks.length; i++) {
+            if (timeblocks[i - 1].end > timeblocks[i].start) {
 		    traceLogger.verbose("timeblock conflict...", req, { timeblock1: timeblocks[i - 1], timeblock2: timeblocks[i] });
-                    res.json({
-                        Status: 'error',
-                        error: 'Invalid timeblocks',
-                    });
-                    return;
-                }
+                res.json({
+                    Status: 'error',
+                    error: 'Invalid timeblocks',
+                });
+                return;
             }
-            await repmode(req, netid, calendar_id, res, timeblocks);
-            return;
+        }
+        await repmode(req, netid, calendar_id, res, timeblocks);
+        return;
     }
 });
 

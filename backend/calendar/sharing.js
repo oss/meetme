@@ -63,7 +63,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
     }
 
     if (calendar.owner.owner_type === 'organization') {
-	traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar.owner._id });
+        traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar.owner._id });
         // temporary ---> cannot share calendars bound to organizations with individuals
         return res.json({
             Status: 'error',
@@ -117,14 +117,14 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
         ) {
 	    traceLogger.verbose("already shared with user", req, { user: new_user });
             payload.already_added.push(new_user);
-	} else if (
+        } else if (
             usr.pendingCalendars.some((item) => {
                 return item._id === req.params.calendar_id;
             })
         ) {
 	    traceLogger.verbose("already shared with user (pending)", req, { user: new_user });
             payload.already_added.push(new_user);
-	} else {
+        } else {
 	    traceLogger.verbose("added user to payload", req, { user: new_user });
             payload.added.push(new_user);
             calendar.pendingUsers.push({ _id: new_user });
@@ -139,7 +139,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
         { $push: { pendingCalendars: { _id: req.params.calendar_id } } }
     );
 
-    traceLogger.verbose("added users to calendar", req, { calendar_id: calendar_id, payload: payload });
+    traceLogger.verbose("added users to calendar", req, { calendar_id: req.params.calendar_id, payload: payload });
     res.json({
         Status: 'ok',
         user_list: payload,
@@ -203,7 +203,7 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
 
     let org_info = null;
     if (calendar.owner.owner_type === 'organization') {
-	traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar.owner._id });
+        traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar.owner._id });
         org_info = await Org_schema.findOne({
             _id: req.params.calendar_id,
             $or: [{ admins: { _id: req.user.uid } }, { owner: req.user.uid }],
@@ -227,7 +227,7 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
     traceLogger.verbose("creating payload...", req, {});
     //org check mode
     if (org_info !== null) {
-	traceLogger.verbose("org delete mode...", req, {});
+        traceLogger.verbose("org delete mode...", req, {});
         for (let i = 0; i < target_users.length; i++) {
             const new_user = target_users[i];
             if (
@@ -236,24 +236,24 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
                     return item._id === new_user;
                 })
             ) {
-		traceLogger.verbose("user is owner, skipping...", req, { user: new_user });
+                traceLogger.verbose("user is owner, skipping...", req, { user: new_user });
                 payload.not_removed.push(new_user);
                 continue;
             } else {
-		traceLogger.verbose("added user for removal", req, { user: new_user });
-		payload.removed.push(new_user);
+                traceLogger.verbose("added user for removal", req, { user: new_user });
+                payload.removed.push(new_user);
 	    }
         }
     } else {
-	traceLogger.verbose("indvidual delete mode...", req, {});
+        traceLogger.verbose("indvidual delete mode...", req, {});
         for (let i = 0; i < target_users.length; i++) {
             const new_user = target_users[i];
             if (new_user === calendar.owner._id) {
-		traceLogger.verbose("user is owner, skipping...", req, { user: new_user });
-		payload.not_removed.push(new_user);
+                traceLogger.verbose("user is owner, skipping...", req, { user: new_user });
+                payload.not_removed.push(new_user);
 	    } else { 
-		traceLogger.verbose("added user for removal", req, { user: new_user });
-		payload.removed.push(new_user);
+                traceLogger.verbose("added user for removal", req, { user: new_user });
+                payload.removed.push(new_user);
 	    }
         }
     }
@@ -340,15 +340,15 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
     const usr = await User_schema.findOne({
         _id: req.user.uid,
         'calendars._id': req.params.calendar_id,
-      });
+    });
     if (usr != null) {
         res.json({
-          Status: 'error',
-          error:
+            Status: 'error',
+            error:
             'User already has the calendar',
         });
         return;
-      }
+    }
 
     traceLogger.verbose("updating calendar...", req, {});
     await Calendar_schema_main.updateOne(
@@ -378,37 +378,37 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
 
 //decline invite
 router.patch('/:calendar_id/decline', isAuthenticated, async function (req, res) {
-	traceLogger.verbose("checking if requester has been invited...", req, { calendar_id: req.params.calendar_id });
-        const cal = await Calendar_schema_main.findOne({
-            _id: req.params.calendar_id,
-            'pendingUsers._id': req.user.uid,
-        });
-        if (cal === null) {
-            res.json({
-                Status: 'error',
-                error:
-                    'You have not been invited to this calendar or this calendar does not exist',
-            });
-            return;
-        }
-
-	traceLogger.verbose("updating user...", req, {});
-        await User_schema.updateOne(
-            { _id: req.user.uid },
-            { $pull: { pendingCalendars: { _id: req.params.calendar_id } } }
-        );
-	traceLogger.verbose("updating calendar...", req, {});
-        await Calendar_schema_main.updateOne(
-            { _id: req.params.calendar_id },
-            { $pull: { pendingUsers: { _id: req.user.uid } } }
-        );
-
-	traceLogger.verbose("declined calendar invite", req, { calendar_id: req.params.calendar_id });
+    traceLogger.verbose("checking if requester has been invited...", req, { calendar_id: req.params.calendar_id });
+    const cal = await Calendar_schema_main.findOne({
+        _id: req.params.calendar_id,
+        'pendingUsers._id': req.user.uid,
+    });
+    if (cal === null) {
         res.json({
-            Status: 'ok',
-            calendar: cal._id,
+            Status: 'error',
+            error:
+                    'You have not been invited to this calendar or this calendar does not exist',
         });
+        return;
     }
+
+    traceLogger.verbose("updating user...", req, {});
+    await User_schema.updateOne(
+        { _id: req.user.uid },
+        { $pull: { pendingCalendars: { _id: req.params.calendar_id } } }
+    );
+    traceLogger.verbose("updating calendar...", req, {});
+    await Calendar_schema_main.updateOne(
+        { _id: req.params.calendar_id },
+        { $pull: { pendingUsers: { _id: req.user.uid } } }
+    );
+
+    traceLogger.verbose("declined calendar invite", req, { calendar_id: req.params.calendar_id });
+    res.json({
+        Status: 'ok',
+        calendar: cal._id,
+    });
+}
 );
 
 //leave calendar

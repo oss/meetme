@@ -1,3 +1,7 @@
+const UserSchema = require('../user/user_schema');
+const { getInfoFromNetID } = require('../auth/util/LDAP_utils');
+
+// type validation stuff
 const primitive = Object.freeze({
     undefined: Symbol('undefined'),
     null: Symbol("null"),
@@ -8,41 +12,86 @@ const primitive = Object.freeze({
     symbol: Symbol('symbol'),
     function: Symbol('function'),
     object: Symbol('object')
-})
+});
 
-function is_type(target, desired_type){
+function isType(target, desiredType){
 
     // typeof null === 'object' bug
     if(target === null)
-        return desired_type === primitive.null;
+        return desiredType === primitive.null;
 
-    return (primitive[typeof target] === desired_type)
+    return (primitive[typeof target] === desiredType);
 }
 
-function assert_type(target, desired_type){
-    if ( !is_type(target,desired_type) )
-        throw new Error(`Invalid type; got ${typeof target}, expected ${desired_type.description}`)
-}
-
-const netid_regex = /^[0-9a-z]+$/;
-function is_valid_netid(candidate){
-    return netid_regex.test(candidate);
-}
-
-function assert_valid_netid(candidate){
-    if( !is_valid_netid(candidate) )
-        throw new Error(`Invalid netid; ${candidate} is not alpha-numeric`);
+function assertType(target, desiredType){
+    if ( !isType(target,desiredType) )
+        throw new Error(`Invalid type; got ${typeof target}, expected ${desiredType.description}`);
 }
 
 
-module.exports = {
-    type_check: {
-        valid_primitives: primitive,
-        validate: is_type,
-        assert: assert_type        
-    },
-    netid_check: {
-        validate: is_valid_netid,
-        assert: assert_valid_netid
+// netid validation stuff
+const checkLevels = {
+    string: Symbol(),
+    database: Symbol(),
+    ldap: Symbol()
+};
+const netidRegex = /^[0-9a-z]+$/;
+
+async function validateAtLevel(candidate,checkLevel){
+    switch(checkLevel){
+
+    case checkLevels.string:
+        return netidRegex.test(candidate);
+
+    case checkLevels.database:
+        return await UserSchema.exists({ _id: candidate });
+
+    case checkLevels.ldap:
+        return await getInfoFromNetID(candidate) !== null;
+
+    default: 
+        throw new Error('Invalid check level');
     }
 }
+
+async function assertAtLevel(candidate,checkLevel){
+    if( await validateAtLevel(candidate, checkLevel) ) return;
+    
+    switch(checkLevel){
+    case checkLevels.string:
+        throw new Error(`netid ${candidate} is not alpha-numeric`);
+    case checkLevels.database:
+        throw new Error(`netid ${candidate} not found in database`);
+    case checkLevels.ldap:
+        throw new Error(`netid ${candidate} not found in ldap`);
+    default: 
+        throw new Error('Invalid check level');
+    }
+}
+
+async function isValidNetid(candidate){
+    if ( ! await validateAtLevel(candidate, checkLevels.string)   ) return false;
+    if (   await validateAtLevel(candidate, checkLevels.database) ) return true;
+    return await validateAtLevel(candidate, checkLevels.ldap);
+}
+
+async function assertValidNetid(candidate){
+    if ( ! await validateAtLevel(candidate, checkLevels.string)   ) throw new Error(`netid ${candidate} is not alpha-numeric`);
+    if (   await validateAtLevel(candidate, checkLevels.database) ) return;
+    if ( ! await validateAtLevel(candidate, checkLevels.ldap)     ) throw new Error(`netid ${candidate} not found in ldap`);
+}
+
+module.exports = {
+    typeCheck: {
+        validPrimitives: primitive,
+        validate: isType,
+        assert: assertType
+    },
+    netidCheck: {
+        scope: checkLevels,
+        validateAtLevel: validateAtLevel,
+        assertAtLevel: assertAtLevel,
+        validate: isValidNetid,
+        assert: assertValidNetid
+    }
+};

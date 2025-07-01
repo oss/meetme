@@ -7,7 +7,7 @@ function create_ldap_user {
 
     ldif_string=$(cat << EOF
 
-dn: cn=${netid},ou=users,dc=example,dc=org
+dn: uid=${netid},ou=users,dc=example,dc=org
 cn: User${netid}
 sn: Last${netid}
 givenName: First${netid}

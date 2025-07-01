@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const User_schema = require('../user_schema');
 const mongoose = require('mongoose');
-const { getinfo_from_netid } = require('../../auth/util/LDAP_utils');
-const { type_check, netid_check } = require("#util/assert");
+const { getInfoFromNetID } = require('../../auth/util/LDAP_utils');
+const { typeCheck, netidCheck } = require("#util/assert");
 
 async function create_user_ldap(netid) {
-    const extra_user_info = await getinfo_from_netid(netid);
+    const extra_user_info = await getInfoFromNetID(netid);
     if(extra_user_info === null)
         throw new Error('invalid netid');
 
@@ -29,11 +29,11 @@ async function create_user_ldap(netid) {
 }
 
 async function create_user_shib({ uid, firstName, lastName }){
-    type_check.assert(uid,type_check.valid_primitives.string);
-    netid_check.assert(uid);
+    typeCheck.assert(uid,typeCheck.validPrimitives.string);
+    netidCheck.assert(uid);
 
-    type_check.assert(firstName,type_check.valid_primitives.string);
-    type_check.assert(lastName,type_check.valid_primitives.string);
+    typeCheck.assert(firstName,typeCheck.validPrimitives.string);
+    typeCheck.assert(lastName,typeCheck.validPrimitives.string);
 
     const newUser = new User_schema();
     newUser._id = uid;
@@ -54,7 +54,7 @@ async function create_user_shib({ uid, firstName, lastName }){
 async function update_last_login(netid) {
     const res = await User_schema.findOneAndUpdate({ _id: netid },{ last_signin: new Date().getTime()});
     if( res === null)
-        throw new Error("could not update login time")
+        throw new Error("could not update login time");
 }
 
 module.exports = { create_user_shib , create_user_ldap, update_last_login };
