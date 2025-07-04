@@ -4,6 +4,8 @@ const router = express.Router();
 const { traceLogger, _baseLogger } = require('#logger');
 
 router.get('/logout', isAuthenticated, function (req, res, next) {
+    traceLogger.verbose("user logout", req, { uid: req.user.uid });
+
     req.logout(function (err) {
         if (err) {
             res.json({
@@ -12,8 +14,7 @@ router.get('/logout', isAuthenticated, function (req, res, next) {
             }); 
         }
     });
-
-    logger.log("user logout", req, { uid: req.user.uid });
+    
     res.json({
         Status: 'ok',
     });

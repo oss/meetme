@@ -7,26 +7,14 @@ services:
       - 80:80
       - 443:443
     depends_on:
-      - proxy
+      - frontend
+      - backend-proxy
     networks:
       no-internet:
         aliases:
           - api.localhost.edu
           - localhost.edu
       authnet:
-
-  proxy:
-    image: nginx-internal-oss-meetme
-    networks:
-      - no-internet
-      - authnet
-    depends_on:
-      - backend
-      - socket
-      - mongo
-    deploy:
-      mode: replicated
-      replicas: 1
 
   mongo:
     image: database-meetme
@@ -41,8 +29,6 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-jr:/var/run/external
 
@@ -51,82 +37,36 @@ services:
     networks:
       - no-internet
       - mongo-net
-    depends_on:
-      - mongo
     volumes:
       - /var/run/meetme/mongo-the-third:/var/run/external
 
-  mongoinit:
-    image: mongo # this container will exit after executing the command
-    restart: 'no'
+  frontend:
+    image: frontend-meetme
+    networks:
+      - no-internet
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  backend-proxy:
+    image: meetme-backend-proxy
+    depends_on:
+      - backend
+    networks:
+      - no-internet
+
+  backend:
+    image: backend-meetme
+    networks:
+      - no-internet
+      - authnet
+    deploy:
+      mode: replicated
+      replicas: 1
     depends_on:
       - mongo
       - mongo-jr
       - mongo-the-third
-    networks:
-      - mongo-net
-    command: >
-      mongosh --host mongo:27017 --eval 'rs.initiate({
-          "_id" : "rs0",
-          "members" : [
-            {
-              "_id" : 0,
-              "host" : "mongo:27017",
-              "priority": 5
-            },
-            {
-              "_id" : 1,
-              "host" : "mongo-jr:27017",
-              "priority": 1
-            },
-            {
-              "_id" : 2,
-              "host" : "mongo-the-third:27017",
-              "priority": 1
-            }
-          ]
-        });
-        '
-
-  backend:
-    image: backend-meetme
-    environment:
-      - COOKIE_DURATION=100000
-    networks:
-      - no-internet
-      - authnet
-    depends_on:
-      - mongoinit
-    volumes:
-      - ./backend:/root
-      - /var/log/meetme/backend:/logs
-    command: bash -c "./install_dependencies.sh && node --watch main.js"
-    deploy:
-      mode: replicated
-      replicas: 3
-
-  frontend:
-    image: frontend-meetme-webpack
-    networks:
-      - no-internet
-    depends_on:
-      - mongoinit
-    volumes:
-      - ./frontend:/root
-    deploy:
-      mode: replicated
-      replicas: 1
-
-  socket:
-    image: websocket-meetme
-    networks:
-      - no-internet
-      - mongo-net
-    depends_on:
-      - backend
-    deploy:
-      mode: replicated
-      replicas: 1
 
   openldap:
     image: bitnami/openldap:2

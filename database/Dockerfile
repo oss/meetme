@@ -10,6 +10,6 @@ RUN apt-get update -y && apt-get install socat -y
 WORKDIR /root
 COPY scripts/*.sh .
 COPY --from=build-stage /go/mongodb_exporter/mongodb_exporter /root/mongodb_exporter
-RUN mkdir /var/run/external && chmod +x mongodb_exporter *.sh
+RUN mkdir -p /var/run/external && chmod +x mongodb_exporter *.sh
 
-CMD ./docker-entrypoint.sh
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
