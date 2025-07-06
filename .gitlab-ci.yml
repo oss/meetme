@@ -150,9 +150,9 @@ build-backend:
         --frontend dockerfile.v0 \
         --local context="./backend/" \
         --local dockerfile="./backend/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true \
-        --build-arg GIT_BRANCH=GIT_BRANCH \
-        --build-arg GIT_HASH=GIT_HASH
+        --opt build-arg:GIT_BRANCH=GIT_BRANCH \
+        --opt build-arg:GIT_HASH=GIT_HASH \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true
 
 build-frontend:
   extends: .buildkit-build
@@ -162,8 +162,8 @@ build-frontend:
         --frontend dockerfile.v0 \
         --local context="./frontend/" \
         --local dockerfile="./frontend/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true \
-        --build-arg BUILD="dev"
+        --opt build-arg:BUILD="dev" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
 
 build-nginx:
   extends: .buildkit-build
