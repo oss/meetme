@@ -1,5 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
+  IMAGE_CACHE_NAME: $CI_REGISTRY_IMAGE/cache
 #  CI_DEBUG_SERVICES: 1
 
 stages:
