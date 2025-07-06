@@ -224,8 +224,8 @@ build-test:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="dir://${CI_PROJECT_DIR}/testing/backend/api" \
-        --local dockerfile="${CI_PROJECT_DIR}/testing/backend/api/Dockerfile" \
+        --local context="./testing/backend/api/" \
+        --local dockerfile="./testing/backend/api/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_TAG}",push=true
 
 build-eslint:
@@ -235,8 +235,8 @@ build-eslint:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="dir://${CI_PROJECT_DIR}/testing/frontend/linter" \
-        --local dockerfile="${CI_PROJECT_DIR}/testing/frontend/linter/Dockerfile" \
+        --local context="./testing/frontend/linter/" \
+        --local dockerfile="./testing/frontend/linter/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_TAG}",push=true
 
 build-docs-env:
@@ -246,8 +246,8 @@ build-docs-env:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="dir://${CI_PROJECT_DIR}/docs" \
-        --local dockerfile="${CI_PROJECT_DIR}/docs/Dockerfile" \
+        --local context="./docs/" \
+        --local dockerfile="./docs/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_TAG}",push=true
 
 build-docs:
@@ -272,7 +272,7 @@ build-tsc-env:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local dockerfile="./testing/frontend/type_checking/Dockerfile" \
+        --local dockerfile="./testing/frontend/type_checking/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_TAG}",push=true
 
 typecheck-frontend:
