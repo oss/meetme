@@ -231,9 +231,6 @@ build-test:
 build-eslint:
   extends: .buildkit-build
   stage: build-env
-  before_script:
-    - mkdir -p ~/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   script:
     - |
       buildctl-daemonless.sh build \
@@ -275,7 +272,7 @@ build-tsc-env:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local dockerfile="${CI_PROJECT_DIR}/testing/frontend/type_checking/Dockerfile" \
+        --local dockerfile="./testing/frontend/type_checking/Dockerfile" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_TAG}",push=true
 
 typecheck-frontend:
