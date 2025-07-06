@@ -163,6 +163,9 @@ build-frontend:
         --local context="./frontend/" \
         --local dockerfile="./frontend/" \
         --opt build-arg:BUILD="dev" \
+        --export-cache type=registry,ref="${IMAGE_CACHE_NAME}:${CI_COMMIT_REF_SLUG}",mode=max \
+        --import-cache type=registry,ref="${IMAGE_CACHE_NAME}:${CI_DEFAULT_BRANCH}" \
+        --import-cache type=registry,ref="${IMAGE_CACHE_NAME}:${CI_COMMIT_REF_SLUG}" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
 
 build-nginx:
