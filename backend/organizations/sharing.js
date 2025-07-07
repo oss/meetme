@@ -39,7 +39,7 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
     }
 
     // TODO(ivan): see if we can pull more stuff out
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("finding org and checking if requester has permission...", req, { org: org_id });
         const target_org = await Org_schema.findOne({
             _id: org_id,
@@ -133,7 +133,7 @@ router.patch('/:organization_id/share', isAuthenticated, async function (req, re
 router.patch('/:organization_id/decline', isAuthenticated, async function (req, res) {
     const org_id = req.params.organization_id;
 
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester is invited to org", req, { org: org_id });
         const target_org = await Org_schema.findOne({
             _id: org_id,
@@ -175,7 +175,7 @@ router.patch('/:organization_id/decline', isAuthenticated, async function (req, 
 router.patch('/:organization_id/accept', isAuthenticated, async function (req, res) {
     const org_id = req.params.organization_id;
 
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester is invited to org...", req, { org: org_id });
         const target_org = await Org_schema.findOne({
             _id: org_id,

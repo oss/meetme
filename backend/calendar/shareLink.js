@@ -28,7 +28,7 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
         return;
     }
 
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
 	traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
 	const cal = await Calendar_schema_meta.findOne({
 	    _id: calendar_id,

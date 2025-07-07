@@ -39,7 +39,7 @@ router.patch('/:calendar_id/share', isAuthenticated, async function (req, res) {
     }
 
     // TODO(ivan): pull the payload section out and use updateMany
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: req.params.calendar_id });
         const calendar = await Calendar_schema_main.findOne({
 	    _id: req.params.calendar_id,
@@ -180,7 +180,7 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
         return;
     }
 
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: req.params.calendar_id });
         const calendar = await Calendar_schema_main.findOne({
 	    _id: req.params.calendar_id,
@@ -283,7 +283,7 @@ router.delete('/:calendar_id/share', isAuthenticated, async function (req, res) 
 
 //accept invite
 router.patch('/:calendar_id/accept', isAuthenticated, async function (req, res) {
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester has been invited...", req, { calendar_id: req.params.calendar_id });
         const calendar = await Calendar_schema_main.findOne({
 	    _id: req.params.calendar_id,
@@ -328,7 +328,7 @@ router.patch('/:calendar_id/accept', isAuthenticated, async function (req, res) 
 
 //sharing by link
 router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (req, res) {
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester has been invited...", req, { calendar_id: req.params.calendar_id });
         const calendar = await Calendar_schema_meta.findOne({
 	    _id: req.params.calendar_id,
@@ -386,7 +386,7 @@ router.patch('/:calendar_id/share_with_link', isAuthenticated, async function (r
 
 //decline invite
 router.patch('/:calendar_id/decline', isAuthenticated, async function (req, res) {
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester has been invited...", req, { calendar_id: req.params.calendar_id });
         const cal = await Calendar_schema_main.findOne({
 	    _id: req.params.calendar_id,
@@ -422,7 +422,7 @@ router.patch('/:calendar_id/decline', isAuthenticated, async function (req, res)
 
 //leave calendar
 router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res) {
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if requester is in calendar...", req, { calendar_id: req.params.calendar_id });
         const cal = await Calendar_schema_main.findOne({
 	    _id: req.params.calendar_id,

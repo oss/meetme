@@ -99,7 +99,7 @@ async function submode() {
 }
 
 async function repmode(req, netid, calendar_id, res, timeblocks) {
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         const calendarMetadata = await Calendar_schema_meta.findOne({
 	    _id: calendar_id
         });

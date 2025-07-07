@@ -20,7 +20,7 @@ router.patch('/:calendar_id/name', isAuthenticated, async function (req, res) {
         return;
     }
 
-    await mongoose.connection().transaction(async () => {
+    await mongoose.connection.transaction(async () => {
         traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
         const cal = await Calendar_schema_metadata.findOne({
             _id: calendar_id,

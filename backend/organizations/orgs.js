@@ -34,7 +34,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     Organization.viewers = [];
 
     traceLogger.verbose("creating organization...", req, {});
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         await Organization.save();
         await User_schema.updateOne(
             { _id: req.user.uid },
@@ -159,7 +159,7 @@ router.delete('/:organization_id/leave', isAuthenticated, async function (req, r
         return;
     }
 
-    mongoose.connection().transaction(async () => {
+    mongoose.connection.transaction(async () => {
         traceLogger.verbose("finding org and checking if requester has permission...", req, { org: org_id });
         // TODO(ivan): check permissions and also check if org has to be removed from users as well
         const target_org = await Organization_schema.findOne({

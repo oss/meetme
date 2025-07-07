@@ -141,7 +141,7 @@ router.post('/', isAuthenticated, async function (req, res) {
     };
 
     traceLogger.verbose("inserting calendar...", req, {});
-    await mongoose.connection().transaction(async () => {
+    await mongoose.connection.transaction(async () => {
         if (owner.type === 'individual') {
             if (owner.id !== req.user.uid) {
                 res.json({
@@ -209,7 +209,7 @@ router.post('/', isAuthenticated, async function (req, res) {
 router.delete('/:calendar_id', isAuthenticated, async function (req, res) {
     const calendar_id = req.params.calendar_id;
 
-    await mongoose.connection().transaction(async () => {
+    await mongoose.connection.transaction(async () => {
         traceLogger.verbose("finding calendar...", req, {});
         const cal = await Calendar_schema_main.findOne({ _id: calendar_id });
         if (cal === null) {
