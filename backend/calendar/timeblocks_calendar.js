@@ -141,31 +141,31 @@ async function repmode(req, netid, calendar_id, res, timeblocks) {
     traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
 
     mongoose.connection().transaction(async () => {
-	const calendar = await Calendar_schema_main.findOne({
+        const calendar = await Calendar_schema_main.findOne({
 	    _id: calendar_id,
 	    'users._id': netid,
-	});
+        });
 
-	if (calendar === null) {
+        if (calendar === null) {
 	    res.json({
-		Status: 'error',
-		error: 'No valid calendar found',
+                Status: 'error',
+                error: 'No valid calendar found',
 	    });
 	    return;
-	}
+        }
 
-	//db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
+        //db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
 
-	traceLogger.verbose("updating calendar", req, { });
-	await Calendar_schema_main.updateOne(
+        traceLogger.verbose("updating calendar", req, { });
+        await Calendar_schema_main.updateOne(
 	    { _id: calendar_id },
 	    { $set: { blocks: timeblocks } }
-	);
+        );
 
-	traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
-	res.json({
+        traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
+        res.json({
 	    Status: 'ok',
-	});
+        });
     });
 }
 
