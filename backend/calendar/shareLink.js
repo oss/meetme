@@ -77,7 +77,7 @@ router.patch('/:calendar_id/shareLink', isAuthenticated, async function (req, re
 	    Status: 'ok',
 	    shareLink: req.body.shareLink,
 	});
-    }):
+    });
 });
 
 router.get('/:calendar_id/shareLink', isAuthenticated, async function (req, res) {
