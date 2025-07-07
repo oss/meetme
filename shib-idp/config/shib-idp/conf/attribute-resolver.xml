@@ -51,6 +51,11 @@
         <InputDataConnector ref="myLDAP" attributeNames="sn"/>
     </AttributeDefinition>
 
+    <AttributeDefinition xsi:type="Simple" id="sn">
+        <InputDataConnector ref="myLDAP" attributeNames="sn"/>
+    </AttributeDefinition>
+
+
     <AttributeDefinition xsi:type="Simple" id="locality">
         <InputDataConnector ref="myLDAP" attributeNames="l"/>
     </AttributeDefinition>

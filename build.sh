@@ -7,14 +7,15 @@ $CR build 'prometheus/.' -t prometheus-oss-meetme || exit 1
 $CR build 'proxy/.' -t nginx-oss-meetme || exit 1
 $CR build 'proxy-ssl-upgrade/.' -t nginx-ssl-oss-meetme || exit 1
 $CR build 'proxy-internal/.' -t nginx-internal-oss-meetme || exit 1
+$CR build 'backend/proxy' -t meetme-backend-proxy || exit 1
 
-
+$CR build 'opensearch/.' -t opensearch-meetme || exit 1
 $CR build 'proxy-docker/.' -t nginx-oss-docker || exit 1
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) || exit 1
 GIT_HASH=$(git rev-parse HEAD) || exit 1
-$CR build 'backend/.' -t backend-meetme --build-arg GIT_BRANCH="$GIT_BRANCH" --build-arg GIT_HASH="$GIT_HASH" --build-arg DEV="true" --build-arg LOGIN_URL='https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO' || exit 1
-$CR build 'frontend/.' -t frontend-meetme --build-arg BUILD="prod" || exit 1
+$CR build 'backend/.' -t backend-meetme --build-arg GIT_BRANCH="$GIT_BRANCH" --build-arg GIT_HASH="$GIT_HASH" || exit 1
+$CR build 'frontend/.' --build-arg API_URL="https://api.localhost.edu" --build-arg WEBSITE_URL="https://localhost.edu" -t frontend-meetme || exit 1
 $CR build 'graphana/.' -t graphana-oss-meetme || exit 1
 $CR build 'database/.' -t database-meetme || exit 1
 $CR build 'websocket/.' -t websocket-meetme || exit 1

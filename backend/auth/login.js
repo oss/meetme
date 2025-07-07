@@ -1,8 +1,10 @@
 const User_schema = require('../user/user_schema');
 const {
-    create_user,
+    create_user_shib,
     update_last_login,
 } = require('../user/helpers/modify_user');
+
+const { netidCheck } = require('#util/assert');
 
 const passport = require('passport');
 const config = require("#config");
@@ -12,43 +14,30 @@ const { traceLogger, _baseLogger } = require('#logger');
 
 router.post('/login',
     async function (req, res, next) {
-        console.log('-----------------------------');
-        console.log('/Start login callback ');
         next();
     },
     passport.authenticate('samlStrategy', { failureRedirect: '/login' }),
     async function (req, res) {
-        console.log('post');
-        console.log(JSON.stringify(req.user));
 
-        const user = await User_schema.findOne({ _id: req.user.uid });
         //create a new user account if user doesnt exist
-        if (user === null) {
-	    traceLogger.verbose('creating new user', req, { uid: req.user.uid });
-            const create_usr_resp = await create_user(req.user.uid);
-            console.log('finished creating new user');
-            if (create_usr_resp.Status === 'Error') {
-                res.json({
-                    create_usr_resp,
-                });
-                return;
-            }
-	    traceLogger.verbose('created new user', req, { uid: req.user.uid });
+        if ( ! await netidCheck.validateAtLevel(req.user.uid, netidCheck.scope.database) ) {
+    	    traceLogger.verbose('creating new user', req, { uid: req.user.uid });
+            await create_user_shib(req.user);
         }
+
         await update_last_login(req.user.uid);
-	traceLogger.verbose('user login', req, { user: req.user.uid });
+        traceLogger.verbose('user login', req, { user: req.user.uid });
         req.session.time = Math.floor(Date.now() / config.auth.session.update_unit);
         res.redirect(config.frontend_domain + (req.body.RelayState || ''));
     }
 );
 
-router.get('/login',
-    async function (req, res, next) {
-	traceLogger.verbose('started login session', req);
-        req.query.RelayState = req.query.dest;
-        next();
-    },
-    passport.authenticate('samlStrategy')
+router.get('/login', async function (req, res, next) {
+    traceLogger.verbose('started login session', req);
+    req.query.RelayState = req.query.dest;
+    next();
+},
+passport.authenticate('samlStrategy')
 );
 
 module.exports = router;
