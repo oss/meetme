@@ -74,7 +74,7 @@ backend-api:
   <<: *job_configuration
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-suite
+    name: ${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}
     entrypoint: ['']
   before_script:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
@@ -103,7 +103,7 @@ backend-api:
 frontend-lint:
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/frontend-lint
+    name: ${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser
@@ -118,7 +118,7 @@ frontend-lint:
 
 backend-docs-uptodate:
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-docs
+    name: ${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}
     entrypoint: ['']
   needs: [ "build-docs-testing" ]
   stage: test
