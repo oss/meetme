@@ -138,17 +138,14 @@ build-docs-testing:
 
 build-backend:
   extends: .buildkit-build
-  variables:
-    GIT_BRANCH: ${CI_COMMIT_BRANCH}
-    GIT_HASH: ${CI_COMMIT_SHA}
   script:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
         --local context="./backend/" \
         --local dockerfile="./backend/" \
-        --opt build-arg:GIT_BRANCH=GIT_BRANCH \
-        --opt build-arg:GIT_HASH=GIT_HASH \
+        --opt build-arg:GIT_BRANCH=${CI_COMMIT_BRANCH} \
+        --opt build-arg:GIT_HASH=${CI_COMMIT_SHA} \
         --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true
 
 build-frontend:
