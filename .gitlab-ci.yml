@@ -78,6 +78,7 @@ backend-api:
     entrypoint: ['']
   before_script:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - bash -c 'cat /etc/hosts'
   script:
     - apt-get install bc -y
     - cd
