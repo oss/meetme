@@ -12,7 +12,7 @@ stages:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
-      alias: saml idp.localhost.edu:4443
+      alias: saml idp.localhost.edu
     - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
