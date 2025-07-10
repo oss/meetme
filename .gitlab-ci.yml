@@ -12,7 +12,7 @@ stages:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
-      alias: saml idp.localhost.edu
+      alias: saml idp.localhost.edu:4443
     - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
     - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
@@ -78,7 +78,6 @@ backend-api:
     entrypoint: ['']
   before_script:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
-    - bash -c 'cat /etc/hosts'
   script:
     - apt-get install bc -y
     - cd
