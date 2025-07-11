@@ -79,7 +79,8 @@ backend-api:
   before_script:
     - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
     - bash -c 'cat /etc/hosts'
-    - bash -c 'echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.0.1    api.localhost.edu" > /etc/hosts'
+    - bash -c 'echo "" > /etc/hosts'
+    # - bash -c 'echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.0.1    api.localhost.edu" > /etc/hosts'
     - bash -c 'cat /etc/hosts'
   script:
     - apt-get install bc -y
