@@ -27,7 +27,7 @@ fi
 echo -e "\e[34mrunning tests now...\e[0m"
 NETID=$(create_ldap_user)
 echo "create ldap ${NETID}"
-sleep 10000000000000000
+# sleep 10000000000000000
 
 COOKIE_NETID=$(getcookie "${NETID}")
 echo "got cookie ${COOKIE_NETID}"
