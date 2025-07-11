@@ -13,8 +13,10 @@ stages:
   services:
     - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
       alias: saml idp.localhost.edu
+
     - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
+
     - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
       alias: socket
       entrypoint:
@@ -23,6 +25,7 @@ stages:
         - |
           sleep 80;
           node main.js;
+
     - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo
     - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
@@ -54,6 +57,7 @@ stages:
         LDAP_ADMIN_PASSWORD: adminpassword
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
+
     - name: ${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}
       alias: nginx localhost.edu api.localhost.edu
 
