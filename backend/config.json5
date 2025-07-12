@@ -31,7 +31,7 @@
         },
         "idp_cert": "./security/idp.pem",
         "issuer": "https://api.localhost.edu/shibboleth",
-        "login_url": "https://idp.localhost.edu/idp/profile/SAML2/Redirect/SSO",
+        "login_url": "https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO",
     },
 
     "google_oauth_credentials": "./security/private/google_oauth.json",
