@@ -12,10 +12,6 @@ const capitalize_level = winston.format(({level, ...otherstuff}) => {
 });
 
 const add_readable_log = winston.format(({level,request_id,request_method,message,...otherstuff})=>{
-    if (request_id === undefined) {
-	console.log(`request id is undefined: ${request_method}   ${message}`);
-	return;
-    }
     const human_friendly_message = `[${level}][${request_id.substring(0,4)}...${request_id.slice(-4)}][${request_method}]: ${message}`;
     return {
         summary: human_friendly_message,

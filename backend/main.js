@@ -19,7 +19,7 @@ mongoose.connect(config.mongo_url);
 
 app.set('trust proxy', 1);
 app.use((req, res, next) => {
-    console.log('backend: %s %s %s', req.method, req.url, req.path);
+    // console.log('backend: %s %s %s', req.method, req.url, req.path);
     //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
     const start_time = new Date().valueOf();
     res.on('finish', function() {
