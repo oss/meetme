@@ -81,7 +81,7 @@ backend-api:
     name: ${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}
     entrypoint: ['']
   before_script:
-    - bash -c 'sleep 5 && curl -k https://api.localhost.edu; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -ks https://api.localhost.edu; done;'
+    - bash -c 'sleep 5 && curl -fk https://api.localhost.edu; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -fks https://api.localhost.edu; done;'
   script:
     - apt-get install bc -y
     - cd
