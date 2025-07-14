@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-#  CI_DEBUG_SERVICES: 1
+  # CI_DEBUG_SERVICES: 1
 
 stages:
   - build-env
@@ -11,11 +11,13 @@ stages:
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
-    - name: ${CI_REGISTRY_IMAGE}/saml
+    - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
       alias: saml idp.localhost.edu
-    - name: ${CI_REGISTRY_IMAGE}/frontend
+
+    - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
-    - name: ${CI_REGISTRY_IMAGE}/websocket
+
+    - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
       alias: socket
       entrypoint:
         - '/bin/bash'
@@ -23,11 +25,12 @@ stages:
         - |
           sleep 80;
           node main.js;
-    - name: ${CI_REGISTRY_IMAGE}/database
+
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo
-    - name: ${CI_REGISTRY_IMAGE}/database
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo-jr
-    - name: ${CI_REGISTRY_IMAGE}/database
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo-the-third
 
     - name: mongo:latest
@@ -38,7 +41,7 @@ stages:
           mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});';
           while [ $? -ne 0 ]; do sleep 2 && mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'; done;
 
-    - name: ${CI_REGISTRY_IMAGE}/backend
+    - name: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}
       alias: backend
       command:
         - '/bin/bash'
@@ -54,7 +57,8 @@ stages:
         LDAP_ADMIN_PASSWORD: adminpassword
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
-    - name: ${CI_REGISTRY_IMAGE}/proxy
+
+    - name: ${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}
       alias: nginx localhost.edu api.localhost.edu
 
 # common buildkit configuration needed to build containers
@@ -74,13 +78,10 @@ backend-api:
   <<: *job_configuration
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-suite
+    name: ${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}
     entrypoint: ['']
   before_script:
-    - |
-      mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
-    - echo "past"
-    - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - bash -c 'sleep 5 && curl -fk https://api.localhost.edu; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -fks https://api.localhost.edu; done;'
   script:
     - apt-get install bc -y
     - cd
@@ -106,7 +107,7 @@ backend-api:
 frontend-lint:
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/frontend-lint
+    name: ${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser
@@ -121,8 +122,8 @@ frontend-lint:
 
 backend-docs-uptodate:
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-docs
-    entrypoint: []
+    name: ${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}
+    entrypoint: ['']
   needs: [ "build-docs-testing" ]
   stage: test
   script:
@@ -141,17 +142,14 @@ build-docs-testing:
 
 build-backend:
   extends: .buildkit-build
-  variables:
-    GIT_BRANCH: ${CI_COMMIT_BRANCH}
-    GIT_HASH: ${CI_COMMIT_SHA}
   script:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
         --local context="./backend/" \
         --local dockerfile="./backend/" \
-        --opt build-arg:GIT_BRANCH=GIT_BRANCH \
-        --opt build-arg:GIT_HASH=GIT_HASH \
+        --opt build-arg:GIT_BRANCH=${CI_COMMIT_BRANCH} \
+        --opt build-arg:GIT_HASH=${CI_COMMIT_SHA} \
         --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true
 
 build-frontend:
@@ -254,7 +252,7 @@ build-docs:
   stage: build
   needs: ["build-docs-env"]
   image:
-    name: ${CI_REGISTRY_IMAGE}/docs
+    name: ${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - mkdocs build -f docs/mkdocs.yml -d ${CI_PROJECT_DIR}/build
@@ -278,7 +276,7 @@ build-tsc-env:
 typecheck-frontend:
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/tscheck
+    name: ${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
