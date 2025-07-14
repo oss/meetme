@@ -17,14 +17,14 @@ stages:
     - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
 
-    - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
-      alias: socket
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          sleep 80;
-          node main.js;
+    # - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
+    #   alias: socket
+    #   entrypoint:
+    #     - '/bin/bash'
+    #     - '-c'
+    #     - |
+    #       sleep 80;
+    #       node main.js;
 
     - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo
