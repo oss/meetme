@@ -111,7 +111,7 @@ frontend-lint:
     entrypoint: ['']
   script:
     - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser
-    - npx eslint -c "./testing/frontend/linter/eslint.config.cjs" --color --format junit "./frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
+    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.mjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
   artifacts:
     when: always
     paths:
