@@ -110,8 +110,8 @@ frontend-lint:
     name: ${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
-    - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser
-    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.cjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
+    - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser globals eslint-plugin-react-compiler eslint-formatter-junit
+    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.mjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
   artifacts:
     when: always
     paths:
