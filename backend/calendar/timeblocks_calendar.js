@@ -139,32 +139,34 @@ async function submode() { }
 async function repmode(req, netid, calendar_id, res, timeblocks) {
     //db.calendars.find({_id:"d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", "users.netid": 'abcd'})
     traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
-    const calendar = await Calendar_schema_main.findOne({
-        _id: calendar_id,
-        'users._id': netid,
-    });
 
-    if (calendar === null) {
-        res.json({
-            Status: 'error',
-            error: 'No valid calendar found',
+    mongoose.connection.transaction(async () => {
+        const calendar = await Calendar_schema_main.findOne({
+	    _id: calendar_id,
+	    'users._id': netid,
         });
-        return;
-    }
 
-    //db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
+        if (calendar === null) {
+	    res.json({
+                Status: 'error',
+                error: 'No valid calendar found',
+	    });
+	    return;
+        }
 
-    traceLogger.verbose("updating calendar", req, { });
-    await Calendar_schema_main.updateOne(
-        { _id: calendar_id },
-        { $set: { blocks: timeblocks } }
-    );
+        //db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
 
-    traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
-    res.json({
-        Status: 'ok',
+        traceLogger.verbose("updating calendar", req, { });
+        await Calendar_schema_main.updateOne(
+	    { _id: calendar_id },
+	    { $set: { blocks: timeblocks } }
+        );
+
+        traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
+        res.json({
+	    Status: 'ok',
+        });
     });
-    return;
 }
 
 module.exports = router;
