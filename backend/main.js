@@ -16,6 +16,7 @@ const config = require('#config');
 const build = require('#build');
 const { typeCheck, netidCheck } = require("#util/assert");
 mongoose.connect(config.mongo_url);
+mongoose.set("transactionAsyncLocalStorage", true);
 
 app.set('trust proxy', 1);
 app.use((req, res, next) => {
