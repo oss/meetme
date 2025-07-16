@@ -41,7 +41,7 @@ const logger = winston.createLogger({
             filename: "/logs/requests.log"
         })
     ]
-})
+});
 
 const traceLogger = new Proxy({}, {
     get(target, prop){
@@ -54,7 +54,7 @@ const traceLogger = new Proxy({}, {
                 container_id: CONTAINER_ID,
                 ...optional
             });
-        }
+        };
     }
 });
 

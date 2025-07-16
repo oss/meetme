@@ -167,6 +167,9 @@
         <AttributeRule attributeID="surname">
             <PermitValueRule xsi:type="ANY" />
         </AttributeRule>
+        <AttributeRule attributeID="sn">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
     </AttributeFilterPolicy>
     <!-- end of test SP container -->
 

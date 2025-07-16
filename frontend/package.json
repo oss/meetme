@@ -1,15 +1,15 @@
 {
   "dependencies": {
-    "@babel/core": "7.27.1",
+    "@babel/core": "7.27.7",
     "@babel/plugin-transform-object-assign": "7.27.1",
     "@babel/preset-env": "7.27.2",
     "@babel/preset-react": "7.27.1",
     "@babel/preset-typescript": "7.27.1",
     "@headlessui/react": "2.2.4",
-    "@tailwindcss/cli": "4.1.7",
-    "@types/react": "19.1.4",
+    "@tailwindcss/cli": "4.1.11",
+    "@types/react": "19.1.8",
     "babel-loader": "10.0.0",
-    "cjsldap": "0.0.7",
+    "cjsldap": "0.0.8",
     "copy-webpack-plugin": "13.0.0",
     "css-loader": "7.1.2",
     "html-webpack-plugin": "5.6.3",
@@ -18,16 +18,16 @@
     "react": "19.1.0",
     "react-date-range": "2.0.1",
     "react-dom": "19.1.0",
-    "react-router-dom": "7.6.0",
+    "react-router-dom": "7.6.3",
     "socket.io-client": "4.8.1",
     "style-loader": "4.0.0",
-    "tailwindcss": "4.1.7",
+    "tailwindcss": "4.1.11",
     "uniqid": "5.4.0",
     "url-loader": "4.1.1",
     "webpack": "5.99.9",
     "webpack-cli": "6.0.1",
-    "webpack-dev-server": "5.2.1",
+    "webpack-dev-server": "5.2.2",
     "webpack-remove-debug": "0.1.0",
-    "zustand": "5.0.4"
+    "zustand": "5.0.6"
   }
 }

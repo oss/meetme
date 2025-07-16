@@ -38,48 +38,48 @@ router.patch('/:calendar_id/timeblocks', isAuthenticated, async function (req, r
     }
 
     switch (operation) {
-        case 'add':
-            await addmode();
-            return;
-        case 'delete':
-            await submode();
-            return;
-        case 'replace':
+    case 'add':
+        await addmode();
+        return;
+    case 'delete':
+        await submode();
+        return;
+    case 'replace':
 	    traceLogger.verbose("replace mode", req, { });
-            for (let i = 0; i < timeblocks.length; i++) {
-		traceLogger.verbose("validating timeblock...", req, { timeblock: timeblocks[i] });
-                if (timeblocks[i].start >= timeblocks[i].end) {
-                    res.json({
-                        Status: 'e',
-                        error: 'Invalid timeblocks',
-                    });
-                    return;
-                }
-                if (
-                    !JSON.stringify(timeblocks[i]).match(
-                        '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
-                    )
-                ) {
-                    res.json({
-                        Status: 'error',
-                        error: 'Invalid timeblock',
-                    });
-                    return;
-                }
+        for (let i = 0; i < timeblocks.length; i++) {
+            traceLogger.verbose("validating timeblock...", req, { timeblock: timeblocks[i] });
+            if (timeblocks[i].start >= timeblocks[i].end) {
+                res.json({
+                    Status: 'e',
+                    error: 'Invalid timeblocks',
+                });
+                return;
             }
+            if (
+                !JSON.stringify(timeblocks[i]).match(
+                    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
+                )
+            ) {
+                res.json({
+                    Status: 'error',
+                    error: 'Invalid timeblock',
+                });
+                return;
+            }
+        }
 
-            for (let i = 1; i < timeblocks.length; i++) {
-                if (timeblocks[i - 1].end > timeblocks[i].start) {
+        for (let i = 1; i < timeblocks.length; i++) {
+            if (timeblocks[i - 1].end > timeblocks[i].start) {
 		    traceLogger.verbose("timeblock conflict...", req, { timeblock1: timeblocks[i - 1], timeblock2: timeblocks[i] });
-                    res.json({
-                        Status: 'error',
-                        error: 'Invalid timeblocks',
-                    });
-                    return;
-                }
+                res.json({
+                    Status: 'error',
+                    error: 'Invalid timeblocks',
+                });
+                return;
             }
-            await repmode(req, netid, calendar_id, res, timeblocks);
-            return;
+        }
+        await repmode(req, netid, calendar_id, res, timeblocks);
+        return;
     }
 });
 
@@ -140,32 +140,32 @@ async function repmode(req, netid, calendar_id, res, timeblocks) {
     //db.calendars.find({_id:"d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", "users.netid": 'abcd'})
     traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
 
-    mongoose.connection().transaction(async () => {
-	const calendar = await Calendar_schema_main.findOne({
+    mongoose.connection.transaction(async () => {
+        const calendar = await Calendar_schema_main.findOne({
 	    _id: calendar_id,
 	    'users._id': netid,
-	});
+        });
 
-	if (calendar === null) {
+        if (calendar === null) {
 	    res.json({
-		Status: 'error',
-		error: 'No valid calendar found',
+                Status: 'error',
+                error: 'No valid calendar found',
 	    });
 	    return;
-	}
+        }
 
-	//db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
+        //db.calendars.update({_id: "d386808522386e75936c35583dc668eff5be278bbef9f5ab392b636f922080f0", 'users.netid': 'abcd'},{$set: {'users.$.netid': "test2"}})
 
-	traceLogger.verbose("updating calendar", req, { });
-	await Calendar_schema_main.updateOne(
+        traceLogger.verbose("updating calendar", req, { });
+        await Calendar_schema_main.updateOne(
 	    { _id: calendar_id },
 	    { $set: { blocks: timeblocks } }
-	);
+        );
 
-	traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
-	res.json({
+        traceLogger.verbose("updated timeblocks for calendar", req, { calendar_id: calendar_id, timeblocks: timeblocks });
+        res.json({
 	    Status: 'ok',
-	});
+        });
     });
 }
 

@@ -14,13 +14,14 @@ const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
 const config = require('#config');
 const build = require('#build');
+const { typeCheck, netidCheck } = require("#util/assert");
 mongoose.connect(config.mongo_url);
 mongoose.set("transactionAsyncLocalStorage", true);
 
 app.set('trust proxy', 1);
 app.use((req, res, next) => {
-  //console.log('backend: %s %s %s', req.method, req.url, req.path);
-  //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
+    // console.log('backend: %s %s %s', req.method, req.url, req.path);
+    //logger.info('request received',req,{ip: req.headers['x-forwarded-for']});
     const start_time = new Date().valueOf();
     res.on('finish', function() {
 
@@ -44,7 +45,7 @@ app.use((req, res, next) => {
             bytesOut: req.socket.bytesWritten
             // latitude -> added by fluent-bit
             // longitude -> added by fluent-bit
-        })
+        });
     });
     //logger.info('request received',req,{path: req.url,ip: random_ip_list[Math.floor(Math.random()* random_ip_list.length)], user_agent: req.headers['user-agent']});
     next();
@@ -53,23 +54,23 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use((error, req, res, next) => {
-  if (error !== null) {
-    res.status(400).json({
-      Status: 'error',
-      error: 'error parsing body',
-      trace: error,
-    });
-    return;
-  } else next();
+    if (error !== null) {
+        res.status(400).json({
+            Status: 'error',
+            error: 'error parsing body',
+            trace: error,
+        });
+        return;
+    } else next();
 });
 
 app.use(
-  cookieSession({
-    keys: new Keygrip(require(config.auth.keygrip_secret_file),'sha512'),
-    resave: true,
-    saveUninitialized: false,
-    domain: config.auth.cookie_domain,
-  })
+    cookieSession({
+        keys: new Keygrip(require(config.auth.keygrip_secret_file),'sha512'),
+        resave: true,
+        saveUninitialized: false,
+        domain: config.auth.cookie_domain,
+    })
 );
 
 /*
@@ -81,38 +82,47 @@ app.use(
 app.use(function(request, response, next) {
     if (request.session && !request.session.regenerate) {
         request.session.regenerate = (cb) => {
-            cb()
-        }
+            cb();
+        };
     }
     if (request.session && !request.session.save) {
         request.session.save = (cb) => {
-            cb()
-        }
+            cb();
+        };
     }
-    next()
-})
+    next();
+});
 
 //inside unsecure bc we use nginx magic
 const samlStrategy = new saml.Strategy(
-  {
-    callbackUrl: `${config.backend_domain}/login`,
-    entryPoint: config.auth.login_url,
-    issuer: config.auth.issuer,
-    identifierFormat: null,
-    decryptionPvk: fs.readFileSync(config.auth.shib_key.private, 'utf8'),
-    privateCert: fs.readFileSync(config.auth.shib_key.public, 'utf8'),
-    idpCert: fs.readFileSync(config.auth.idp_cert, 'utf8'),
-//    validateInResponseTo: false,
-    disableRequestedAuthnContext: true,
-    wantAssertionsSigned: false
-  },
-  function (profile, done) {
-        console.log("main_js_saml",profile);
-        const user_serialized = {}
+    {
+        callbackUrl: `${config.backend_domain}/login`,
+        entryPoint: config.auth.login_url,
+        issuer: config.auth.issuer,
+        identifierFormat: null,
+        decryptionPvk: fs.readFileSync(config.auth.shib_key.private, 'utf8'),
+        privateCert: fs.readFileSync(config.auth.shib_key.public, 'utf8'),
+        idpCert: fs.readFileSync(config.auth.idp_cert, 'utf8'),
+        //    validateInResponseTo: false,
+        disableRequestedAuthnContext: true,
+        wantAssertionsSigned: false
+    },
+    async function (profile, done) {
+        const user_serialized = {};
 
+        // netid
         user_serialized.uid = profile.attributes['urn:oid:0.9.2342.19200300.100.1.1'];
+        typeCheck.assert(user_serialized.uid,typeCheck.validPrimitives.string);
+        await netidCheck.assertAtLevel(user_serialized.uid,netidCheck.scope.string);
+
+        //firstName
         user_serialized.firstName = profile.attributes['urn:oid:2.5.4.42'];
+        typeCheck.assert(user_serialized.firstName,typeCheck.validPrimitives.string);
+
+        //lastName
         user_serialized.lastName = profile.attributes['urn:oid:2.5.4.4'];
+        typeCheck.assert(user_serialized.lastName,typeCheck.validPrimitives.string);
+
         return done(null, user_serialized);
     }
 );
@@ -125,18 +135,18 @@ app.use(async function(req,res,next){
     // this makes it so that we don't send an empty invalid session and session.sig on non-authenticated requests
     // exlcude the unauthed login endpoint
     if(!req.isAuthenticated() && !(req.url === '/login' && req.method === 'POST'))
-        req.session = {}
+        req.session = {};
 
     next();
-})
+});
 
-const enabled_routes = config['routers']
+const enabled_routes = config['routers'];
 for (let i = 0; i < enabled_routes.length; i++) {
     const enabled_route = enabled_routes[i];
 
     const prefix = enabled_route['prefix'];
     const router_location = enabled_route['router_file'];
-    const router_obj = require(router_location)
+    const router_obj = require(router_location);
     router.use(prefix, router_obj);
     router_obj.router_prefix = prefix;
     if(prefix === '/')
@@ -158,13 +168,13 @@ app.use('/', router);
 
 app.use((req, res) => {
     //logger.info('')
-    res.status(404).json({status: 'error', error: 'invalid path'})
-})
+    res.status(404).json({status: 'error', error: 'invalid path'});
+});
 
 app.use((err, req, res, next) => {
-    traceLogger.verbose('uncaught error encountered',req,{error_message: err.message, error_stack: err.stack})
-    res.status(500).json({"error": "An unexpected error occured. Please email oss@oit.rutgers.edu along with the request id for help.", message: err.message,request_id: req.headers['x-request-id']})
-})
+    traceLogger.verbose('uncaught error encountered',req,{error_message: err.message, error_stack: err.stack});
+    res.status(500).json({"error": "An unexpected error occured. Please email oss@oit.rutgers.edu along with the request id for help.", message: err.message,request_id: req.headers['x-request-id']});
+});
 
 
 function printRegisteredRoutes(routerStack, parentPath) {
@@ -186,9 +196,9 @@ printRegisteredRoutes(app.router.stack,'');
 
 // Starting server using listen function
 app.listen(port, function (err) {
-  if (err) {
-    console.log('Error while starting server');
-  } else {
-    console.log('Server has been started at ' + port);
-  }
+    if (err) {
+        console.log('Error while starting server');
+    } else {
+        console.log('Server has been started at ' + port);
+    }
 });

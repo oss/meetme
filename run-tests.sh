@@ -2,7 +2,7 @@ source ./rt.sh
 CR=$(check_runtime "$CR") || exit 1
 
 if [ ! $skip_build ]; then
-    $CR build -t meetme-test-suite testing/backend-testing || exit 1
+    $CR build -t meetme-test-suite testing/backend/api || exit 1
     $CR build -t meetme-test-puppeteer testing/puppeteer || exit 1
 fi
 
