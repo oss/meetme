@@ -102,48 +102,46 @@ router.post('/:calendar_id/meetme', isAuthenticated, async function (req, res) {
     });
 });
 
-router.post('/:calendar_id/meetme/me',
-    isAuthenticated,
-    async function (req, res) {
-        const calendar_id = req.params.calendar_id;
-        traceLogger.verbose("validating parameters...", req, {});
-        if (
-            req.body === undefined ||
+router.post('/:calendar_id/meetme/me', isAuthenticated, async function (req, res) {
+    const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("validating parameters...", req, {});
+    if (
+        req.body === undefined ||
       req.body.timezone === null ||
       req.body.timezone === undefined
-        ) {
-            res.json({
-                Status: 'error',
-                error: 'invalid body',
-            });
-            return;
-        }
-        const timezone_settings = {
-            timeZone: req.body.timezone,
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-        };
-
-        if (timezone_settings === undefined || timezone_settings === null) {
-            res.json({
-                Status: 'error',
-                error: 'No timezone',
-            });
-            return;
-        }
-
-        traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
-        const calendar_data = await Calendar_schema_main.findOne({
-            _id: calendar_id,
-            $or: [
-                { 'owner._id': req.user.uid },
-                { 'owner.owner_type': 'organization' },
-                { 'users._id': req.user.uid },
-            ],
+    ) {
+        res.json({
+            Status: 'error',
+            error: 'invalid body',
         });
+        return;
+    }
+    const timezone_settings = {
+        timeZone: req.body.timezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    };
 
-        /*
+    if (timezone_settings === undefined || timezone_settings === null) {
+        res.json({
+            Status: 'error',
+            error: 'No timezone',
+        });
+        return;
+    }
+
+    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
+    const calendar_data = await Calendar_schema_main.findOne({
+        _id: calendar_id,
+        $or: [
+            { 'owner._id': req.user.uid },
+            { 'owner.owner_type': 'organization' },
+            { 'users._id': req.user.uid },
+        ],
+    });
+
+    /*
     {
         times: {
             $elemMatch: {
@@ -153,69 +151,69 @@ router.post('/:calendar_id/meetme/me',
     }
     */
 
-        if (calendar_data === null) {
+    if (calendar_data === null) {
+        res.json({
+            Status: 'error',
+            error:
+          'The calendar does not exist or you do not have permission to access this calendar',
+        });
+        return;
+    }
+
+    if (calendar_data.owner.owner_type === 'organization') {
+        traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar_data.owner._id });
+        const org_owner = await Org_schema.findOne({
+            _id: calendar_data.owner._id,
+            $or: [
+                { owner: req.user.uid },
+                { 'admins._id': req.user.uid },
+                { 'editors._id': req.user.uid },
+                { 'members._id': req.user.uid },
+                { 'viewers._id': req.user.uid },
+            ],
+        });
+
+        if (org_owner === null) {
             res.json({
                 Status: 'error',
                 error:
-          'The calendar does not exist or you do not have permission to access this calendar',
+            'The calendar does not exist or you do not have permission to access this calendar',
             });
             return;
         }
+    }
 
-        if (calendar_data.owner.owner_type === 'organization') {
-            traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: calendar_data.owner._id });
-            const org_owner = await Org_schema.findOne({
-                _id: calendar_data.owner._id,
-                $or: [
-                    { owner: req.user.uid },
-                    { 'admins._id': req.user.uid },
-                    { 'editors._id': req.user.uid },
-                    { 'members._id': req.user.uid },
-                    { 'viewers._id': req.user.uid },
-                ],
-            });
-
-            if (org_owner === null) {
-                res.json({
-                    Status: 'error',
-                    error:
-            'The calendar does not exist or you do not have permission to access this calendar',
-                });
-                return;
-            }
-        }
-
-        const calendar_data_sending = await Calendar_schema_main.aggregate([
-            {
-                $match: {
-                    _id: calendar_id,
-                },
+    const calendar_data_sending = await Calendar_schema_main.aggregate([
+        {
+            $match: {
+                _id: calendar_id,
             },
-            {
-                $addFields: {
-                    timeline: {
-                        $filter: {
-                            input: '$users',
-                            as: 'item',
-                            cond: {
-                                $eq: ['$$item._id', req.user.uid],
-                            },
+        },
+        {
+            $addFields: {
+                timeline: {
+                    $filter: {
+                        input: '$users',
+                        as: 'item',
+                        cond: {
+                            $eq: ['$$item._id', req.user.uid],
                         },
                     },
                 },
             },
-            {
-                $project: {
-                    timeline: 1,
-                },
+        },
+        {
+            $project: {
+                timeline: 1,
             },
-        ]);
+        },
+    ]);
 
-        traceLogger.verbose("fetched user's timeline for calendar", req, { calendar_id: calendar_id });
-        res.json({
-            Status: 'ok',
-            timeline: calendar_data_sending,
-        });
+    traceLogger.verbose("fetched user's timeline for calendar", req, { calendar_id: calendar_id });
+    res.json({
+        Status: 'ok',
+        timeline: calendar_data_sending,
     });
+});
 
 module.exports = router;

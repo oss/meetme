@@ -38,58 +38,57 @@ router.patch('/:calendar_id/meet_time', isAuthenticated, async function (req, re
         return;
     }
 
-    traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
-    const cal = await Calendar_schema_meta.findOne({
-        _id: calendar_id,
-        $or: [
-            { 'owner.owner_type': 'organization' },
-            { 'owner._id': req.user.uid },
-        ],
-    });
-
-    if (cal === null) {
-        res.json({
-            Status: 'error',
-            error:
-          'Calendar does not eixst or you do not have access to this calendar',
+    await mongoose.connection.transaction(async () => {
+        traceLogger.verbose("checking if calendar exists or if user has permission...", req, { calendar_id: calendar_id });
+        const cal = await Calendar_schema_meta.findOne({
+	    _id: calendar_id,
+	    $or: [
+                { 'owner.owner_type': 'organization' },
+                { 'owner._id': req.user.uid },
+	    ],
         });
-        return;
-    }
-
-    if (cal.owner.owner_type === 'organization') {
-        traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
-        const org = await Org_schema.findOne({
-            _id: cal.owner._id,
-            $or: [
-                { owner: req.user.uid },
-                { 'admins._id': req.user.uid },
-                { 'editors._id': req.user.uid },
-            ],
-        });
-        if (org === null) {
-            res.json({
+        if (cal === null) {
+	    res.json({
                 Status: 'error',
                 error:
-            'The calendar does not exist or you do not have access to modify this calendar',
-            });
-            return;
+		'Calendar does not eixst or you do not have access to this calendar',
+	    });
+	    return;
         }
-    }
 
-    traceLogger.verbose("updating meeting time of calendar...", req, { });
-    await Calendar_schema_meta.updateOne(
-        { _id: calendar_id },
-        { $set: { meetingTime: meeting_time } }
-    );
+        if (cal.owner.owner_type === 'organization') {
+	    traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: cal.owner._id });
+	    const org = await Org_schema.findOne({
+                _id: cal.owner._id,
+                $or: [
+		    { owner: req.user.uid },
+		    { 'admins._id': req.user.uid },
+		    { 'editors._id': req.user.uid },
+                ],
+	    });
+	    if (org === null) {
+                res.json({
+		    Status: 'error',
+		    error:
+		    'The calendar does not exist or you do not have access to modify this calendar',
+                });
+                return;
+	    }
+        }
 
-    traceLogger.verbose("updated meeting time of calendar", req, { calendar_id: calendar_id, meeting_time: meeting_time });
-    res.json({
-        Status: 'ok',
-        meeting_time: meeting_time,
+        traceLogger.verbose("updating meeting time of calendar...", req, { });
+        await Calendar_schema_meta.updateOne(
+	    { _id: calendar_id },
+	    { $set: { meetingTime: meeting_time } }
+        );
+
+        traceLogger.verbose("updated meeting time of calendar", req, { calendar_id: calendar_id, meeting_time: meeting_time });
+        res.json({
+	    Status: 'ok',
+	    meeting_time: meeting_time,
+        });
     });
-    return;
-}
-);
+});
 
 // Gets the meeting time of a calendar
 router.get('/:calendar_id/meet_time',isAuthenticated,async function (req, res) {

@@ -1,6 +1,6 @@
 variables:
   FF_NETWORK_PER_BUILD: 1
-#  CI_DEBUG_SERVICES: 1
+  # CI_DEBUG_SERVICES: 1
 
 stages:
   - build-env
@@ -11,11 +11,13 @@ stages:
 .job_template:
   &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
   services:
-    - name: ${CI_REGISTRY_IMAGE}/saml
+    - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
       alias: saml idp.localhost.edu
-    - name: ${CI_REGISTRY_IMAGE}/frontend
+
+    - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
       alias: frontend
-    - name: ${CI_REGISTRY_IMAGE}/websocket
+
+    - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
       alias: socket
       entrypoint:
         - '/bin/bash'
@@ -23,11 +25,12 @@ stages:
         - |
           sleep 80;
           node main.js;
-    - name: ${CI_REGISTRY_IMAGE}/database
+
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo
-    - name: ${CI_REGISTRY_IMAGE}/database
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo-jr
-    - name: ${CI_REGISTRY_IMAGE}/database
+    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
       alias: mongo-the-third
 
     - name: mongo:latest
@@ -38,7 +41,7 @@ stages:
           mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});';
           while [ $? -ne 0 ]; do sleep 2 && mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'; done;
 
-    - name: ${CI_REGISTRY_IMAGE}/backend
+    - name: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}
       alias: backend
       command:
         - '/bin/bash'
@@ -54,20 +57,31 @@ stages:
         LDAP_ADMIN_PASSWORD: adminpassword
         LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
         LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
-    - name: ${CI_REGISTRY_IMAGE}/proxy
+
+    - name: ${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}
       alias: nginx localhost.edu api.localhost.edu
+
+# common buildkit configuration needed to build containers
+.buildkit-build:
+  stage: build
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: ["sh", "-c"]
+  variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+  before_script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+
 
 backend-api:
   <<: *job_configuration
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-suite
+    name: ${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}
     entrypoint: ['']
   before_script:
-    - |
-      mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'
-    - echo "past"
-    - bash -c 'curl backend:8000; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -s http://backend:8000; done;'
+    - bash -c 'sleep 5 && curl -fk https://api.localhost.edu; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -fks https://api.localhost.edu; done;'
   script:
     - apt-get install bc -y
     - cd
@@ -93,11 +107,11 @@ backend-api:
 frontend-lint:
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/frontend-lint
+    name: ${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
-    - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser
-    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.cjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
+    - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser globals eslint-plugin-react-compiler eslint-formatter-junit
+    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.mjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
   artifacts:
     when: always
     paths:
@@ -108,8 +122,8 @@ frontend-lint:
 
 backend-docs-uptodate:
   image:
-    name: ${CI_REGISTRY_IMAGE}/test-docs
-    entrypoint: []
+    name: ${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}
+    entrypoint: ['']
   needs: [ "build-docs-testing" ]
   stage: test
   script:
@@ -117,139 +131,128 @@ backend-docs-uptodate:
 
 
 build-docs-testing:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}/testing/docs"
-      --dockerfile "${CI_PROJECT_DIR}/testing/docs/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./testing/docs/" \
+        --local dockerfile="./testing/docs/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}",push=true
 
 build-backend:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  variables: 
-    GIT_BRANCH: ${CI_COMMIT_BRANCH}
-    GIT_HASH: ${CI_COMMIT_SHA}
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}/backend"
-      --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_TAG}"
-      --build-arg GIT_BRANCH
-      --build-arg GIT_HASH
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./backend/" \
+        --local dockerfile="./backend/" \
+        --opt build-arg:GIT_BRANCH=${CI_COMMIT_BRANCH} \
+        --opt build-arg:GIT_HASH=${CI_COMMIT_SHA} \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true
 
 build-frontend:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/frontend"
-      --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_TAG}"
-      --build-arg=BUILD="dev"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./frontend/" \
+        --local dockerfile="./frontend/" \
+        --opt build-arg:BUILD="dev" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
 
 build-nginx:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
     - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
     - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/prom.conf
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}/proxy"
-      --dockerfile "${CI_PROJECT_DIR}/proxy/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./proxy/" \
+        --local dockerfile="./proxy/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
 
 build-mongo:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/database"
-      --dockerfile "${CI_PROJECT_DIR}/database/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./database/" \
+        --local dockerfile="./database/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}",push=true
 
 build-docker-proxy:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/proxy-docker"
-      --dockerfile "${CI_PROJECT_DIR}/proxy-docker/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/proxy-docker:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./proxy-docker/" \
+        --local dockerfile="./proxy-docker/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-docker:${CI_COMMIT_SHA}",push=true
 
 build-websocket:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/websocket"
-      --dockerfile "${CI_PROJECT_DIR}/websocket/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./websocket/" \
+        --local dockerfile="./websocket/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}",push=true
 
 build-saml:
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
-  stage: build
+  extends: .buildkit-build
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/shib-idp"
-      --dockerfile "${CI_PROJECT_DIR}/shib-idp/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./shib-idp/" \
+        --local dockerfile="./shib-idp/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}",push=true
 
 build-test:
+  extends: .buildkit-build
   stage: build-env
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/testing/backend/api"
-      --dockerfile "${CI_PROJECT_DIR}/testing/backend/api/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./testing/backend/api/" \
+        --local dockerfile="./testing/backend/api/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}",push=true
 
 build-eslint:
+  extends: .buildkit-build
   stage: build-env
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/testing/frontend/linter"
-      --dockerfile "${CI_PROJECT_DIR}/testing/frontend/linter/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./testing/frontend/linter/" \
+        --local dockerfile="./testing/frontend/linter/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
 
 build-docs-env:
+  extends: .buildkit-build
   stage: build-env
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/docs"
-      --dockerfile "${CI_PROJECT_DIR}/docs/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./docs/" \
+        --local dockerfile="./docs/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}",push=true
 
 build-docs:
   stage: build
   needs: ["build-docs-env"]
   image:
-    name: ${CI_REGISTRY_IMAGE}/docs
+    name: ${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - mkdocs build -f docs/mkdocs.yml -d ${CI_PROJECT_DIR}/build
@@ -261,19 +264,19 @@ build-docs:
 
 
 build-tsc-env:
+  extends: .buildkit-build
   stage: build-env
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: ['']
   script:
-    - /kaniko/executor
-      --dockerfile "${CI_PROJECT_DIR}/testing/frontend/type_checking/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_TAG}"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local dockerfile="./testing/frontend/type_checking/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}",push=true
 
 typecheck-frontend:
   stage: test
   image:
-    name: ${CI_REGISTRY_IMAGE}/tscheck
+    name: ${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
