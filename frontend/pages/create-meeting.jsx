@@ -25,23 +25,15 @@ function CreateMeeting({ isOrganizationOwned = false }) {
     console.log('re-render')
     const [dateRange, setDateRange] = useState(() => {
         // this function sets the default date range to be the current week
-
         const start = new Date();
         start.setHours(0);
         start.setMinutes(0);
         start.setSeconds(0);
         start.setMilliseconds(0);
-        const base = [
-            {
-                startDate: start,
-                endDate: null,
-                key: "selection",
-            },
-        ];
-        base[0].endDate = new Date(
-            base[0].startDate.valueOf() + 1000 * 60 * 60 * 24 * 6
-        );
-        return base;
+	return {
+	    from: start,
+	    to: new Date(start.valueOf() + 1000 * 60 * 60 * 24 * 6),
+	};
     });
     const userHook = userStore((store) => store.getUserData);
     const {orgID} = useParams();
@@ -65,11 +57,11 @@ function CreateMeeting({ isOrganizationOwned = false }) {
 
         const timeArr = [];
 
-        const endDay = dateRange[0].endDate;
+        const endDay = dateRange.to;
         const maxEndOfCalendar = endDay;
         maxEndOfCalendar.setDate(endDay.getDate() + 1);
 
-        const cursor = dateRange[0].startDate;
+        const cursor = dateRange.from;
 
         while (cursor < maxEndOfCalendar) {
             const start = new Date(cursor);
@@ -301,11 +293,13 @@ function CreateMeeting({ isOrganizationOwned = false }) {
                                 Choose Your Days
                             </p>
                             <div className="w-full flex justify-center">
-                                <DayPicker 
+                                <DayPicker
                                     //bg-red-500
                                     mode="range"
                                     startMonth={ Date() }
                                     disabled={{ before: Date() }}
+				    selected={dateRange}
+				    onSelect={setDateRange}
                                     range_start="range-start"
                                     range_end="range-end"
                                     range_middle="range-middle"
