@@ -70,3 +70,13 @@ sequenceDiagram
     end
     main.js ->> main.js: start server
 ```
+
+## Proxy Architecture
+``` mermaid
+flowchart LR
+    SSL["SSL (proxy)"] --> Frontend["Frontend (webpack/webserver)"] & Backend["Backend (nginx)"]
+    Backend --> API["API"]
+    Backend <--> Websocket
+    Mongo --> Websocket
+    API --> Mongo[("Mongo")]
+```
