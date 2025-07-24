@@ -143,7 +143,6 @@ router.delete('/:organization_id', isAuthenticated, async function (req, res) {
             },
         });
     });
-  });
 });
 
 //handles leaving an organization
