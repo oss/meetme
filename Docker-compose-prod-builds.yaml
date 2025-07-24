@@ -2,7 +2,7 @@ version: '3'
 
 services:
   entrypoint:
-    image: nginx-ssl-oss-meetme
+    image: nginx-prod-meetme
     ports:
       - 80:80
       - 443:443
