@@ -50,6 +50,9 @@ stages:
           sleep 80;
           node main.js;
 
+    - name: ${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}
+      alias: backend-proxy
+
     - name: bitnami/openldap:2
       alias: openldap ldap.localhost.edu
       variables:
@@ -60,9 +63,6 @@ stages:
 
     - name: ${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}
       alias: nginx localhost.edu api.localhost.edu
-
-    - name: ${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}
-      alias: backend-proxy
 
 # common buildkit configuration needed to build containers
 .buildkit-build:
