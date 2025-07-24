@@ -1,30 +1,37 @@
 # Architecture
 
 Meetme is build with the idea of splitting things up, things should do 1 thing.
-Everything is ideally split into its own container, which is then orchestrated using
-compose (either docker or podman). A main overview of each component is
+Everything is ideally split into its own container, which is then orchestrated
+using compose (either docker or podman). There are three compose files,
+`docker-compose-admin`, `Docker-compose-hotload`, and `Docker-compose-prod`
+(prod version of hotload, use this when deploying).
+
+Both `Docker-compose-hotload` and `Docker-compose-prod` start up Meetme, which
+includes the backend, frontend, and databases. `docker-compose-admin` can be
+ran separately and independently of the other two and sets up an admin
+dashboard. See systems.md for more information.
 
 ## Frontend and Backend
 
-Ran using the `Docker-compose-split-ssl.yml` file.
+Ran using `Docker-compose-hotload.yml` or `docker-compose-prod`.
 
 `entrypoint`
-: This runs the front facing nginx server and handles ssl
-
-`proxy`
-: An internal nginx server use for communication between internal components
-
-`mongo`, `mongo-jr`, `mongo-third`
-: MongoDB databses, three are required for replication
-
-`backend`
-: Backend
+: This runs the front facing nginx server, handles ssl upgrade, and forwards requests to either the frontend (localhost.edu on dev) or backend (api.localhost.edu on dev).
 
 `frontend`
-: Frontend
+: Frontend, served using webpack and made using tailwindcss and react.
+
+`backend-proxy`
+: Proxies requests to the backend (API) or to the websocket.
+
+`backend`
+: Backend made using express. Communicates with the databases.
+
+`mongo`, `mongo-jr`, `mongo-third`
+: MongoDB databases, three are required for replication, each database also runs a monogo-exporter server to serve metrics to a socket. See Admin section below.
 
 `socket`
-: Runs the websocket, which communicates between the database and frontend nginx
+: Runs the websocket, which streams changes from the database. Frontend connects to it via `api.localhost.edu/sauron` for live reload of pages.
 
 `openldap`
 : LDAP, this gives us access to netids used for authentication
@@ -34,31 +41,17 @@ Ran using the `Docker-compose-split-ssl.yml` file.
 
 ```mermaid
 flowchart LR
-    entrypoint["`**entrypoint**
-        api.localhost.edu
-        localhost.edu
-        80:80  443:443
+    proxy["SSL Upgrade Proxy"] -- "api.localhost.edu" <--> backend-proxy["Backend Proxy"];
+    proxy -- "localhost.edu" <--> fronted["Frontend"]  
 
-    `"]-->proxy[proxy];
-    proxy --> backend[backend];
-    proxy --> socket[socket];
-    proxy --> mongo[(mongo)];
-    mongo --> mongojr[(mongo jr)];
-    mongo --> mongothird[(mongo third)];
+    backend-proxy <--> backend["Backend (api)"]
+    backend-proxy <-- "api.localhost.edu/sauron" --> websocket["Websocket"]
 
-    monogoinit[mongo init] --> mongo;
-    monogoinit --> mongojr;
-    monogoinit --> mongothird;
-    backend --> monogoinit;
-    frontend[frontend] --> monogoinit;
-    socket --> backend;
+    backend <--> database[(Mongoes)]
+    database <--> websocket
 
-    shibboleth("`shibboleth
-        idp.localhost.edu 4443:4443
-    `");
-    openldap("`openldap
-        ldap.localhost.edu
-    `");
+    shibboleth("shibboleth<br>idp.localhost.edu 4443:4443");
+    openldap("openldap<br>ldap.localhost.edu");
 ```
 
 ## Admin
@@ -76,24 +69,33 @@ from the functional components. This can be ran using `docker-compose-admin.yml`
 : This format logs and then exports them to grafana
 
 `nginx_soc2http`
-: Nginx service which communicates data between the database sockets and the services here
+: Collects metrics from mongo-exporter sockets and passes them to prometheus
 
 `prometheus`
-: Collects metrics (of databases for example) and exports them grafana
+: Collects metrics from mongo databases and exports them to grafana
 
 ```mermaid
 flowchart LR
-    mongosocket[mongo socket] -->|exports| nginx
-    mongojrsocket[mongo jr socket] -->|exports| nginx
-    mongothirdsocket[mongo third socket] -->|exports| nginx
-
-    nginx --> prometheus[(prometheus)]
-    nginx --> fluentbit@{ shape: tri, label: "fluentbit" }
-
-    prometheus --> grafana["grafana 
-        127.0.0.1:3000:3000"
-    ]
-    fluentbit --> grafana
-    fluentbit --> opensearch[(opensearch)]
-    opensearch <--> grafana
+    subgraph backend
+        subgraph mongo-exporter["mongo-exporters"]
+            mongo & mongo-jr & mongo-the-third
+        end
+        server["backend"]
+    end
+    subgraph volumes
+        mongo-sockets
+        logs
+    end
+    mongo & mongo-jr & mongo-the-third -- "/var/run/meetme/mongo*/exporter.sock" --> mongo-sockets["sockets"]
+    subgraph nginx_soc2http
+        mongo-sockets -- "/mongo-sockets/mongo*" --> proxy
+    end
+    subgraph filebeat
+        server["backend"] -- "/var/log/meetme/backend" --> logs
+        logs -- "/logs/backend" --> Fluentbit
+    end
+    proxy --> Prometheus
+    Prometheus --> Graphana
+    Fluentbit --> Opensearch
+    Opensearch --> Graphana
 ```
