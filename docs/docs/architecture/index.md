@@ -31,7 +31,7 @@ Ran using `Docker-compose-hotload.yml` or `docker-compose-prod`.
 : MongoDB databases, three are required for replication, each database also runs a monogo-exporter server to serve metrics to a socket. See Admin section below.
 
 `socket`
-: Runs the websocket, which communicates between the database and backend-proxy. Frontend also connects to it.
+: Runs the websocket, which streams changes from the database. Frontend connects to it via `api.localhost.edu/sauron` for live reload of pages.
 
 `openldap`
 : LDAP, this gives us access to netids used for authentication
@@ -41,14 +41,14 @@ Ran using `Docker-compose-hotload.yml` or `docker-compose-prod`.
 
 ```mermaid
 flowchart LR
-    proxy["SSL Upgrade Proxy"] -- "api.localhost.edu" --> backend-proxy["Backend Proxy"];
-    proxy -- "localhost.edu" --> fronted["Frontend"]  
+    proxy["SSL Upgrade Proxy"] -- "api.localhost.edu" <--> backend-proxy["Backend Proxy"];
+    proxy -- "localhost.edu" <--> fronted["Frontend"]  
 
-    backend-proxy --> backend["Backend (api)"]
+    backend-proxy <--> backend["Backend (api)"]
     backend-proxy <-- "api.localhost.edu/sauron" --> websocket["Websocket"]
 
-    backend --> database[(Mongoes)]
-    database --> websocket
+    backend <--> database[(Mongoes)]
+    database <--> websocket
 
     shibboleth("shibboleth<br>idp.localhost.edu 4443:4443");
     openldap("openldap<br>ldap.localhost.edu");
