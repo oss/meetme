@@ -173,18 +173,6 @@ build-proxy:
         --local dockerfile="./proxy-ssl-upgrade/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
 
-build-prod-proxy:
-  extends: .buildkit-build
-  script:
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/prom.conf
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-prod/" \
-        --local dockerfile="./proxy-prod/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-prod:${CI_COMMIT_SHA}",push=true
-
 build-mongo:
   extends: .buildkit-build
   script:
