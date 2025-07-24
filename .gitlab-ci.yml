@@ -73,7 +73,6 @@ stages:
     - mkdir -p ~/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
 
-
 backend-api:
   <<: *job_configuration
   stage: test
@@ -129,7 +128,6 @@ backend-docs-uptodate:
   script:
     - PROJECT_DIR="${CI_PROJECT_DIR}" /bin/bash /root/verify_updated_docs.sh
 
-
 build-docs-testing:
   extends: .buildkit-build
   script:
@@ -163,7 +161,7 @@ build-frontend:
         --opt build-arg:BUILD="dev" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
 
-build-nginx:
+build-proxy:
   extends: .buildkit-build
   script:
     - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
@@ -171,9 +169,21 @@ build-nginx:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="./proxy/" \
-        --local dockerfile="./proxy/" \
+        --local context="./proxy-ssl-upgrade/" \
+        --local dockerfile="./proxy-ssl-upgrade/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
+
+build-prod-proxy:
+  extends: .buildkit-build
+  script:
+    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
+    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/prom.conf
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./proxy-prod/" \
+        --local dockerfile="./proxy-prod/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-prod:${CI_COMMIT_SHA}",push=true
 
 build-mongo:
   extends: .buildkit-build
@@ -184,16 +194,6 @@ build-mongo:
         --local context="./database/" \
         --local dockerfile="./database/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}",push=true
-
-build-docker-proxy:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-docker/" \
-        --local dockerfile="./proxy-docker/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-docker:${CI_COMMIT_SHA}",push=true
 
 build-websocket:
   extends: .buildkit-build
@@ -261,8 +261,6 @@ build-docs:
     paths:
       - ${CI_PROJECT_DIR}/build/
 
-
-
 build-tsc-env:
   extends: .buildkit-build
   stage: build-env
@@ -281,4 +279,3 @@ typecheck-frontend:
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
   needs: ['build-tsc-env','build-frontend']
-
