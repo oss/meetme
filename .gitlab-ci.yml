@@ -167,8 +167,6 @@ build-frontend:
 build-proxy:
   extends: .buildkit-build
   script:
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/prom.conf
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
