@@ -15,7 +15,7 @@ async function get_cookie() {
   });
   const page = await browser.newPage();
   await page.setDefaultNavigationTimeout(5000);
-  await page.goto('http://api.localhost.edu/login');
+  await page.goto('https://api.localhost.edu/login');
   await page.waitForSelector('body > div > div > div > div.column.one > form > div:nth-child(6) > button');
   await page.evaluate(
     (uname, pw) => {
