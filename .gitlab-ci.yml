@@ -50,6 +50,9 @@ stages:
           sleep 80;
           node main.js;
 
+    - name: ${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}
+      alias: backend-proxy
+
     - name: bitnami/openldap:2
       alias: openldap ldap.localhost.edu
       variables:
@@ -73,7 +76,6 @@ stages:
     - mkdir -p ~/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
 
-
 backend-api:
   <<: *job_configuration
   stage: test
@@ -94,7 +96,7 @@ backend-api:
     - sed -i 's/^<?xml version="1.0" encoding="UTF-8"?>$//g;s/<testsuites time="[0-9]\+\.[0-9]\+">//g;s/<\/testsuites>//g;/^$/d' ${CI_PROJECT_DIR}/merged.xml
     - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
-  needs: [ "build-backend", "build-frontend", "build-nginx", "build-mongo", "build-websocket", "build-saml" ]
+  needs: [ "build-backend", "build-frontend", "build-proxy", "build-backend-proxy", "build-mongo", "build-websocket", "build-saml" ]
 
   artifacts:
     when: always
@@ -129,7 +131,6 @@ backend-docs-uptodate:
   script:
     - PROJECT_DIR="${CI_PROJECT_DIR}" /bin/bash /root/verify_updated_docs.sh
 
-
 build-docs-testing:
   extends: .buildkit-build
   script:
@@ -163,17 +164,25 @@ build-frontend:
         --opt build-arg:BUILD="dev" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
 
-build-nginx:
+build-proxy:
   extends: .buildkit-build
   script:
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/graphana.conf
-    - rm ${CI_PROJECT_DIR}/proxy/nginx/conf.d/prom.conf
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="./proxy/" \
-        --local dockerfile="./proxy/" \
+        --local context="./proxy-ssl-upgrade/" \
+        --local dockerfile="./proxy-ssl-upgrade/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
+
+build-backend-proxy:
+  extends: .buildkit-build
+  script:
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context="./backend/proxy/" \
+        --local dockerfile="./backend/proxy/" \
+        --output type=image,name="${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}",push=true
 
 build-mongo:
   extends: .buildkit-build
@@ -184,16 +193,6 @@ build-mongo:
         --local context="./database/" \
         --local dockerfile="./database/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}",push=true
-
-build-docker-proxy:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-docker/" \
-        --local dockerfile="./proxy-docker/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-docker:${CI_COMMIT_SHA}",push=true
 
 build-websocket:
   extends: .buildkit-build
@@ -261,8 +260,6 @@ build-docs:
     paths:
       - ${CI_PROJECT_DIR}/build/
 
-
-
 build-tsc-env:
   extends: .buildkit-build
   stage: build-env
@@ -281,4 +278,3 @@ typecheck-frontend:
   script:
     - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
   needs: ['build-tsc-env','build-frontend']
-
