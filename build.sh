@@ -5,7 +5,7 @@ echo "running builds"
 
 $CR build 'prometheus/.' -t prometheus-oss-meetme || exit 1
 $CR build 'proxy-ssl-upgrade/.' -t nginx-ssl-oss-meetme || exit 1
-$CR build 'backend/proxy' -t meetme-backend-proxy || exit 1
+$CR build 'proxy-backend' -t meetme-backend-proxy || exit 1
 $CR build 'proxy-prod' -t nginx-prod-meetme || exit 1
 
 $CR build 'opensearch/.' -t opensearch-meetme || exit 1

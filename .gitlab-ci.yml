@@ -190,8 +190,8 @@ build-backend-proxy:
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
-        --local context="./backend/proxy/" \
-        --local dockerfile="./backend/proxy/" \
+        --local context=".proxy-backend" \
+        --local dockerfile=".proxy-backend" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}",push=true
 
 build-mongo:
