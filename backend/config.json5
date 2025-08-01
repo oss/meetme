@@ -11,13 +11,13 @@
         "scope": "subtree",
         "bind_dn": "cn=admin,dc=example,dc=org",
         "base": "ou=users,dc=example,dc=org",
-        "password_file": "./security/private/ldap_credential"
+        "password_file": "/root/security/private/ldap_credential"
     },
 
     "auth": {
         // cookie-session
         "cookie_domain": ".localhost.edu",
-        "keygrip_secret_file": "./security/private/keygrip.json",
+        "keygrip_secret_file": "/root/security/private/keygrip.json",
         "session": {
             "update_unit": 60000,               // after when to update in ms, ex. 60000 equals a minute
             "update_interval": 2,               // how many units till time to update
@@ -26,10 +26,10 @@
 
         // passport-saml
         "shib_key": {
-            "public": "./security/cert.pem",
-            "private": "./security/private/key.pem"
+            "public": "/root/security/cert.pem",
+            "private": "/root/security/private/key.pem"
         },
-        "idp_cert": "./security/idp.pem",
+        "idp_cert": "/root/security/idp.pem",
         "issuer": "https://api.localhost.edu/shibboleth",
         "login_url": "https://idp.localhost.edu:4443/idp/profile/SAML2/Redirect/SSO",
     },
