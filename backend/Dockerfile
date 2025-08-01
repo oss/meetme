@@ -25,4 +25,4 @@ RUN jq -rn --arg hash "$GIT_HASH" \
 	   --arg key_sha "$(sha1sum ./security/private/key.pem | cut -f 1 -d ' ')"  \
        '{ "GIT_HASH": $hash, "GIT_BRANCH": $branch, "IDP_SHA": $idp_sha, "CERT_SHA": $cert_sha, "KEY_SHA": $key_sha }' > build.json
 
-ENTRYPOINT [ "entrypoint.sh" ]
+CMD ./entrypoint.sh
