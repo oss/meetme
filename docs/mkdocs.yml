@@ -49,7 +49,7 @@ nav:
       - Philosophy: architecture/index.md
       - Diagrams: architecture/systems.md
       - Dependencies: architecture/dependencies.md
-
+      - Authentication: architecture/auth.md
 use_directory_urls: false
 
 theme:
