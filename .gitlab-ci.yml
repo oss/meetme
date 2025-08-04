@@ -251,8 +251,8 @@ build-docs-env:
   before_script:
     - echo "${BUILDAH_ISOLATION}"
   script:
-    - buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
-    # - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    #- buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
+    - podman build --userns=nomap -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
