@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/nodejs-22
+FROM quay.io/sclorg/nodejs-22-c9s:latest
 WORKDIR /root
 RUN npm -g install typescript
 ENTRYPOINT ["npx","tsc","-p","/code/tsconfig.json"]
