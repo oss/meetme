@@ -243,9 +243,6 @@ build-eslint:
 build-docs-env:
   image: quay.io/podman/stable
   stage: build-env
-  before_script:
-    - podman info
-    - id
   script:
     - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
