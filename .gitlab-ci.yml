@@ -243,9 +243,11 @@ build-eslint:
 build-docs-env:
   # image: quay.io/podman/stable
   image: quay.io/buildah/stable:latest
+  variables:
+    BUILDAH_ISOLATION: chroot
   stage: build-env
   script:
-    - buildah build --isolation=chroot -t "docs:${CI_COMMIT_SHA}" ./docs
+    - buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
     # - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
@@ -262,8 +264,6 @@ build-docs:
       - ${CI_PROJECT_DIR}/build/
 
 build-tsc-env:
-  variables:
-    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   extends: .buildkit-build
   stage: build-env
   script:
