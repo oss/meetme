@@ -245,7 +245,7 @@ build-docs-env:
   image: quay.io/buildah/stable:latest
   stage: build-env
   script:
-    - buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
+    - buildah build --isolation=chroot -t "docs:${CI_COMMIT_SHA}" ./docs
     # - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
