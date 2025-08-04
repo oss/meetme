@@ -4,7 +4,6 @@ default:
 
 variables:
   FF_NETWORK_PER_BUILD: 1
-  FF_PRINT_POD_EVENTS: "true"
   # CI_DEBUG_SERVICES: 1
 
 stages:
@@ -248,7 +247,7 @@ build-docs-env:
     - podman info
     - id
   script:
-    - podman build --userns=keep-id -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
