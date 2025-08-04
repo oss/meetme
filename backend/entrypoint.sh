@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 check() {
-	jq -e "$2" < "$1" > /dev/null
+	echo "$1" | jq -e "$2" > /dev/null
 }
 
 die() {

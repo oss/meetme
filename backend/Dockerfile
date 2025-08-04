@@ -12,7 +12,7 @@ COPY install_dependencies.sh .
 RUN bash install_dependencies.sh
 
 RUN apt-get update -y
-RUN apt-get install jq -y
+RUN apt-get install jq node-json5 -y
 
 COPY --exclude=node_modules --exclude=.npm . .
 COPY config.json5 /etc/meetme/
