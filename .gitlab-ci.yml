@@ -244,16 +244,11 @@ build-eslint:
 build-docs-env:
   stage: build-env
   image: quay.io/podman/stable:latest
-  variables:
-    STORAGE_DRIVER: vfs
-    _BUILDAH_STARTED_IN_USERNS: ""
-    BUILDAH_ISOLATION: chroot
   before_script:
     - echo "${BUILDAH_ISOLATION}"
   script:
     #- buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
-    - cat /proc/self/uid_map
-    - podman build --userns=nomap -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - podman build --ipc=host --userns=nomap --isolation=rootless -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
