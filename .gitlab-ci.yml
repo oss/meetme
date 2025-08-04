@@ -248,7 +248,7 @@ build-docs-env:
     - echo "${BUILDAH_ISOLATION}"
   script:
     #- buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
-    - fakeroot -- podman build --ipc=host --userns=nomap --isolation=rootless -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - buildah-build --ipc host --isolation chroot --cgroupns host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
