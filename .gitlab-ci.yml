@@ -79,6 +79,7 @@ stages:
   before_script:
     - mkdir -p ~/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - runc spec --rootless
 
 backend-api:
   <<: *job_configuration
