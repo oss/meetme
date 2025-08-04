@@ -242,9 +242,6 @@ build-eslint:
 
 build-docs-env:
   stage: build-env
-  variables:
-    KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: podman-sa
-    KUBERNETES_POD_ANNOTATIONS_1: "openshift.io/required-scc=podman-scc"
   script:
     - podman build -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
