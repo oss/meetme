@@ -262,6 +262,8 @@ build-docs:
       - ${CI_PROJECT_DIR}/build/
 
 build-tsc-env:
+  variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   extends: .buildkit-build
   stage: build-env
   script:
