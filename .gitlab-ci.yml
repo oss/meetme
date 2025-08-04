@@ -241,10 +241,12 @@ build-eslint:
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
 
 build-docs-env:
-  image: quay.io/podman/stable
+  # image: quay.io/podman/stable
+  image: quay.io/buildah/stable:latest
   stage: build-env
   script:
-    - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
+    # - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
