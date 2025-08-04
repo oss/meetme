@@ -83,6 +83,7 @@ homeDirectory: /home/netid5
 
 # User netid6 creation
 dn: uid=netid6,ou=users,dc=example,dc=org
+cn: User6
 sn: Last6
 givenName: First6
 objectClass: inetOrgPerson
@@ -93,15 +94,3 @@ uid: netid6
 uidNumber: 1005
 gidNumber: 1005
 homeDirectory: /home/netid6
-
-# Group creation
-dn: uid=readers,ou=users,dc=example,dc=org
-cn: readers
-objectClass: groupOfNames
-# User group membership
-member: uid=netid1,ou=users,dc=example,dc=org
-member: uid=netid2,ou=users,dc=example,dc=org
-member: uid=netid3,ou=users,dc=example,dc=org
-member: uid=netid4,ou=users,dc=example,dc=org
-member: uid=netid5,ou=users,dc=example,dc=org
-member: uid=netid6,ou=users,dc=example,dc=org
