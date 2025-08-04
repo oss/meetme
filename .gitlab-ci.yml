@@ -244,7 +244,7 @@ build-docs-env:
   image: quay.io/podman/stable
   stage: build-env
   script:
-    - podman build -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - podman build --userns=keep-id -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
