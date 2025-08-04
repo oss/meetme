@@ -3,6 +3,8 @@ version: '3'
 services:
   entrypoint:
     image: nginx-prod-meetme
+    environment:
+      PROD_URL: "https://meetme.oss.r.e"
     ports:
       - 80:80
       - 443:443
@@ -50,6 +52,8 @@ services:
 
   backend-proxy:
     image: meetme-backend-proxy
+    environment:
+      PROD_URL: "https://meetme.oss.r.e"
     depends_on:
       - backend
     networks:
@@ -57,6 +61,8 @@ services:
 
   backend:
     image: backend-meetme
+    environment:
+      PROD: "YES"
     networks:
       - no-internet
       - authnet
@@ -99,14 +105,10 @@ services:
 
 networks:
   no-internet:
-    driver: overlay
     attachable: true
   authnet:
-    driver: overlay
     attachable: true
   mongo-net:
-    driver: overlay
     attachable: true
   socat-net:
-    driver: overlay
     attachable: true

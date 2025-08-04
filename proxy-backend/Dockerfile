@@ -1,4 +1,10 @@
 FROM nginx
 
+EXPOSE 80
+ENV PROD_URL https://localhost.edu
+
 RUN mkdir /logs
-COPY proxy.conf /etc/nginx/conf.d/default.conf
+COPY nginx /etc/nginx
+COPY entrypoint.sh .
+
+CMD ./entrypoint.sh
