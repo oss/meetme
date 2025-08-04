@@ -243,6 +243,9 @@ build-eslint:
 build-docs-env:
   extends: .buildkit-build
   stage: build-env
+  variables:
+    KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: podman-sa
+    KUBERNETES_POD_ANNOTATIONS_1: "openshift.io/required-scc=podman-scc"
   script:
     - |
       buildctl-daemonless.sh build \
