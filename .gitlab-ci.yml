@@ -252,6 +252,7 @@ build-docs-env:
     - echo "${BUILDAH_ISOLATION}"
   script:
     #- buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
+    - sleep 300000
     - podman build --userns=nomap -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
