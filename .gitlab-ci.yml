@@ -1,3 +1,7 @@
+default:
+  tags:
+    - openshift
+
 variables:
   FF_NETWORK_PER_BUILD: 1
   # CI_DEBUG_SERVICES: 1
