@@ -241,18 +241,12 @@ build-eslint:
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
 
 build-docs-env:
-  extends: .buildkit-build
   stage: build-env
   variables:
     KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: podman-sa
     KUBERNETES_POD_ANNOTATIONS_1: "openshift.io/required-scc=podman-scc"
   script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./docs/" \
-        --local dockerfile="./docs/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}",push=true
+    - podman build -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
 
 build-docs:
   stage: build
