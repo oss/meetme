@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/python-312
+FROM quay.io/fedora/python-313
 EXPOSE 8000
 RUN pip install mkdocs mkdocs-material
 WORKDIR /root
