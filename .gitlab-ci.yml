@@ -242,16 +242,12 @@ build-eslint:
 
 build-docs-env:
   stage: build-env
-  image: quay.io/buildah/stable:latest
-  variables:
-    STORAGE_DRIVER: vfs
-    _BUILDAH_STARTED_IN_USERNS: ""
-    BUILDAH_ISOLATION: chroot
-  before_script:
-    - echo "${BUILDAH_ISOLATION}"
+  image: ghcr.io/kaniko-build/dist/chainguard-dev-kaniko/executor:v1.25.1-debug
   script:
-    - buildah build --isolation=chroot -t "docs:${CI_COMMIT_SHA}" ./docs
-    # - podman build --userns=host -t docs:${CI_COMMIT_SHA} -f ./docs/Dockerfile ./docs
+    - /kaniko/executor
+      --context "dir://${CI_PROJECT_DIR}/docs"
+      --dockerfile "${CI_PROJECT_DIR}/docs/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}"
 
 build-docs:
   stage: build
