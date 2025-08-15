@@ -8,7 +8,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const saml = require('@node-saml/passport-saml');
 const mongoose = require('mongoose');
-const { traceLogger, _baseLogger } = require('#logger');
+const { traceLogger, baseLogger } = require('#logger');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
 const random_ip_list = require("./random_ip_list.json");
@@ -180,12 +180,10 @@ app.use((err, req, res, next) => {
 function printRegisteredRoutes(routerStack, parentPath) {
     routerStack.forEach((middleware) => {
         if (middleware.route) {
-            routes.push(
-                {
-                    method: middleware.route.stack[0].method.toUpperCase(),
-                    path: `${parentPath}${middleware.route.path}`
-                }
-            );
+	    const method = middleware.route.stack[0].method.toUpperCase();
+	    const path = `${parentPath}${middleware.route.path}`;
+            routes.push({ method: method, path: path });
+	    baseLogger.verbose('loading router', { method: method, path: path });
         } else if (middleware.name === 'router') {
             printRegisteredRoutes(middleware.handle.stack,`${parentPath}${middleware.handle.router_prefix || ''}`);
         }
@@ -198,7 +196,17 @@ printRegisteredRoutes(app.router.stack,'');
 app.listen(port, function (err) {
     if (err) {
         console.log('Error while starting server');
+	baseLogger.verbose('unable to start server', { error_message: err.message, error_stack: err.stack });
     } else {
         console.log('Server has been started at ' + port);
+	baseLogger.verbose('server started', { port: port });
     }
 });
+
+// Shutdown
+process.on('SIGTERM', () => {
+    baseLogger.verbose('received sigterm, terminating...');
+    app.close(() => {
+	baseLogger.verbose('server has been closed')
+    })
+})
