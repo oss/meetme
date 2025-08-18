@@ -1,6 +1,16 @@
+#!/usr/bin/env bash
+
+# Builds container files using the passed in CR.
+# To change the url, change the BASE_URL, which defaults to # localhost.edu
+#
+# Containers are built manually rather than through compose to avoid
+# weird caching issues with docker or podman.
+
 source ./rt.sh
 CR=$(check_runtime "$CR") || exit 1
+BASE_URL="${BASE_URL:-"localhost.edu"}"
 
+echo "Using base url: ${BASE_URL}"
 echo "running builds"
 
 $CR build 'prometheus/.' -t prometheus-oss-meetme || exit 1
@@ -13,7 +23,7 @@ $CR build 'opensearch/.' -t opensearch-meetme || exit 1
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) || exit 1
 GIT_HASH=$(git rev-parse HEAD) || exit 1
 $CR build 'backend/.' -t backend-meetme --build-arg GIT_BRANCH="$GIT_BRANCH" --build-arg GIT_HASH="$GIT_HASH" || exit 1
-$CR build 'frontend/.' --build-arg API_URL="https://api.localhost.edu" --build-arg WEBSITE_URL="https://localhost.edu" -t frontend-meetme || exit 1
+$CR build 'frontend/.' --build-arg API_URL="https://api.${BASE_URL}" --build-arg WEBSITE_URL="https://${BASE_URL}" -t frontend-meetme || exit 1
 $CR build 'graphana/.' -t graphana-oss-meetme || exit 1
 $CR build 'database/.' -t database-meetme || exit 1
 $CR build 'websocket/.' -t websocket-meetme || exit 1
