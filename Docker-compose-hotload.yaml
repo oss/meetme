@@ -50,7 +50,6 @@ services:
       mode: replicated
       replicas: 1
 
-
   backend-proxy:
     image: meetme-backend-proxy
     depends_on:
@@ -76,21 +75,15 @@ services:
       - mongo-the-third
 
   openldap:
-    image: bitnami/openldap:2
-    environment:
-      - LDAP_ADMIN_USERNAME=admin
-      - LDAP_ADMIN_PASSWORD=adminpassword
-      - LDAP_USERS=netid1,netid2,netid3,netid4,netid5,netid6
-      - LDAP_PASSWORDS=rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
-      - BITNAMI_DEBUG=true
+    image: openldap-meetme
     networks:
       authnet:
         aliases:
           - ldap.localhost.edu
-    volumes:
-      - ./openldap_data:/bitnami/openldap
-      - ./ldaptest/eduPerson.ldif:/schema/custom.ldif
-      - ./ldaptest/bootstrap.ldif:/ldifs/bootstrap.ldif
+    ports:
+      - 1389:1389
+    # volumes:
+    #   - ./openldap_data:/bitnami/openldap
 
   shibboleth:
     image: shibboleth-idp-meetme
@@ -106,14 +99,10 @@ services:
 
 networks:
   no-internet:
-    driver: overlay
     attachable: true
   authnet:
-    driver: overlay
     attachable: true
   mongo-net:
-    driver: overlay
     attachable: true
   socat-net:
-    driver: overlay
     attachable: true

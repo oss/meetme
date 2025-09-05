@@ -27,6 +27,8 @@ $CR build 'frontend/.' --build-arg API_URL="https://api.${BASE_URL}" --build-arg
 $CR build 'graphana/.' -t graphana-oss-meetme || exit 1
 $CR build 'database/.' -t database-meetme || exit 1
 $CR build 'websocket/.' -t websocket-meetme || exit 1
+$CR build 'openldap/.' -t openldap-meetme || exit 1
+
 $CR build --file 'frontend/webpack.Dockerfile' -t frontend-meetme-webpack 'frontend/.' || exit 1
 #$CR build --file 'shibboleth/Dockerfile' -t shibboleth-idp-meetme 'shibboleth/.' || exit 1
 $CR build --file 'shib-idp/Dockerfile' -t shibboleth-idp-meetme 'shib-idp/.' || exit 1
