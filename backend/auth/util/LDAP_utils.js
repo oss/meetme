@@ -1,7 +1,8 @@
-const { LDAP, SEARCH_SCOPES, TLS_CHECK } = require('cjsldap');
+const { Client } = require('ldapts');
 const User_schema = require('../../user/user_schema');
 const config = require('#config');
 const fs = require('fs');
+const { traceLogger, _baseLogger } = require('#logger');
 
 async function valid_netid(netid) {
     if (!(/^[a-zA-Z0-9]+$/.test(netid)))return false;
@@ -10,31 +11,34 @@ async function valid_netid(netid) {
 }
 
 async function getInfoFromNetID(netid) {
-    const client = new LDAP({ uri: config.ldap.uri });
-    const bind = await client.bind({
-        dn: config.ldap.bind_dn ,
-        password: fs.readFileSync(config.ldap.password_file, 'utf8')
+    const client = new Client({ url: config.ldap.uri });
+    await client.bind(
+	config.ldap.bind_dn,
+	fs.readFileSync(config.ldap.password_file, 'utf8')
+    );
+    console.log("created client");
+
+    console.log("searching entries");
+    const { entries, references } = await client.search(config.ldap.base, {
+	scope: "sub",
+	filter: `(uid=${netid})`,
+	attributes: ["dn","sn","givenName","uid"]
     });
 
-    const search_req = await client.search({
-        filter: `uid=${netid}`,
-        scope: SEARCH_SCOPES[config.ldap.scope],
-        base: config.ldap.base,
-        attributes: ["dn","sn","givenName","uid"]
-    });
-
-    const search = search_req.toObject();
-    const close = await client.close();
+    await client.unbind();
+    console.log("unbound client");
     const ldap_dn_string = `uid=${netid},${config.ldap.base}`;
-    if ( search[ldap_dn_string] === undefined)
-        return null;
+    // if (entries[ldap_dn_string] === undefined)
+    //     return null;
 
     const usr_obj_to_return = {};
 
-    for(const attribute in search[ldap_dn_string] ){
+    for(const attribute in entries[0].attributes){
         // all of the stuff we get from ldap are single elements
         // if we deal with stuff with multiple values (like roles), then have to upgrade
-        usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0]; 
+        // usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0]; 
+	usr_obj_to_return[attribute.type] = attribute.values[0]; 
+	console.log(attribute.values[0]);
     }
 
     return usr_obj_to_return;
