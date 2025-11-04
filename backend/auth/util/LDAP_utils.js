@@ -12,36 +12,37 @@ async function valid_netid(netid) {
 
 async function getInfoFromNetID(netid) {
     const client = new Client({ url: config.ldap.uri });
-    await client.bind(
-	config.ldap.bind_dn,
-	fs.readFileSync(config.ldap.password_file, 'utf8')
-    );
-    console.log("created client");
 
-    console.log("searching entries");
-    const { entries, references } = await client.search(config.ldap.base, {
-	scope: "sub",
-	filter: `(uid=${netid})`,
-	attributes: ["dn","sn","givenName","uid"]
-    });
+    try {
+	await client.bind(
+	    config.ldap.bind_dn,
+	    fs.readFileSync(config.ldap.password_file, 'utf8')
+	);
 
-    await client.unbind();
-    console.log("unbound client");
-    const ldap_dn_string = `uid=${netid},${config.ldap.base}`;
-    // if (entries[ldap_dn_string] === undefined)
-    //     return null;
+	const { entries, references } = await client.search(config.ldap.base, {
+	    scope: "sub",
+	    filter: `(uid=${netid})`,
+	    attributes: ["dn","sn","givenName","uid"]
+	});
 
-    const usr_obj_to_return = {};
 
-    for(const attribute in entries[0].attributes){
-        // all of the stuff we get from ldap are single elements
-        // if we deal with stuff with multiple values (like roles), then have to upgrade
-        // usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0]; 
-	usr_obj_to_return[attribute.type] = attribute.values[0]; 
-	console.log(attribute.values[0]);
-    }
+	const usr_obj_to_return = {};
+	if (entries === undefined) {
+	    return usr_obj_to_return;
+	};
 
-    return usr_obj_to_return;
+	for(const attribute in entries[0].attributes){
+	    // all of the stuff we get from ldap are single elements
+	    // if we deal with stuff with multiple values (like roles), then have to upgrade
+	    // usr_obj_to_return[attribute] = search[ldap_dn_string][attribute][0]; 
+	    usr_obj_to_return[attribute.type] = attribute.values[0]; 
+	}
+	return usr_obj_to_return;
+    } catch (ex) {
+	throw ex;
+    } finally {
+	await client.unbind();
+    };
 }
 
 module.exports = { valid_netid, getInfoFromNetID };
