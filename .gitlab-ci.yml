@@ -242,12 +242,11 @@ build-eslint:
 
 build-docs-env:
   stage: build-env
-  image: ghcr.io/kaniko-build/dist/chainguard-dev-kaniko/executor:v1.25.1-debug
+  image: quay.io/openshift/origin-cli:latest
   script:
-    - /kaniko/executor
-      --context "dir://${CI_PROJECT_DIR}/docs"
-      --dockerfile "${CI_PROJECT_DIR}/docs/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}"
+    - oc login -u https://api.ocp.ei.rutgers.edu:6443/
+    - oc new-build --strategy docker --binary --name docs
+    - oc start-build docs --from-dir . --follow
 
 build-docs:
   stage: build
