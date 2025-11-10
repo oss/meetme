@@ -244,7 +244,7 @@ build-docs-env:
   stage: build-env
   image: quay.io/openshift/origin-cli:latest
   script:
-    - oc login --token "$OPENSHIFT_TOKEN" https://api.ocp.ei.rutgers.edu:6443/
+    - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443
     - oc project oit-eas-macs-meetme-ci
     - oc new-build --strategy docker --binary --name docs
     - oc start-build docs --from-dir . --follow
