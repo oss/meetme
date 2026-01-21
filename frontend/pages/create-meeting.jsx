@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import "react-date-range/dist/styles.css"; // main css file
-import "react-date-range/dist/theme/default.css"; // theme css file
-import { DateRangePicker } from "react-date-range";
+import { DayPicker, getDefaultClassNames } from "react-day-picker";
+
 import Tile from "@primitives/tile";
 import RedButton from '@components/utils/red-button';
 import RutgersLogoUrl from "../assets/RU_SHIELD_BLACK.png";
@@ -18,6 +17,7 @@ const DAYS = [
     "Friday",
     "Saturday",
 ];
+import "react-day-picker/style.css";
 
 // TODO: The type for `dateRange` is *not* consistent.
 
@@ -214,6 +214,7 @@ function CreateMeeting({ isOrganizationOwned = false }) {
     }
 
     const locationRef = useRef(null);
+    const defaultCalendarCSS = getDefaultClassNames();
 
     const [good_to_create, set_good_to_create] = useState(true);
 
@@ -300,15 +301,27 @@ function CreateMeeting({ isOrganizationOwned = false }) {
                                 Choose Your Days
                             </p>
                             <div className="w-full flex justify-center">
-                                <DateRangePicker
-                                    onChange={(item) =>
-                                        setDateRange([item.selection])
-                                    }
-                                    showSelectionPreview
-                                    moveRangeOnFirstSelection={false}
-                                    months={1}
-                                    ranges={dateRange}
-                                    direction="vertical"
+                                <DayPicker 
+                                    //bg-red-500
+                                    mode="range"
+                                    startMonth={ Date() }
+                                    disabled={{ before: Date() }}
+                                    range_start="range-start"
+                                    range_end="range-end"
+                                    range_middle="range-middle"
+                                    classNames={{
+                                        month_grid: `border-separate border-spacing-y-0.5`,
+                                        day_button: `w-full h-full font-normal text-base`,
+                                    }}
+                                    modifiersClassNames={{
+                                        range_start: `bg-rutgers_red rounded-l-md`,
+                                        range_middle: `bg-rutgers_red/30`,
+                                        range_end: `bg-rutgers_red rounded-r-md`,
+                                    }}
+                                    required
+                                    excludeDisabled
+                                    fixedWeeks
+                                    captionLayout="dropdown"
                                 />
                             </div>
                         </div>
