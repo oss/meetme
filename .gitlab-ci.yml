@@ -6,18 +6,6 @@ variables:
   FF_NETWORK_PER_BUILD: 1
   # CI_DEBUG_SERVICES: 1
 
-before_script:
-  image: quay.io/openshift/origin-cli:latest
-  script:
-  - echo "Downloading certs"
-  - glab auth login --hostname $CI_SERVER_FQDN --job-token $CI_JOB_TOKEN
-  - glab securefile download --all --output-dir .secure_files/  
-
-  - echo "Logging into OpenShift"
-  # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority=./secure_files/ca-bundle.crt
-  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --insecure-skip-tls-verify
-  - oc project oit-eas-macs-meetme-ci
-
 stages:
   - build-env
   - build
@@ -256,8 +244,17 @@ build-docs-env:
   stage: build-env
   image: quay.io/openshift/origin-cli:latest
   script:
-    - oc new-build --strategy docker --binary --name build-docs-env
-    - oc start-build docs --from-dir . --follow
+  - echo "Downloading certs"
+  - glab auth login --hostname $CI_SERVER_FQDN --job-token $CI_JOB_TOKEN
+  - glab securefile download --all --output-dir .secure_files/  
+
+  # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority=./secure_files/ca-bundle.crt
+  - echo "Logging into OpenShift"
+  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --insecure-skip-tls-verify
+  - oc project oit-eas-macs-meetme-ci
+
+  - oc new-build --strategy docker --binary --name build-docs-env
+  - oc start-build docs --from-dir . --follow
 
 build-docs:
   stage: build
