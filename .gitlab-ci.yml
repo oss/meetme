@@ -244,9 +244,9 @@ build-docs-env:
   stage: build-env
   image: quay.io/openshift/origin-cli:latest
   script:
-  - echo "Downloading certs"
-  - glab auth login --hostname $CI_SERVER_FQDN --job-token $CI_JOB_TOKEN
-  - glab securefile download --all --output-dir .secure_files/  
+  # - echo "Downloading certs"
+  # - glab auth login --hostname $CI_SERVER_FQDN --job-token $CI_JOB_TOKEN
+  # - glab securefile download --all --output-dir .secure_files/  
 
   # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority=./secure_files/ca-bundle.crt
   - echo "Logging into OpenShift"
