@@ -250,7 +250,7 @@ build-docs-env:
 
   # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority=./secure_files/ca-bundle.crt
   - echo "Logging into OpenShift"
-  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --insecure-skip-tls-verify
+  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443
   - oc project oit-eas-macs-meetme-ci
 
   - oc new-build --strategy docker --binary --name build-docs-env
