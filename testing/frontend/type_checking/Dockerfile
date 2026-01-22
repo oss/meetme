@@ -1,4 +1,4 @@
-FROM nodejs:22
+FROM node:latest
 
 USER user
 WORKDIR /root
