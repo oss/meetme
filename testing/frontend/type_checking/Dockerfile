@@ -1,4 +1,5 @@
-FROM node:latest
+# FROM node:latest
+FROM quay.io/sclorg/nodejs-22-c9s:latest
 
 RUN useradd -ms /bin/bash user
 USER user

@@ -277,6 +277,8 @@ build-tsc-env:
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
         --local dockerfile="./testing/frontend/type_checking/" \
+        --export-cache type=registry,ref=$CACHE_IMAGE \
+        --import-cache type=registry,ref=$CACHE_IMAGE \
         --output type=image,name="${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}",push=true
 
 typecheck-frontend:
