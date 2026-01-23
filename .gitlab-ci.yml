@@ -251,9 +251,8 @@ build-docs-env:
   - cp /etc/gitlab-runner/certs/ca.crt /usr/local/share/ca-certificates/
   - update-ca-certificates
 
-  # - echo "$CI_SERVER_TLS_CA_FILE" > "ca.crt"
-  # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ca.crt
-  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443
+  - printenv CI_SERVER_TLS_CA_FILE > ca.crt
+  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ca.crt
   - oc project oit-eas-macs-meetme-ci
 
   - oc new-build --strategy docker --binary --name build-docs-env
