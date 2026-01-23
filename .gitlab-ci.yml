@@ -248,9 +248,12 @@ build-docs-env:
   # - echo "Downloading certs"
   # - glab auth login --hostname $CI_SERVER_FQDN --job-token $CI_JOB_TOKEN
   # - glab securefile download --all --output-dir .secure_files/  
+  - cp /etc/gitlab-runner/certs/ca.crt /usr/local/share/ca-certificates/
+  - update-ca-certificates
 
-  - echo "$CI_SERVER_TLS_CA_FILE" > "ca.crt"
-  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ca.crt
+  # - echo "$CI_SERVER_TLS_CA_FILE" > "ca.crt"
+  # - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ca.crt
+  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443
   - oc project oit-eas-macs-meetme-ci
 
   - oc new-build --strategy docker --binary --name build-docs-env
