@@ -250,6 +250,7 @@ build-docs-env:
   # I know this is deprecated...
   # - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority "$CI_SERVER_TLS_CA_FILE"
   - wget "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
+  - ls ./test
   - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority .test/ca-bundle.crt
   - oc project oit-eas-macs-meetme-ci
 
