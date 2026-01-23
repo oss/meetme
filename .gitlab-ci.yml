@@ -250,7 +250,7 @@ build-docs-env:
   # - glab securefile download --all --output-dir .secure_files/  
   - cat "$CI_SERVER_TLS_CA_FILE" > ca-bundle.crt
   - cat ca-bundle.crt
-  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ca-bundle.crt
+  - oc login --token="$OPENSHIFT_TOKEN" --server=https://api.ocp.ei.rutgers.edu:6443 --certificate-authority ./ca-bundle.crt
   # - oc login --token="$OPENSHIFT_TOKEN"
   - oc project oit-eas-macs-meetme-ci
 
