@@ -246,7 +246,10 @@ build-docs-env:
   image: quay.io/openshift/origin-cli:latest
   script:
   # - oc login api.ocp.ei.rutgers.edu:6443 --token "$OPENSHIFT_TOKEN" --certificate-authority "$CI_SERVER_TLS_CA_FILE"
-  - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority "$CI_SERVER_TLS_CA_FILE"
+  - cat "$CI_SERVER_TLS_CA_FILE" > ca-bundle.crt
+  - echo "\n" >> ca-bundle.crt
+  # - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority "$CI_SERVER_TLS_CA_FILE"
+  - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority ca-bundle.crt
   - oc project oit-eas-macs-meetme-ci
 
   - oc new-build --strategy docker --binary --name build-docs-env
