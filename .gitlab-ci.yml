@@ -244,12 +244,12 @@ build-eslint:
 build-docs-env:
   stage: build-env
   image: quay.io/openshift/origin-cli:latest
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: 'test/'
   script:
-  # - oc login api.ocp.ei.rutgers.edu:6443 --token "$OPENSHIFT_TOKEN" --certificate-authority "$CI_SERVER_TLS_CA_FILE"
-  - cat "$CI_SERVER_TLS_CA_FILE" > ca-bundle.crt
-  - echo "\n" >> ca-bundle.crt
   # - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority "$CI_SERVER_TLS_CA_FILE"
-  - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority ca-bundle.crt
+  - wget "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
+  - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority test/ca-bundle.crt
   - oc project oit-eas-macs-meetme-ci
 
   - oc new-build --strategy docker --binary --name build-docs-env
