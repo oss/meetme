@@ -231,15 +231,25 @@ build-test:
         --output type=image,name="${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}",push=true
 
 build-eslint:
-  extends: .buildkit-build
+  # extends: .buildkit-build
   stage: build-env
+  image: quay.io/buildah/stable
+  variables:
+    STORAGE_DRIVER: vfs
   script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./testing/frontend/linter/" \
-        --local dockerfile="./testing/frontend/linter/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
+    - export HOME=/tmp
+    - buildah login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - buildah build -t "${CI_REGISTRY}/eslint:${CI_COMMIT_SHA}"
+    - buildah push "${CI_REGISTRY}/eslint:${CI_COMMIT_SHA}"
+    - buildah logout "$CI_REGISTRY"
+  # script: 
+  # script:
+  #   - |
+  #     buildctl-daemonless.sh build \
+  #       --frontend dockerfile.v0 \
+  #       --local context="./testing/frontend/linter/" \
+  #       --local dockerfile="./testing/frontend/linter/" \
+  #       --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
 
 build-docs-env:
   stage: build-env
