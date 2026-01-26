@@ -8,7 +8,7 @@ services:
       - 443:443
     depends_on:
       - frontend
-      - backend-proxy
+      - backend
     networks:
       no-internet:
         aliases:
@@ -49,13 +49,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-
-  backend-proxy:
-    image: meetme-backend-proxy
-    depends_on:
-      - backend
-    networks:
-      - no-internet
 
   backend:
     image: backend-meetme
