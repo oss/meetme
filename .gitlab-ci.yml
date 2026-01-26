@@ -237,6 +237,7 @@ build-eslint:
   variables:
     STORAGE_DRIVER: vfs
   script:
+    - id -u
     - export HOME=/tmp
     - buildah login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - buildah build -t "${CI_REGISTRY}/eslint:${CI_COMMIT_SHA}"
