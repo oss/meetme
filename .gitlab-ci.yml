@@ -251,15 +251,12 @@ build-eslint:
         --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
 
 build-docs-env:
-  extends: .buildkit-build
   stage: build-env
   script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./docs/" \
-        --local dockerfile="./docs/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}",push=true
+    - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+    - oc project oit-eas-macs-meetme-ci
+    - oc new-build --strategy docker --binary --name build-docs-env -to "${CI_REGISTRY_IMAGE}/docs-env:${CI_COMMIT_SHA}"
+    - oc start-build docs --from-dir . --follow
 
 build-docs:
   stage: build
