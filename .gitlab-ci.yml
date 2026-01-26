@@ -256,7 +256,7 @@ build-docs-env:
   script:
     - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
     - oc project oit-eas-macs-meetme-ci
-    - oc new-build --strategy docker --binary --name "docs" --to="${CI_REGISTRY_IMAGE}/docs:latest" --dry-run=true -o yaml | oc apply -f -
+    - oc new-build --strategy docker --binary --name "docs" --dry-run=true -o yaml | oc apply -f -
     - oc start-build "docs" --from-dir . --follow
     - oc tag docs:latest docs:${CI_COMMIT_SHA}
 
