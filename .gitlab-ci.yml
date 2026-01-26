@@ -3,6 +3,7 @@ default:
     - openshift
 
 variables:
+  REGISTRY: ei-quay-quay-quay-enterprise.apps.ocp.ei.rutgers.edu/openshift_oit-eas-macs-wiki
   FF_NETWORK_PER_BUILD: 1
   CI_DEBUG_SERVICES: 1
 
@@ -264,7 +265,7 @@ build-docs:
   stage: build
   needs: ["build-docs-env"]
   image:
-    name: ${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}
+    name: ${REGISTRY}/docs:${CI_COMMIT_SHA}
     entrypoint: ['']
   script:
     - mkdocs build -f docs/mkdocs.yml -d ${CI_PROJECT_DIR}/build
