@@ -256,12 +256,8 @@ build-docs-env:
   stage: build-env
   image: quay.io/openshift/origin-cli:latest
   script:
-  # I know this is deprecated...
-  # - oc login api.ocp.ei.rutgers.edu:6443 --certificate-authority "$CI_SERVER_TLS_CA_FILE"
-  - wget -q "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
-  - oc login api.ocp.ei.rutgers.edu:6443 --token "$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+  - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
   - oc project oit-eas-macs-meetme-ci
-
   - oc new-build --strategy docker --binary --name build-docs-env
   - oc start-build docs --from-dir . --follow
 
