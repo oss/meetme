@@ -252,6 +252,7 @@ build-eslint:
 
 build-docs-env:
   stage: build-env
+  image: quay.io/openshift/origin-cli:latest
   script:
     - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
     - oc project oit-eas-macs-meetme-ci
