@@ -256,8 +256,8 @@ build-docs-env:
   script:
     - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
     - oc project oit-eas-macs-meetme-ci
-    - oc new-build --strategy docker --binary --name docs --to="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}"
-    - oc start-build docs --from-dir . --follow
+    - oc new-build --strategy docker --binary --name "docs:${CI_COMMIT_SHA}" --to="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}"
+    - oc start-build "docs:${CI_COMMIT_SHA}" --from-dir . --follow
 
 build-docs:
   stage: build
