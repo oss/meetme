@@ -65,7 +65,7 @@ export async function getReadableCalendar(id, userid, req) {
 }
 
 export async function setLocation(id, userid, location, req) {
-    traceLogger.verbose('updating location of calendar', req, { calendar_id: id, location: location, user: userid });
+    traceLogger.verbose('updating location of calendar...', req, { calendar_id: id, location: location, user: userid });
     if (getWritableCalendar(id, userid, req) !== null) {
 	await Calendar_schema_meta.updateOne(
 	    { _id: id },
@@ -77,7 +77,7 @@ export async function setLocation(id, userid, location, req) {
 }
 
 export async function getLocation(id, userid, req) {
-    traceLogger.verbose('fetching location of calendar', req, { calendar_id: id, user: userid });
+    traceLogger.verbose('fetching location of calendar...', req, { calendar_id: id, user: userid });
     const cal = getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.location;
@@ -90,7 +90,7 @@ export async function setMeetingTime(id, meetingTime, userid, req) {
     traceLogger.verbose("updating meeting time of calendar...", req, { calendar_id: id, user: userid, meetingTime: meetingTime });
     if (getWritableCalendar(id, userid, req) !== null) {
         await Calendar_schema_meta.updateOne(
-	    { _id: calendar_id },
+	    { _id: id },
 	    { $set: { meetingTime: meetingTime } }
         );
     } else {
@@ -99,10 +99,54 @@ export async function setMeetingTime(id, meetingTime, userid, req) {
 }
 
 export async function getMeetingTime(id, userid, req) {
-    traceLogger.verbose('fetching meeting time of calendar', req, { calendar_id: id, user: userid });
+    traceLogger.verbose('fetching meeting time of calendar...', req, { calendar_id: id, user: userid });
     const cal = getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.meetingTime;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function setName(id, name, userid, req) {
+    traceLogger.verbose('updating name of calendar...', req, { calendar_id: id, name: name, user: userid });
+    if (getWritableCalendar(id, userid, req) !== null) {
+	await Calendar_schema_metadata.updateOne(
+	    { _id: id },
+	    { $set: { name: name } }
+	);
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function getName(id, userid, req) {
+    traceLogger.verbose('fetching name of calendar...', req, { calendar_id: id, user: userid });
+    const cal = getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	return cal.name;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function setShareLink(id, sharelink, userid, req) {
+    traceLogger.verbose('updating sharelink of calendar...', req, { calendar_id: id, sharelink: sharelink, user: userid });
+    if (getWritableCalendar(id, userid, req) !== null) {
+	await Calendar_schema_meta.updateOne(
+	    { _id: id },
+	    { $set: { shareLink: shareLink } }
+	);
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function getShareLink(id, userid, req) {
+    traceLogger.verbose('fetching sharelink of calendar...', req, { calendar_id: id, user: userid });
+    const cal = getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	return cal.shareLink;
     } else {
 	throw new Error('Permission denied or no calendar');
     }
