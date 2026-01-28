@@ -17,5 +17,7 @@ router.use(require('./userlist'));
 
 router.patch('/:calendar_id/location', isAuthenticated, handler.setLocation);
 router.get('/:calendar_id/location', isAuthenticated, handler.getLocation);
+router.patch('/:calendar_id/meet_time', isAuthenticated, handler.setMeetingTime);
+router.get('/:calendar_id/meet_time',isAuthenticated, handler.getMeetingTime);
 
 module.exports = router;
