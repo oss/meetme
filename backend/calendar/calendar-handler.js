@@ -133,3 +133,13 @@ export async function getShareLink(res, req) {
 	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
     }
 }
+
+export async function getUserList(res, req) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const memberlist = service.getUserList(id, req.user.id, req);
+	res.json({ Status: 'ok', memberlist: memberlist });
+    } catch (e) {
+	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+    }
+}

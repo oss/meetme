@@ -10,7 +10,6 @@ router.use(require('./owner'));
 router.use(require('./sharing'));
 router.use(require('./timeblocks_calendar'));
 router.use(require('./user_timeblocks'));
-router.use(require('./userlist'));
 
 router.patch('/:calendar_id/location', isAuthenticated, handler.setLocation);
 router.get('/:calendar_id/location', isAuthenticated, handler.getLocation);
@@ -23,5 +22,9 @@ router.get('/:calendar_id/name', isAuthenticated, handler.getName);
 
 router.patch('/:calendar_id/shareLink', isAuthenticated, handler.setShareLink);
 router.get('/:calendar_id/shareLink', isAuthenticated, handler.getShareLink);
+
+// Gets a list of users in a calendar and is used to calculate color for time selections
+router.get('/:calendar_id/memberlist', isAuthenticated, handler.getUserList);
+
 
 module.exports = router;

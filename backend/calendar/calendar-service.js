@@ -151,3 +151,37 @@ export async function getShareLink(id, userid, req) {
 	throw new Error('Permission denied or no calendar');
     }
 }
+
+export async function getUserList(id, userid, req) {
+    traceLogger.verbose('fetching userlist of calendar...', req, { calendar_id: id, user: userid });
+
+    const cal = getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	traceLogger.verbose("creating memberlist...", req, {});
+	const memberlist = [];
+	const nin_arr = [];
+	if (cal.owner.owner_type === 'individual') {
+	    memberlist.push({ _id: cal.owner._id, type: 'owner' });
+	    nin_arr.push(cal.owner._id);
+	}
+	for (let i = 0; i < cal.viewers.length; i++) {
+	    memberlist.push({ _id: cal.viewers[i]._id, type: 'viewer' });
+	    nin_arr.push(cal.viewers[i]._id);
+	}
+
+	const all_individual_shared = await User_schema.distinct('_id', {
+            'calendars._id': req.params.calendar_id,
+            _id: {
+		$nin: nin_arr,
+            },
+	});
+
+	for (let i = 0; i < all_individual_shared.length; i++) {
+            memberlist.push({ _id: all_individual_shared[i], type: 'user' });
+	}
+
+	return memberlist;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
