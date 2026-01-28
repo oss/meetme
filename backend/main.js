@@ -1,9 +1,6 @@
 // json5 stuff to load config. Use json5 so we can have comments in json
 const express = require('express'); // Importing express module
 const fs = require('fs');
-const app = express(); // Creating an express object
-const router = express.Router();
-const port = 8000; // Setting an port for this application
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const saml = require('@node-saml/passport-saml');
@@ -11,10 +8,23 @@ const mongoose = require('mongoose');
 const { traceLogger, _baseLogger } = require('#logger');
 const crypto =  require("crypto");
 const Keygrip = require("keygrip");
+const process = require('process');
 const random_ip_list = require("./random_ip_list.json");
 const config = require('#config');
-const build = require('#build');
 const { typeCheck, netidCheck } = require("#util/assert");
+const configcheck = require("#util/configcheck");
+
+// Check if config is valid before starting anything
+// See: https://nodejs.org/api/process.html#processexitcode
+if (process.env.PROD === "true" && !configcheck()) {
+    process.exitCode = 1;
+    throw new Error("Invalid config file");
+}
+
+const app = express();
+const router = express.Router();
+const port = 8000;
+
 mongoose.connect(config.mongo_url);
 mongoose.set("transactionAsyncLocalStorage", true);
 
@@ -40,7 +50,7 @@ app.use((req, res, next) => {
             container_id: process.env.HOSTNAME,
             request_method: req.method,
             netid: req.isAuthenticated() ? req.user.uid : null,
-            version: build.GIT_HASH,
+            version: process.env.GIT_HASH,
             bytesIn: req.socket.bytesRead,
             bytesOut: req.socket.bytesWritten
             // latitude -> added by fluent-bit
@@ -159,7 +169,10 @@ router.get('/', function (req, res) {
     res.json({
         Status: 'ok',
         time: new Date(),
-        build: build,
+        build: {
+	    branch: process.env.GIT_BRANCH,
+	    hash: process.env.GIT_HASH,
+        },
         paths: routes
     });
 });

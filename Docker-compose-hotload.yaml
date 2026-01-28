@@ -58,7 +58,6 @@ services:
     volumes:
       - ./backend:/root
       - /var/log/meetme/backend:/logs
-    command: bash -c "./install_dependencies.sh && node --watch main.js"
     deploy:
       mode: replicated
       replicas: 1
