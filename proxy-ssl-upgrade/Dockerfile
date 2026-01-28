@@ -7,6 +7,7 @@ EXPOSE 80
 EXPOSE 443
 
 RUN mkdir /logs && touch /logs/api.log 
-COPY . .
+COPY nginx /etc/nginx
+COPY entrypoint.sh .
 
 CMD ./entrypoint.sh
