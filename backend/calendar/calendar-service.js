@@ -290,3 +290,39 @@ export async function getTimeblocks(id, userid, req) {
 	throw new Error('Permission denied or no calendar');
     }
 }
+
+export async function getUsers(id, userid, req) {
+    traceLogger.verbose('fetching users of calendar...', req, { calendar_id: id, user: userid });
+    const cal = await getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	return cal.users;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function getTimeine(id, userid, req) {
+    traceLogger.verbose('fetching user\'s timeline for calendar...', req, { calendar_id: id, user: userid });
+    const cal = await getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	return await Calendar_schema_main.aggregate([
+	    {
+		$match: { _id: calendar_id },
+	    },
+	    {
+		$addFields: {
+		    timeline: {
+			$filter: {
+			    input: '$users',
+			    as: 'item',
+			    cond: { $eq: ['$$item._id', userid] },
+			},
+		    },
+		},
+	    },
+	    { $project: { timeline: 1 } },
+	]);
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}

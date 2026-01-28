@@ -314,3 +314,82 @@ export async function getTimeblocks(req, res) {
 	res.json({ Status: 'error', error: e.message);
     }
 }
+
+// TODO: figure out why we need the timezone data
+export async function getUsers(req, res) {
+    const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("validating parameters...", req, {});
+    if (req.body === undefined ||
+	req.body.timezone === null ||
+	req.body.timezone === undefined
+    ) {
+        res.json({ Status: 'error', error: 'invalid body' });
+        return;
+    }
+    const timezone_settings = {
+        timeZone: req.body.timezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    };
+
+    const final_time_array = [];
+    let time_array = {
+        date: null,
+        iso_string: null,
+        times: [],
+    };
+    if (timezone_settings === undefined || timezone_settings === null) {
+        res.json({ Status: 'error', error: 'No timezone' });
+        return;
+    }
+
+    //let firstday = new Date(100, { timeZone: 'UTC' });
+    //let lastday = new Date(100, {timeZone: timezone});
+    //let days = Math.ceil((lastday-firstday)/86400000);
+    //    time_array.date = firstday.toLocaleString('en-US', timezone_settings);
+    // time_array.iso_string = firstday.toISOString();
+
+    try {
+	const users = await calendar.getUsers(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', users: users });
+    } catch {
+	res.json({ Status: 'error', error: e.message);
+    }
+}
+
+export async function() getMe(req, res) {
+    const calendar_id = req.params.calendar_id;
+    traceLogger.verbose("validating parameters...", req, {});
+    if (req.body === undefined ||
+	req.body.timezone === null ||
+	req.body.timezone === undefined
+    ) {
+        res.json({
+            Status: 'error',
+            error: 'invalid body',
+        });
+        return;
+    }
+    const timezone_settings = {
+        timeZone: req.body.timezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    };
+
+    if (timezone_settings === undefined || timezone_settings === null) {
+        res.json({
+            Status: 'error',
+            error: 'No timezone',
+        });
+        return;
+    }
+
+    try {
+	const timeline = await calendar.getTimeline(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', timeline: timeline });
+    } catch {
+	res.json({ Status: 'error', error: e.message);
+    }
+}
