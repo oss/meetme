@@ -8,7 +8,6 @@ router.use(require('./cal'));
 router.use(require('./meetme'));
 router.use(require('./sharing'));
 router.use(require('./timeblocks_calendar'));
-router.use(require('./user_timeblocks'));
 
 router.patch('/:calendar_id/location', isAuthenticated, handler.setLocation);
 router.get('/:calendar_id/location', isAuthenticated, handler.getLocation);
@@ -26,5 +25,7 @@ router.get('/:calendar_id/shareLink', isAuthenticated, handler.getShareLink);
 router.get('/:calendar_id/memberlist', isAuthenticated, handler.getUserList);
 
 router.patch('/:calendar_id/owner', isAuthenticated, handler.setOwner);
+
+router.patch('/:calendar_id/me', isAuthenticated, handler.setUserTimeblocks);
 
 module.exports = router;

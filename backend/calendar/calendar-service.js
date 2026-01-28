@@ -216,3 +216,50 @@ export async function setOwner(id, newowner, userid, req) {
 	throw new Error('Permission denied or no calendar');
     }
 }
+
+async function repUserTimeblocks(id, timeblocks, userid, req) {
+    traceLogger.verbose('replacing user timeblocks of calendar...', req, { calendar_id: id, timeblocks: timeblocks, user: userid });
+    const cal = getWritableCalendar(id, userid, req);
+    if (cal !== null) {
+	mongoose.connection.transaction(async () => {
+	    if (cal.owner.owner_type == "individual") {
+		await Calendar_schema_main.updateOne(
+		    { _id: id, 'users._id': userid },
+		    { $set: { 'users.$.times': timeblocks } }
+		);
+	    } else
+		// If the user does not exist in the current array of users,
+		// then add it and then set the timeblocks.
+		// If the user already exists, then just set the timeblocks.
+		// TODO: have to change this to one query instead of two seperate querys. Not sure if it is possible.
+                const calendar = await Calendar_schema_main.findOne({
+		    _id: id,
+		    'users._id': userid,
+                });
+                if (calendar === null) {
+		    await Calendar_schema_main.updateOne(
+                        { _id: id },
+                        { $push: { users: { _id: userid, times: timeblocks } } }
+		    );
+                } else {
+		    await Calendar_schema_main.updateOne(
+                        { _id: id, 'users._id': userid },
+                        { $set: { 'users.$.times': timeblocks } }
+		    );
+                }
+	    }
+
+            //update modified time in the metadata
+            const current_time = new Date().getTime();
+            await Calendar_schema_meta.updateOne(
+		{ _id: id },
+		{ $set: { modified: current_time} }
+            );
+	});
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+async function addUserTimeblocks(id, timeblocks, userid, req) { };
+async function subUserTimeblocks(id, timeblocks, userid, req) { };

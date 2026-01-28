@@ -12,7 +12,7 @@ export async function setLocation(req, res) {
     }
 
     try {
-	service.setLocation(id, location, req.user.id, req);
+	await service.setLocation(id, location, req.user.id, req);
 	res.json({ Status: 'ok', location: req.body.location });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -23,7 +23,7 @@ export async function getLocation(req, res) {
     const calendar_id = req.params.calendar_id;
 
     try {
-	const location = service.getLocation(id, req.user.id, req);
+	const location = await service.getLocation(id, req.user.id, req);
 	res.json({ Status: 'ok', location: cal.location });
     } catch (e)
 	res.json({ Status: 'error', error: e.message });
@@ -57,7 +57,7 @@ export async function setMeetingTime(req, res) {
     }
 
     try {
-	service.setMeetingTime(id, meetingTime, req.user.id, req);
+	await service.setMeetingTime(id, meetingTime, req.user.id, req);
         res.json({ Status: 'ok', meetingTime: meetingTime });
     } catch (e)
 	res.json({ Status: 'error', error: e.message });
@@ -67,7 +67,7 @@ export async function setMeetingTime(req, res) {
 export async function getMeetingTime(res, req) {
     const calendar_id = req.params.calendar_id;
     try {
-	const meetingTime = service.getMeetingTime(id, req.user.id, req);
+	const meetingTime = await service.getMeetingTime(id, req.user.id, req);
 	res.json({ Status: 'ok', meeting_time: cal.meetingTime });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -86,7 +86,7 @@ export async function setName(res, req) {
     }
 
     try {
-	service.setName(calendar_id, new_name, req.user.id, req);
+	await service.setName(calendar_id, new_name, req.user.id, req);
 	res.json({ Status: 'ok', new_name: new_name });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -96,7 +96,7 @@ export async function setName(res, req) {
 export async function getName(res, req) {
     const calendar_id = req.params.calendar_id;
     try {
-	const name = service.getName(id, req.user.id, req);
+	const name = await service.getName(id, req.user.id, req);
 	res.json({ Status: 'ok', name: name });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -117,7 +117,7 @@ export async function setShareLink(res, req) {
     }
 
     try {
-	service.setShareLink(calendar_id, req.body.shareLink, req.user.id, req);
+	await service.setShareLink(calendar_id, req.body.shareLink, req.user.id, req);
 	res.json({ Status: 'ok', shareLink: req.body.shareLink });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -127,7 +127,7 @@ export async function setShareLink(res, req) {
 export async function getShareLink(res, req) {
     const calendar_id = req.params.calendar_id;
     try {
-	const shareLink = service.getShareLink(id, req.user.id, req);
+	const shareLink = await service.getShareLink(id, req.user.id, req);
 	res.json({ Status: 'ok', shareLink: shareLink });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -137,7 +137,7 @@ export async function getShareLink(res, req) {
 export async function getUserList(res, req) {
     const calendar_id = req.params.calendar_id;
     try {
-	const memberlist = service.getUserList(id, req.user.id, req);
+	const memberlist = await service.getUserList(id, req.user.id, req);
 	res.json({ Status: 'ok', memberlist: memberlist });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
@@ -162,9 +162,80 @@ export async function setOwner(res, req) {
         return;
     }
     try {
-	service.setowner(calendar_id, newowner, req.user.id, req);
+	await service.setowner(calendar_id, newowner, req.user.id, req);
 	res.json({ Status: 'ok' });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message);
+    }
+}
+
+export async function setUserTimeblocks(res, req) {
+    const calendar_id = req.params.calendar_id;
+
+    const mode = req.body.mode;
+    traceLogger.verbose("validating operation...", req, { operation: mode });
+    if (mode === undefined || !mode.toString().match('add|subtract|replace')) {
+        res.json({ Status: 'error', error: 'Invalid operation' });
+        return;
+    }
+
+    const timeblocks = req.body.timeblocks;
+    traceLogger.verbose("validating timeblocks...", req, { timeblocks: timeblocks });
+    for (let i = 0; i < timeblocks.length; i++) {
+	if (timeblocks[i] == null) {
+	    return res.json({ Status: 'error', error: `Timeblocks at index ${i} is null.` });
+	}
+	if (timeblocks[i].start >= timeblocks[i].end) {
+	    res.json({
+		Status: 'error',
+		error: 'Invalid timeblocks',
+		timeblock: timeblocks[i].start,
+	    });
+	    return;
+	}
+	if (!JSON.stringify(timeblocks[i]).match(
+	    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
+	)) {
+	    res.json({
+		Status: 'error',
+		error: 'Invalid timeblock',
+		timeblock: timeblocks[i],
+	    });
+	    return;
+	}
+	if (timeblocks[i].start % (1000 * 60) !== 0 || timeblocks[i].end % (1000 * 60) !== 0) {
+	    res.json({
+		Status: 'error',
+		error: 'not a full minute',
+		timeblock: timeblocks[i],
+	    });
+	    return;
+	}
+    }
+
+    for (let i = 1; i < timeblocks.length; i++) {
+        if (timeblocks[i - 1].end > timeblocks[i].start) {
+            res.json({
+                Status: 'error',
+                error: 'Invalid times',
+                timeblock: [
+                    { index: i - 1, end: timeblocks[i - 1].end },
+                    { index: i, start: timeblocks[i].start },
+                ],
+            });
+            return;
+        }
+    }
+
+    switch (mode) {
+    case 'add':
+	await service.addUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+        break;
+    case 'subtract':
+	await service.subUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+        break;
+    case 'replace':
+	await service.repUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+        break;
     }
 }
