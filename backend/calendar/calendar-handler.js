@@ -4,6 +4,84 @@ async function valid_name(potential_name) {
     return true;
 }
 
+async function valid_operation(operation, res) {
+    traceLogger.verbose("validating operation...", req, { operation: operation });
+    if (operation === undefined || operation === null) {
+	res.json({
+	    Status: 'error',
+	    error: 'No operation provided',
+	});
+	return false;
+    }
+
+    if (!operation.toString().match('add|delete|replace')) {
+        res.json({
+            Status: 'error',
+            error: 'Invalid operation',
+        });
+        return false;
+    }
+    return true;
+}
+
+async function valid_timeblocks(timeblocks, res) {
+    traceLogger.verbose("validating timeblocks...", req, { timeblocks: timeblocks });
+    if (timeblocks === undefined || timeblocks === null) {
+        res.json({
+            Status: 'error',
+            error: 'Missing timeblocks',
+        });
+        return false;
+    }
+
+    for (let i = 0; i < timeblocks.length; i++) {
+	if (timeblocks[i] == null) {
+	    return res.json({ Status: 'error', error: `Timeblocks at index ${i} is null.` });
+	}
+	if (timeblocks[i].start >= timeblocks[i].end) {
+	    res.json({
+		Status: 'error',
+		error: 'Invalid timeblocks',
+		timeblock: timeblocks[i].start,
+	    });
+	    return false;
+	}
+	if (!JSON.stringify(timeblocks[i]).match(
+	    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
+	)) {
+	    res.json({
+		Status: 'error',
+		error: 'Invalid timeblock',
+		timeblock: timeblocks[i],
+	    });
+	    return false;
+	}
+	if (timeblocks[i].start % (1000 * 60) !== 0 || timeblocks[i].end % (1000 * 60) !== 0) {
+	    res.json({
+		Status: 'error',
+		error: 'not a full minute',
+		timeblock: timeblocks[i],
+	    });
+	    return false;
+	}
+    }
+
+    for (let i = 1; i < timeblocks.length; i++) {
+        if (timeblocks[i - 1].end > timeblocks[i].start) {
+            res.json({
+                Status: 'error',
+                error: 'Invalid times',
+                timeblock: [
+                    { index: i - 1, end: timeblocks[i - 1].end },
+                    { index: i, start: timeblocks[i].start },
+                ],
+            });
+            return false;
+        }
+    }
+    return true;
+}
+
 export async function setLocation(req, res) {
     const calendar_id = req.params.calendar_id;
     if (req.body.location === undefined || req.body.location === null) {
@@ -64,7 +142,7 @@ export async function setMeetingTime(req, res) {
     }
 }
 
-export async function getMeetingTime(res, req) {
+export async function getMeetingTime(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
 	const meetingTime = await service.getMeetingTime(id, req.user.id, req);
@@ -74,7 +152,7 @@ export async function getMeetingTime(res, req) {
     }
 }
 
-export async function setName(res, req) {
+export async function setName(req, res) {
     const calendar_id = req.params.calendar_id;
     const new_name = req.body.new_name;
 
@@ -93,7 +171,7 @@ export async function setName(res, req) {
     }
 }
 
-export async function getName(res, req) {
+export async function getName(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
 	const name = await service.getName(id, req.user.id, req);
@@ -103,7 +181,7 @@ export async function getName(res, req) {
     }
 }
 
-export async function setShareLink(res, req) {
+export async function setShareLink(req, res) {
     const calendar_id = req.params.calendar_id;
 
     traceLogger.verbose("validating parameters...", req, {});
@@ -124,7 +202,7 @@ export async function setShareLink(res, req) {
     }
 }
 
-export async function getShareLink(res, req) {
+export async function getShareLink(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
 	const shareLink = await service.getShareLink(id, req.user.id, req);
@@ -134,7 +212,7 @@ export async function getShareLink(res, req) {
     }
 }
 
-export async function getUserList(res, req) {
+export async function getUserList(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
 	const memberlist = await service.getUserList(id, req.user.id, req);
@@ -144,7 +222,7 @@ export async function getUserList(res, req) {
     }
 }
 
-export async function setOwner(res, req) {
+export async function setOwner(req, res) {
     const calendar_id = req.params.calendar_id;
     const newowner = req.body;
 
@@ -169,73 +247,70 @@ export async function setOwner(res, req) {
     }
 }
 
-export async function setUserTimeblocks(res, req) {
+export async function setUserTimeblocks(req, res) {
     const calendar_id = req.params.calendar_id;
 
     const mode = req.body.mode;
-    traceLogger.verbose("validating operation...", req, { operation: mode });
-    if (mode === undefined || !mode.toString().match('add|subtract|replace')) {
-        res.json({ Status: 'error', error: 'Invalid operation' });
-        return;
+    if (!(await valid_operation(mode))) {
+	return;
     }
-
     const timeblocks = req.body.timeblocks;
-    traceLogger.verbose("validating timeblocks...", req, { timeblocks: timeblocks });
-    for (let i = 0; i < timeblocks.length; i++) {
-	if (timeblocks[i] == null) {
-	    return res.json({ Status: 'error', error: `Timeblocks at index ${i} is null.` });
+    if (!(await valid_timeblocks(mode))) {
+	return;
+    }
+    try {
+	switch (mode) {
+	case 'add':
+	    await service.addUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
+	case 'subtract':
+	    await service.subUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
+	case 'replace':
+	    await service.repUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
 	}
-	if (timeblocks[i].start >= timeblocks[i].end) {
-	    res.json({
-		Status: 'error',
-		error: 'Invalid timeblocks',
-		timeblock: timeblocks[i].start,
-	    });
-	    return;
-	}
-	if (!JSON.stringify(timeblocks[i]).match(
-	    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
-	)) {
-	    res.json({
-		Status: 'error',
-		error: 'Invalid timeblock',
-		timeblock: timeblocks[i],
-	    });
-	    return;
-	}
-	if (timeblocks[i].start % (1000 * 60) !== 0 || timeblocks[i].end % (1000 * 60) !== 0) {
-	    res.json({
-		Status: 'error',
-		error: 'not a full minute',
-		timeblock: timeblocks[i],
-	    });
-	    return;
-	}
+	res.json({ 'Status': 'ok', timeblocks: timeblocks });
+    } catch {
+	res.json({ Status: 'error', error: e.message);
+    }
+}
+
+export async function setTimeblocks(req, res) {
+    const calendar_id = req.params.calendar_id;
+    const mode = req.body.mode;
+    if (!(await valid_operation(mode))) {
+	return;
+    }
+    const timeblocks = req.body.timeblocks;
+    if (!(await valid_timeblocks(mode))) {
+	return;
     }
 
-    for (let i = 1; i < timeblocks.length; i++) {
-        if (timeblocks[i - 1].end > timeblocks[i].start) {
-            res.json({
-                Status: 'error',
-                error: 'Invalid times',
-                timeblock: [
-                    { index: i - 1, end: timeblocks[i - 1].end },
-                    { index: i, start: timeblocks[i].start },
-                ],
-            });
-            return;
-        }
+    try {
+	switch (mode) {
+	case 'add':
+	    await service.addTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
+	case 'subtract':
+	    await service.subTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
+	case 'replace':
+	    await service.repTimeblocks(calendar_id, timeblocks, req.user.id, req);
+	    break;
+	}
+	res.json({ 'Status': 'ok', timeblocks: timeblocks });
+    } catch (e) {
+	res.json({ Status: 'error', error: e.message);
     }
+}
 
-    switch (mode) {
-    case 'add':
-	await service.addUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
-        break;
-    case 'subtract':
-	await service.subUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
-        break;
-    case 'replace':
-	await service.repUserTimeblocks(calendar_id, timeblocks, req.user.id, req);
-        break;
+export async function getTimeblocks(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	blocks = await service.getTimeblocks(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', timeblocks: blocks });
+    } catch (e) {
+	res.json({ Status: 'error', error: e.message);
     }
 }

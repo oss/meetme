@@ -11,7 +11,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 //    org calendar: user must be owner, admin, or editor
 // Returns the calendar if true or null
 export async function getWritableCalendar(id, userid, req) {
-    traceLogger.verbose('fetching calendar for writing...', req, { calendar_id: calendar_id, user: userid });
+    traceLogger.verbose('fetching calendar for writing...', req, { calendar_id: id, user: userid });
     const cal = await Calendar_schema_meta.findOne({
 	_id: id,
 	$or: [
@@ -20,7 +20,7 @@ export async function getWritableCalendar(id, userid, req) {
 	],
     });
     if (cal !== null && cal.owner.owner_type === 'organization') {
-	traceLogger.verbose('checking calendar write permissions for user...', req, { calendar_id: id, org: cal.owner._id, user: userid });
+	traceLogger.verbose('checking calendar write permissions for user...', req, { id: id, org: cal.owner._id, user: userid });
 	const org = await Org_schema.findOne({
 	    _id: id,
 	    $or: [
@@ -40,7 +40,7 @@ export async function getWritableCalendar(id, userid, req) {
 //    org calendar: user must be owner, admin, editor, member, or viewer
 // Returns the calendar if true or null
 export async function getReadableCalendar(id, userid, req) {
-    traceLogger.verbose('fetching calendar for reading...', req, { calendar_id: calendar_id, user: userid });
+    traceLogger.verbose('fetching calendar for reading...', req, { calendar_id: id, user: userid });
     const cal = await Calendar_schema_meta.findOne({
 	_id: id,
 	$or: [
@@ -69,7 +69,7 @@ export async function getReadableCalendar(id, userid, req) {
 
 export async function setLocation(id, userid, location, req) {
     traceLogger.verbose('updating location of calendar...', req, { calendar_id: id, location: location, user: userid });
-    if (getWritableCalendar(id, userid, req) !== null) {
+    if ((await getWritableCalendar(id, userid, req)) !== null) {
 	await Calendar_schema_meta.updateOne(
 	    { _id: id },
 	    { $set: { location: location } }
@@ -81,7 +81,7 @@ export async function setLocation(id, userid, location, req) {
 
 export async function getLocation(id, userid, req) {
     traceLogger.verbose('fetching location of calendar...', req, { calendar_id: id, user: userid });
-    const cal = getReadableCalendar(id, userid, req);
+    const cal = await getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.location;
     } else {
@@ -91,7 +91,7 @@ export async function getLocation(id, userid, req) {
 
 export async function setMeetingTime(id, meetingTime, userid, req) {
     traceLogger.verbose("updating meeting time of calendar...", req, { calendar_id: id, user: userid, meetingTime: meetingTime });
-    if (getWritableCalendar(id, userid, req) !== null) {
+    if ((await getWritableCalendar(id, userid, req)) !== null) {
         await Calendar_schema_meta.updateOne(
 	    { _id: id },
 	    { $set: { meetingTime: meetingTime } }
@@ -103,7 +103,7 @@ export async function setMeetingTime(id, meetingTime, userid, req) {
 
 export async function getMeetingTime(id, userid, req) {
     traceLogger.verbose('fetching meeting time of calendar...', req, { calendar_id: id, user: userid });
-    const cal = getReadableCalendar(id, userid, req);
+    const cal = await getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.meetingTime;
     } else {
@@ -113,7 +113,7 @@ export async function getMeetingTime(id, userid, req) {
 
 export async function setName(id, name, userid, req) {
     traceLogger.verbose('updating name of calendar...', req, { calendar_id: id, name: name, user: userid });
-    if (getWritableCalendar(id, userid, req) !== null) {
+    if ((await getWritableCalendar(id, userid, req)) !== null) {
 	await Calendar_schema_metadata.updateOne(
 	    { _id: id },
 	    { $set: { name: name } }
@@ -125,7 +125,7 @@ export async function setName(id, name, userid, req) {
 
 export async function getName(id, userid, req) {
     traceLogger.verbose('fetching name of calendar...', req, { calendar_id: id, user: userid });
-    const cal = getReadableCalendar(id, userid, req);
+    const cal = await getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.name;
     } else {
@@ -135,7 +135,7 @@ export async function getName(id, userid, req) {
 
 export async function setShareLink(id, sharelink, userid, req) {
     traceLogger.verbose('updating sharelink of calendar...', req, { calendar_id: id, sharelink: sharelink, user: userid });
-    if (getWritableCalendar(id, userid, req) !== null) {
+    if ((await getWritableCalendar(id, userid, req)) !== null) {
 	await Calendar_schema_meta.updateOne(
 	    { _id: id },
 	    { $set: { shareLink: shareLink } }
@@ -147,7 +147,7 @@ export async function setShareLink(id, sharelink, userid, req) {
 
 export async function getShareLink(id, userid, req) {
     traceLogger.verbose('fetching sharelink of calendar...', req, { calendar_id: id, user: userid });
-    const cal = getReadableCalendar(id, userid, req);
+    const cal = await getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	return cal.shareLink;
     } else {
@@ -157,7 +157,7 @@ export async function getShareLink(id, userid, req) {
 
 export async function getUserList(id, userid, req) {
     traceLogger.verbose('fetching userlist of calendar...', req, { calendar_id: id, user: userid });
-    const cal = getReadableCalendar(id, userid, req);
+    const cal = await getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	traceLogger.verbose("creating memberlist...", req, {});
 	const memberlist = [];
@@ -190,7 +190,7 @@ export async function getUserList(id, userid, req) {
 
 export async function setOwner(id, newowner, userid, req) {
     traceLogger.verbose('updating owner of calendar...', req, { calendar_id: id, newowner: owner, user: userid });
-    const cal = getWritableCalendar(id, userid, req);
+    const cal = await getWritableCalendar(id, userid, req);
     if (cal !== null) {
 	if (newowner.owner_type === undefined || newowner.owner_type === 'individual') {
 	    traceLogger.verbose("new owner is individual, checking if user exists...", req, { owner: newowner._id });
@@ -217,9 +217,9 @@ export async function setOwner(id, newowner, userid, req) {
     }
 }
 
-async function repUserTimeblocks(id, timeblocks, userid, req) {
+export async function repUserTimeblocks(id, timeblocks, userid, req) {
     traceLogger.verbose('replacing user timeblocks of calendar...', req, { calendar_id: id, timeblocks: timeblocks, user: userid });
-    const cal = getWritableCalendar(id, userid, req);
+    const cal = await getWritableCalendar(id, userid, req);
     if (cal !== null) {
 	mongoose.connection.transaction(async () => {
 	    if (cal.owner.owner_type == "individual") {
@@ -261,5 +261,32 @@ async function repUserTimeblocks(id, timeblocks, userid, req) {
     }
 }
 
-async function addUserTimeblocks(id, timeblocks, userid, req) { };
-async function subUserTimeblocks(id, timeblocks, userid, req) { };
+// TODO: implement
+export async function addUserTimeblocks(id, timeblocks, userid, req) { };
+export async function subUserTimeblocks(id, timeblocks, userid, req) { };
+
+export async function repTimeblocks(id, timeblocks, userid, req) {
+    traceLogger.verbose('replacing timeblocks of calendar...', req, { calendar_id: id, timeblocks: timeblocks, user: userid });
+    if ((await getWritableCalendar(id, userid, req)) !== null) {
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    { $set: { blocks: timeblocks } }
+        );
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+// TODO: implement
+export async function addTimeblocks(id, timeblocks, userid, req) { };
+export async function subTimeblocks(id, timeblocks, userid, req) { };
+
+export async function getTimeblocks(id, userid, req) {
+    traceLogger.verbose('fetching timeblocks of calendar...', req, { calendar_id: id, user: userid });
+    const cal = await getReadableCalendar(id, userid, req);
+    if (cal !== null) {
+	return cal.blocks;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
