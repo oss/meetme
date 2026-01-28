@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const Calendar_schema_meta = require('./calendar_schema_meta');
+const Calendar_schema_main = require('./calendar_schema_main');
+const User_schema = require('../user/user_schema');
+const Org_schema = require('../organizations/organization_schema');
 const { traceLogger, _baseLogger } = require('#logger');
 
 // Determines if a user can write to the calendar. A user can write if the
@@ -154,7 +157,6 @@ export async function getShareLink(id, userid, req) {
 
 export async function getUserList(id, userid, req) {
     traceLogger.verbose('fetching userlist of calendar...', req, { calendar_id: id, user: userid });
-
     const cal = getReadableCalendar(id, userid, req);
     if (cal !== null) {
 	traceLogger.verbose("creating memberlist...", req, {});
@@ -181,6 +183,35 @@ export async function getUserList(id, userid, req) {
 	}
 
 	return memberlist;
+    } else {
+	throw new Error('Permission denied or no calendar');
+    }
+}
+
+export async function setOwner(id, newowner, userid, req) {
+    traceLogger.verbose('updating owner of calendar...', req, { calendar_id: id, newowner: owner, user: userid });
+    const cal = getWritableCalendar(id, userid, req);
+    if (cal !== null) {
+	if (newowner.owner_type === undefined || newowner.owner_type === 'individual') {
+	    traceLogger.verbose("new owner is individual, checking if user exists...", req, { owner: newowner._id });
+	    if ((await User_schema.findOne({ _id: newowner.id })) === null) {
+		throw new Error("User does not exist");
+	    }
+	} else {
+	    traceLogger.verbose("new owner is org, checking if org exists...", req, { owner: newowner._id });
+	    if ((await Org_schema.findOne({ _id: newowner.id })) === null) {
+		throw new Error("Organization does not exist");
+	    }
+	}
+
+	/** 
+	 * possibilities
+	 * individual to individual -> easy
+	 * individual to org -> easy
+	 * org to individual
+	 * org to org
+	 */
+	// TODO: implmement
     } else {
 	throw new Error('Permission denied or no calendar');
     }

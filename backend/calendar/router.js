@@ -6,7 +6,6 @@ const handler = require('./calendar-handler');
 
 router.use(require('./cal'));
 router.use(require('./meetme'));
-router.use(require('./owner'));
 router.use(require('./sharing'));
 router.use(require('./timeblocks_calendar'));
 router.use(require('./user_timeblocks'));
@@ -26,5 +25,6 @@ router.get('/:calendar_id/shareLink', isAuthenticated, handler.getShareLink);
 // Gets a list of users in a calendar and is used to calculate color for time selections
 router.get('/:calendar_id/memberlist', isAuthenticated, handler.getUserList);
 
+router.patch('/:calendar_id/owner', isAuthenticated, handler.setOwner);
 
 module.exports = router;

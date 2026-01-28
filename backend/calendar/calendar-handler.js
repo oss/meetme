@@ -15,7 +15,7 @@ export async function setLocation(req, res) {
 	service.setLocation(id, location, req.user.id, req);
 	res.json({ Status: 'ok', location: req.body.location });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -26,7 +26,7 @@ export async function getLocation(req, res) {
 	const location = service.getLocation(id, req.user.id, req);
 	res.json({ Status: 'ok', location: cal.location });
     } catch (e)
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -60,7 +60,7 @@ export async function setMeetingTime(req, res) {
 	service.setMeetingTime(id, meetingTime, req.user.id, req);
         res.json({ Status: 'ok', meetingTime: meetingTime });
     } catch (e)
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -70,7 +70,7 @@ export async function getMeetingTime(res, req) {
 	const meetingTime = service.getMeetingTime(id, req.user.id, req);
 	res.json({ Status: 'ok', meeting_time: cal.meetingTime });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -89,7 +89,7 @@ export async function setName(res, req) {
 	service.setName(calendar_id, new_name, req.user.id, req);
 	res.json({ Status: 'ok', new_name: new_name });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -99,7 +99,7 @@ export async function getName(res, req) {
 	const name = service.getName(id, req.user.id, req);
 	res.json({ Status: 'ok', name: name });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -120,7 +120,7 @@ export async function setShareLink(res, req) {
 	service.setShareLink(calendar_id, req.body.shareLink, req.user.id, req);
 	res.json({ Status: 'ok', shareLink: req.body.shareLink });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -130,7 +130,7 @@ export async function getShareLink(res, req) {
 	const shareLink = service.getShareLink(id, req.user.id, req);
 	res.json({ Status: 'ok', shareLink: shareLink });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -140,6 +140,31 @@ export async function getUserList(res, req) {
 	const memberlist = service.getUserList(id, req.user.id, req);
 	res.json({ Status: 'ok', memberlist: memberlist });
     } catch (e) {
-	res.json({ Status: 'error', error: 'Calendar does not exist or you do not have access to this calendar' });
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function setOwner(res, req) {
+    const calendar_id = req.params.calendar_id;
+    const newowner = req.body;
+
+    traceLogger.verbose("validating parameters...", req, {});
+    if (newowner === undefined) {
+        res.json({ Status: 'error', error: 'Missing body' });
+        return;
+    }
+    console.log(JSON.stringify(req.body));
+    if (!JSON.stringify(req.body).match(
+	'{"id":"[a-zA-Z0-9]+"(?:,"owner_type":"individual")}'
+    )) {
+	traceLogger.verbose("invalid new owner", req, { newowner: newowner });
+        res.json({ Status: 'error', error: 'invalid body format' });
+        return;
+    }
+    try {
+	service.setowner(calendar_id, newowner, req.user.id, req);
+	res.json({ Status: 'ok' });
+    } catch (e) {
+	res.json({ Status: 'error', error: e.message);
     }
 }
