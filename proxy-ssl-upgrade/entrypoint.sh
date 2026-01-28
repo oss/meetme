@@ -17,7 +17,8 @@ if [ "$PROD" = "true" ]; then
     frontend="/etc/nginx/templates/frontend-prod.conf"
 fi
 
-envsubst "$SITE_URL" < "$backend"  > /etc/nginx/conf.d/backend.conf
+# NOTE: keep this as single quotes, it is a literal, we do not want it to expand!
+envsubst '$SITE_URL' < "$backend"  > /etc/nginx/conf.d/backend.conf
 cp "$frontend" /etc/nginx/conf.d/frontend.conf
 
 nginx -g "daemon off;"
