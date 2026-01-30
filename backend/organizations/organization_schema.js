@@ -39,6 +39,10 @@ let organization = new Schema({
     ],
 });
 
+organization.methods.hasAdmin = function hasAdmin(id) {
+    return this.owner === id || this.admins.some((item) => item._id === id);
+}
+
 const Organizations = mongoose.model('organization', organization);
 
 module.exports = Organizations;

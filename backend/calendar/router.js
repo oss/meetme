@@ -5,7 +5,6 @@ const { isAuthenticated } = require('../auth/passport/util');
 const handler = require('./calendar-handler');
 
 router.use(require('./cal'));
-router.use(require('./sharing'));
 
 // General calendar settings
 router.patch('/:calendar_id/owner', isAuthenticated, handler.setOwner);
@@ -29,5 +28,14 @@ router.patch('/:calendar_id/me', isAuthenticated, handler.setUserTimeblocks);
 // Timelines
 router.post('/:calendar_id/meetme', isAuthenticated, handler.getUsers);
 router.post('/:calendar_id/meetme/me', isAuthenticated, handler.getMe);
+
+router.patch('/:calendar_id/share', isAuthenticated, handler.shareCalendar);
+router.delete('/:calendar_id/share', isAuthenticated, handler.unshareCalendar);
+
+router.patch('/:calendar_id/accept', isAuthenticated, handler.acceptInvite);
+router.patch('/:calendar_id/share_with_link', isAuthenticated, handler.acceptSharelinkInvite);
+
+router.patch('/:calendar_id/decline', isAuthenticated, handler.declineInvite);
+router.patch('/:calendar_id/leave', isAuthenticated, async function (req, res), handler.leaveCalendar);
 
 module.exports = router;

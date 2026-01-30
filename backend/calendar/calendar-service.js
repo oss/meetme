@@ -3,14 +3,17 @@ const Calendar_schema_meta = require('./calendar_schema_meta');
 const Calendar_schema_main = require('./calendar_schema_main');
 const User_schema = require('../user/user_schema');
 const Org_schema = require('../organizations/organization_schema');
+const { valid_netid } = require('../auth/util/LDAP_utils');
 const { traceLogger, _baseLogger } = require('#logger');
+
+// TODO: hoik req out of these by using a middleware logging
 
 // Determines if a user can write to the calendar. A user can write if the
 // following requirements are satisfied:
 //    calendar: user must be the owner of the calendar
 //    org calendar: user must be owner, admin, or editor
 // Returns the calendar if true or null
-export async function getWritableCalendar(id, userid, req) {
+async function getWritableCalendar(id, userid, req) {
     traceLogger.verbose('fetching calendar for writing...', req, { calendar_id: id, user: userid });
     const cal = await Calendar_schema_meta.findOne({
 	_id: id,
@@ -65,6 +68,9 @@ export async function getReadableCalendar(id, userid, req) {
 	return (org === null) ? null : cal;
     }
     return cal;
+}
+
+export async function getPendingCalendar(id, userid, req) {
 }
 
 export async function setLocation(id, userid, location, req) {
@@ -172,7 +178,7 @@ export async function getUserList(id, userid, req) {
 	}
 
 	const all_individual_shared = await User_schema.distinct('_id', {
-            'calendars._id': req.params.calendar_id,
+            'calendars._id': id,
             _id: {
 		$nin: nin_arr,
             },
@@ -325,4 +331,250 @@ export async function getTimeine(id, userid, req) {
     } else {
 	throw new Error('Permission denied or no calendar');
     }
+}
+
+export async function shareCalendar(id, users, userid, req) {
+    traceLogger.verbose("sharing calendars with users...", req, { calendar_id: id, users: users });
+    const cal = await getWritableCalendar(id, user, req);
+    if (cal === null) {
+	throw new Error('Permission denied or no calendar');
+    }
+
+    const payload = {
+	already_added: [],
+	new_users: [],
+	added: [],
+	not_added: [],
+    };
+
+    traceLogger.verbose("creating payload...", req, {});
+    for (let i = 0; i < users.length; i++) {
+	const new_user = users[i];
+	if (!(await valid_netid(new_user))) {
+            traceLogger.verbose("skipping invalid netid in payload", req, { user: new_user });
+            payload.not_added.push(new_user);
+            continue;
+	}
+
+	const usr = await User_schema.findOne({ _id: new_user });
+	if (usr === null) {
+	    traceLogger.verbose("no user found, an account will be created", req, { user: new_user });
+	    cal.pendingUsers.push({ _id: new_user });
+            payload.new_users.push(new_user);
+            payload.added.push(new_user);
+            continue;
+	}
+
+	if (user.hasSharedCalendar(id)) {
+	    traceLogger.verbose("already shared with user", req, { user: new_user });
+	    payload.already_added.push(new_user);
+	} else {
+            traceLogger.verbose("added user to payload", req, { user: new_user });
+            payload.added.push(new_user);
+            calendar.pendingUsers.push({ _id: new_user });
+	}
+    }
+
+    // Wrap in transaction since it is multi-table modifications
+    mongoose.connection.transaction.(async() => {
+	for (const user of payload.new_users) {
+	    traceLogger.verbose("user account created and added to payload", req, { user: user });
+	    await create_user(user);
+	}
+
+	traceLogger.verbose("updating calendar...", req, {});
+	await calendar.save();
+
+	traceLogger.verbose("updating users...", req, {});
+	await User_schema.updateMany(
+	    { _id: { $in: payload.added } },
+	    { $push: { pendingCalendars: { _id: id } } }
+	);
+    });
+
+    return payload;
+}
+
+export async function unshareCalendar(id, users, userid) {
+    traceLogger.verbose("unsharing calendars with users...", req, { calendar_id: id, users: users });
+    const cal = await getWritableCalendar(id, user, req);
+    if (cal === null) {
+	throw new Error('Permission denied or no calendar');
+    }
+
+    const payload = {
+	removed: [],
+	not_removed: [],
+    };
+
+    traceLogger.verbose("creating payload...", req, {});
+    if (cal.owner.owner_type === 'organization') {
+	const org = await Org_schema.findOne({
+	    _id: cal.owner._id,
+	    $or: [
+		{ 'owner._id': userid },
+		{ 'admins._id': userid },
+		{ 'editors._id': userid },
+	    ],
+	});
+
+	for (const user of users) {
+	    if (org.hasAdmin(user)) {
+		traceLogger.verbose("user is owner or admin, skipping...", req, { user: user });
+		payload.not_removed.push(user);
+	    } else {
+		traceLogger.verbose("added user for removal", req, { user: user });
+		payload.removed.push(user);
+	    }
+	}
+    } else {
+	for (const user of users) {
+	    if (user === cal.owner._id) {
+		traceLogger.verbose("user is owner, skipping...", req, { user: new_user });
+		payload.not_removed.push(new_user);
+	    } else { 
+		traceLogger.verbose("added user for removal", req, { user: new_user });
+		payload.removed.push(new_user);
+	    }
+	}
+    }
+
+    // Wrap in transaction since it is multi-table modifications
+    mongoose.connection.transaction(async () => {
+        traceLogger.verbose("updating calendar...", req, {});
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    { $pull: { users: { _id: { $in: payload.removed } } } }
+        );
+
+        traceLogger.verbose("updating users...", req, {});
+        await User_schema.updateMany(
+	    { _id: { $in: payload.removed } },
+	    { $pull: { calendars: { _id: id } } }
+        );
+    });
+
+    return payload;
+}
+
+export async function acceptInvite(id, userid, req) {
+    traceLogger.verbose("accepting calendar invite for user...", req, { calendar_id: id, userid: userid });
+    const cal = await Calendar_schema_main.findOne({
+	_id: id,
+	'pendingUsers._id': userid,
+    });
+    if (cal === null) {
+	throw new Error("User has not been invited to calendar or calendar does not exist");
+    }
+
+    // Wrap in transaction since it is multi-table modifications
+    mongoose.connection.transaction(async () => {
+        traceLogger.verbose("updating calendar...", req, {});
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    {
+                $pull: { pendingUsers: { _id: userid } },
+                $push: { users: { _id: userid, times: [] } },
+	    }
+        );
+
+        traceLogger.verbose("updating user...", req, {});
+        await User_schema.updateOne(
+	    { _id: userid },
+	    {
+                $pull: { pendingCalendars: { _id: id } },
+                $push: { calendars: { _id: id } },
+	    }
+        );
+    });
+
+    return id;
+}
+
+export async function acceptSharelinkInvite(id, userid, req) {
+    traceLogger.verbose("accepting calendar sharelink invite for user...", req, { calendar_id: id, userid: userid });
+    const calendar = await Calendar_schema_meta.findOne({ _id: id, shareLink: true });
+    if (calendar === null) {
+	throw new Error("Calendar does not have link sharing or calendar does not exist");
+    }
+
+    const user = await User_schema.findOne({ _id: userid, 'calendars._id': id });
+    if (user !== null) {
+	throw new Error("User already has the calednar");
+    }
+
+    // Wrap in transaction since it is multi-table modifications
+    mongoose.connection.transaction(async () => {
+        traceLogger.verbose("updating calendar...", req, {});
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    {
+                $pull: { pendingUsers: { _id: userid } },
+                $addToSet: { users: { _id: userid, times: [] } },
+	    }
+        );
+        traceLogger.verbose("updating user...", req, {});
+        await User_schema.updateOne(
+	    { _id: userid },
+	    {
+                $pull: { pendingCalendars: { _id: id } },
+                $addToSet: { calendars: { _id: id } },
+	    }
+        );
+    });
+    return id;
+}
+
+export async function declineInvite(id, userid, req) {
+    traceLogger.verbose("declining calendar invite for user...", req, { calendar_id: id, userid: userid });
+    const cal = await Calendar_schema_main.findOne({ _id: id, 'pendingUsers._id': userid });
+    if (cal === null) {
+	throw new Error("User has not been invited to calendar or calendar does not exist");
+    }
+
+    // Wrap in transaction since it is multi-table modifications
+    mongoose.connection.transaction(async () => {
+        traceLogger.verbose("updating user...", req, {});
+        await User_schema.updateOne(
+	    { _id: userid },
+	    { $pull: { pendingCalendars: { _id: id } } }
+        );
+        traceLogger.verbose("updating calendar...", req, {});
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    { $pull: { pendingUsers: { _id: userid } } }
+        );
+    });
+
+    return id;
+}
+
+// Wrap in transaction since it is multi-table modifications
+export async function leaveCalendar(id, userid, req) {
+    traceLogger.verbose("leaving calendar for user...", req, { calendar_id: id, userid: userid });
+    const cal = await Calendar_schema_main.findOne({ _id: id, 'users._id': userid });
+    if (cal === null) {
+	throw new Error("Calendar does not exist or you are not in the calendar");
+    }
+    if (cal.owner._id === userid) {
+	throw new Error("You cannot leave the calendar when you are the owner")
+    }
+
+    mongoose.connection.transaction(async () => {
+        traceLogger.verbose("updating user...", req, {});
+        await User_schema.updateOne(
+	    { _id: userid },
+	    {
+                $pull: { calendars: { _id: id } },
+	    }
+        );
+        traceLogger.verbose("updating calendar...", req, {});
+        await Calendar_schema_main.updateOne(
+	    { _id: id },
+	    {
+                $pull: { users: { _id: userid } },
+	    }
+        );
+    });
+    return id;
 }

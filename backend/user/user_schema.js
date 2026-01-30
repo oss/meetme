@@ -36,6 +36,11 @@ const user = new Schema({
     ],
 });
 
+user.methods.hasSharedCalendar = function hasSharedCalendar(id) {
+    return this.calendars.some((item) => item._id === id)
+	|| this.pendingCalendars.some((item) => item._id === id);
+}
+
 const User = mongoose.model('users', user);
 
 module.exports = User;

@@ -243,7 +243,7 @@ export async function setOwner(req, res) {
 	await service.setowner(calendar_id, newowner, req.user.id, req);
 	res.json({ Status: 'ok' });
     } catch (e) {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -272,7 +272,7 @@ export async function setUserTimeblocks(req, res) {
 	}
 	res.json({ 'Status': 'ok', timeblocks: timeblocks });
     } catch {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -301,7 +301,7 @@ export async function setTimeblocks(req, res) {
 	}
 	res.json({ 'Status': 'ok', timeblocks: timeblocks });
     } catch (e) {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -311,7 +311,7 @@ export async function getTimeblocks(req, res) {
 	blocks = await service.getTimeblocks(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', timeblocks: blocks });
     } catch (e) {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -351,10 +351,10 @@ export async function getUsers(req, res) {
     // time_array.iso_string = firstday.toISOString();
 
     try {
-	const users = await calendar.getUsers(calendar_id, req.user.id, req);
+	const users = await service.getUsers(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', users: users });
     } catch {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
     }
 }
 
@@ -387,9 +387,105 @@ export async function() getMe(req, res) {
     }
 
     try {
-	const timeline = await calendar.getTimeline(calendar_id, req.user.id, req);
+	const timeline = await service.getTimeline(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', timeline: timeline });
     } catch {
-	res.json({ Status: 'error', error: e.message);
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function shareCalendar(req, res) {
+    const calendar_id = req.params.calendar_id;
+    const new_users = req.body.new_users;
+
+    traceLogger.verbose("validating parameters...", req, { new_users: new_users });
+    if (new_users === undefined || new_users === null) {
+	res.json({ Status: 'error', error: 'No users found' });
+	return;
+    }
+
+    if (new_users.length === 0) {
+        res.json({ Status: 'error', error: 'new_users is empty' });
+        return;
+    }
+
+    if (!JSON.stringify(new_users).match('(?:"[a-zA-Z0-9]+",?)+')) {
+        res.json({ Status: 'error', error: 'Invalid new_user syntax' });
+        return;
+    }
+
+    try {
+	const payload = await service.shareCalendar(calendar_id, new_users, req.user.id, req);
+	res.json({ Status: 'ok', payload: payload });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function unshareCalendar(req, res) {
+    const calendar_id = req.params.calendar_id;
+    const users = req.body.target_users;
+
+    traceLogger.verbose("validating parameters...", req, { users: users });
+    if (target_users === undefined || target_users === null) {
+        res.json({ Status: 'error', error: 'No users found' });
+        return;
+    }
+
+    if (target_users.length === 0) {
+        res.json({ Status: 'error', error: 'target_users is empty' });
+        return;
+    }
+
+    if (!JSON.stringify(target_users).match('(?:"[a-zA-Z0-9]+",?)+')) {
+        res.json({ Status: 'error', error: 'Invalid target_user syntax' });
+        return;
+    }
+
+    try {
+	const payload = await service.unshareCalendar(calendar_id, users, req.user.id, req);
+	res.json({ Status: 'ok', payload: payload });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function acceptInvite(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const id = await service.acceptInvite(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', calendar_id: id });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function acceptSharelinkInvite(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const id = await service.acceptSharelinkInvite(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', calendar_id: id });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function declineInvite(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const id = await service.declineInvite(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', calendar_id: id });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function leaveCalendar(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const id = await service.leaveCalendar(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', calendar_id: id });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
     }
 }
