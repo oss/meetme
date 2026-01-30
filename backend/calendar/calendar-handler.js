@@ -35,48 +35,41 @@ async function valid_timeblocks(timeblocks, res) {
     }
 
     for (let i = 0; i < timeblocks.length; i++) {
-	if (timeblocks[i] == null) {
-	    return res.json({ Status: 'error', error: `Timeblocks at index ${i} is null.` });
-	}
-	if (timeblocks[i].start >= timeblocks[i].end) {
-	    res.json({
-		Status: 'error',
-		error: 'Invalid timeblocks',
-		timeblock: timeblocks[i].start,
-	    });
-	    return false;
-	}
-	if (!JSON.stringify(timeblocks[i]).match(
+        const timeblock = timeblocks[i];
+        if (!JSON.stringify(timeblocks[i]).match(
 	    '{ ?"start": ?[0-9]+ ?, ?"end": ?[0-9]+ ?}'
 	)) {
+	    traceLogger.verbose("invalid timeblock", req, { timeblock: timeblock });
 	    res.json({
 		Status: 'error',
 		error: 'Invalid timeblock',
-		timeblock: timeblocks[i],
 	    });
-	    return false;
-	}
-	if (timeblocks[i].start % (1000 * 60) !== 0 || timeblocks[i].end % (1000 * 60) !== 0) {
-	    res.json({
-		Status: 'error',
-		error: 'not a full minute',
-		timeblock: timeblocks[i],
-	    });
-	    return false;
-	}
-    }
+            return false;
+        }
 
-    for (let i = 1; i < timeblocks.length; i++) {
-        if (timeblocks[i - 1].end > timeblocks[i].start) {
+        if (timeblock.start > timeblock.end) {
             res.json({
                 Status: 'error',
-                error: 'Invalid times',
-                timeblock: [
-                    { index: i - 1, end: timeblocks[i - 1].end },
-                    { index: i, start: timeblocks[i].start },
-                ],
+                error: 'Timeblock start cannot occur after end',
+                Timeblock: { start: timeblock.start, end: timeblock.end },
             });
             return false;
+        }
+
+        if (i !== 0) {
+            const timeblock_prev = timeblocks[i - 1];
+            const timeblock_current = timeblocks[i];
+            if (timeblock_prev.end > timeblock_current.start) {
+                res.json({
+                    Status: 'error',
+                    error: 'Timeblock conflict',
+                    conflict: {
+                        before: timeblock_prev,
+                        after: timeblock_current,
+                    },
+                });
+                return false;
+            }
         }
     }
     return true;
@@ -101,8 +94,8 @@ export async function getLocation(req, res) {
     const calendar_id = req.params.calendar_id;
 
     try {
-	const location = await service.getLocation(id, req.user.id, req);
-	res.json({ Status: 'ok', location: cal.location });
+	const meta = await service.getMeta(id, req.user.id, req);
+	res.json({ Status: 'ok', location: meta.location });
     } catch (e)
 	res.json({ Status: 'error', error: e.message });
     }
@@ -145,8 +138,8 @@ export async function setMeetingTime(req, res) {
 export async function getMeetingTime(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
-	const meetingTime = await service.getMeetingTime(id, req.user.id, req);
-	res.json({ Status: 'ok', meeting_time: cal.meetingTime });
+	const meta = await service.getMeta(id, req.user.id, req);
+	res.json({ Status: 'ok', meeting_time: meta.meetingTime });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
@@ -174,8 +167,8 @@ export async function setName(req, res) {
 export async function getName(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
-	const name = await service.getName(id, req.user.id, req);
-	res.json({ Status: 'ok', name: name });
+	const meta = await service.getMeta(id, req.user.id, req);
+	res.json({ Status: 'ok', name: meta.name });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
@@ -205,8 +198,8 @@ export async function setShareLink(req, res) {
 export async function getShareLink(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
-	const shareLink = await service.getShareLink(id, req.user.id, req);
-	res.json({ Status: 'ok', shareLink: shareLink });
+	const meta = await service.getMeta(id, req.user.id, req);
+	res.json({ Status: 'ok', shareLink: meta.shareLink });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
@@ -255,7 +248,7 @@ export async function setUserTimeblocks(req, res) {
 	return;
     }
     const timeblocks = req.body.timeblocks;
-    if (!(await valid_timeblocks(mode))) {
+    if (!(await valid_timeblocks(timeblocks))) {
 	return;
     }
     try {
@@ -283,7 +276,7 @@ export async function setTimeblocks(req, res) {
 	return;
     }
     const timeblocks = req.body.timeblocks;
-    if (!(await valid_timeblocks(mode))) {
+    if (!(await valid_timeblocks(timeblocks))) {
 	return;
     }
 
@@ -308,8 +301,8 @@ export async function setTimeblocks(req, res) {
 export async function getTimeblocks(req, res) {
     const calendar_id = req.params.calendar_id;
     try {
-	blocks = await service.getTimeblocks(calendar_id, req.user.id, req);
-	res.json({ Status: 'ok', timeblocks: blocks });
+	const meta = await service.getMeta(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', timeblocks: meta.timeblocks });
     } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
@@ -351,8 +344,8 @@ export async function getUsers(req, res) {
     // time_array.iso_string = firstday.toISOString();
 
     try {
-	const users = await service.getUsers(calendar_id, req.user.id, req);
-	res.json({ Status: 'ok', users: users });
+	const meta = await service.getMeta(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', users: meta.users });
     } catch {
 	res.json({ Status: 'error', error: e.message });
     }
@@ -488,4 +481,82 @@ export async function leaveCalendar(req, res) {
     } catch {
 	res.json({ Status: 'error', error: e.message });
     }
+}
+
+export async function createCalendar(req, res) {
+    traceLogger.verbose("validating calendar public status...", req, {});
+    const { owner, timeblocks, name, location, public } = req.body;
+    if (public !== undefined && !public.toString().match('true|false')) {
+        req.json({ Status: 'error', error: 'Need a valid public status' });
+        return;
+    }
+
+    if (!(await valid_timeblocks(timeblocks))) {
+	return;
+    }
+
+    //impemented default name of 'untitled' below, maybe uncomment to add banned names?
+    /*
+    const name = req.get('name');
+    if (name === undefined) {
+        res.json({
+            Status: "error",
+            error: "No name found"
+        });
+        return;
+    }
+    */
+
+    // verify owner data is ok and able to create calendar
+    traceLogger.verbose("checking for owner...", req, {});
+    if (owner === undefined) {
+        traceLogger.verbose("no owner specified, defaulting to requester as owner", req, {});
+        owner = { type: 'individual', id: req.user.uid };
+    }
+
+    try {
+	const calendar = await service.createCalendar(owner, timeblocks, name, location, public, req.user.id, req);
+	res.json({ Status: 'ok', calendar: calendar });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function deleteCalendar(req, res) {
+    const calendar_id = req.params.calendar_id;
+
+    try {
+	const calendar = await service.deleteCalendar(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', calendar: calendar });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function getMeta(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const meta = await service.getMeta(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', metadata: meta });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function getMain(req, res) {
+    const calendar_id = req.params.calendar_id;
+    try {
+	const meta = await service.getMain(calendar_id, req.user.id, req);
+	res.json({ Status: 'ok', maindata: main });
+    } catch {
+	res.json({ Status: 'error', error: e.message });
+    }
+}
+
+export async function getLinks(req, res) {
+    res.json({
+	Status: 'error',
+	error: 'Not implemented',
+    });
+    return;
 }

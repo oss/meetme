@@ -12,7 +12,7 @@ const { traceLogger, _baseLogger } = require('#logger');
 // following requirements are satisfied:
 //    calendar: user must be the owner of the calendar
 //    org calendar: user must be owner, admin, or editor
-// Returns the calendar if true or null
+// Returns the calendar or throw an error
 async function getWritableCalendar(id, userid, req) {
     traceLogger.verbose('fetching calendar for writing...', req, { calendar_id: id, user: userid });
     const cal = await Calendar_schema_meta.findOne({
@@ -32,29 +32,37 @@ async function getWritableCalendar(id, userid, req) {
 		{ 'editors._id': userid },
 	    ],
 	});
-	return (org === null) ? null : cal;
+	if (org === null) {
+	    throw new Error("Permission denied");
+	}
+    }
+    if (cal === null) {
+	throw new Error("Permission denied");
     }
     return cal;
 }
 
-// Determines if a user can read the calendar. A user can read if the following
-// requirements are satisfied:
+// Returns the main data associated with the calendar. This method handles
+// permissions and will return the data only if the user is allowed to read it.
+// A user is allowed to read a calendar if any of the following are satisfied:
 //    calendar: user must be the owner, user, or view of the calendar
 //    org calendar: user must be owner, admin, editor, member, or viewer
-// Returns the calendar if true or null
-export async function getReadableCalendar(id, userid, req) {
-    traceLogger.verbose('fetching calendar for reading...', req, { calendar_id: id, user: userid });
-    const cal = await Calendar_schema_meta.findOne({
+//    pending: pending users of an org or calendar can always read
+// Returns the calendar or throws an error.
+export async function getMain(id, userid, req) {
+    traceLogger.verbose('fetching main data for calendar...', req, { calendar_id: id });
+    const cal = await Calendar_schema_main.findOne({
 	_id: id,
 	$or: [
 	    { 'owner.owner_type': 'organization' },
 	    { 'owner._id': userid },
 	    { 'users._id': userid },
 	    { 'viewers._id': userid },
+	    { 'pendingUsers._id': userid },
 	],
     });
     if (cal !== null && cal.owner.owner_type === 'organization') {
-	traceLogger.verbose('checking calendar read permissions for user...', req, { calendar_id: id, org: cal.owner._id, user: userid });
+	traceLogger.verbose('calendar belongs to org, checking if user is in organization...', req, { calendar_id: id, org: cal.owner._id });
 	const org = await Org_schema.findOne({
 	    _id: id,
 	    $or: [
@@ -63,208 +71,134 @@ export async function getReadableCalendar(id, userid, req) {
 		{ 'editors._id': userid },
 		{ 'members._id': userid },
 		{ 'viewers._id': userid },
+		{ 'pendingMembers._id': userid },
 	    ],
 	});
-	return (org === null) ? null : cal;
+
+	if (org === null) {
+	    throw new Error("Permission denied");
+	}
     }
+    if (cal === null) {
+	throw new Error("Permission denied");
+    }
+
     return cal;
 }
 
-export async function getPendingCalendar(id, userid, req) {
+export async function getMeta(id, userid, req) {
+    const cal = await getMain(id, userid, req);
+    const metadata = await Calendar_schema_meta.findOne({ _id: id });
+    return metadata;
 }
 
 export async function setLocation(id, userid, location, req) {
     traceLogger.verbose('updating location of calendar...', req, { calendar_id: id, location: location, user: userid });
-    if ((await getWritableCalendar(id, userid, req)) !== null) {
-	await Calendar_schema_meta.updateOne(
-	    { _id: id },
-	    { $set: { location: location } }
-	);
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
-export async function getLocation(id, userid, req) {
-    traceLogger.verbose('fetching location of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.location;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+    await getWritableCalendar(id, userid, req);
+    await Calendar_schema_meta.findByIdAndUpdate(id, { location: location });
 }
 
 export async function setMeetingTime(id, meetingTime, userid, req) {
-    traceLogger.verbose("updating meeting time of calendar...", req, { calendar_id: id, user: userid, meetingTime: meetingTime });
-    if ((await getWritableCalendar(id, userid, req)) !== null) {
-        await Calendar_schema_meta.updateOne(
-	    { _id: id },
-	    { $set: { meetingTime: meetingTime } }
-        );
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
-export async function getMeetingTime(id, userid, req) {
-    traceLogger.verbose('fetching meeting time of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.meetingTime;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+    traceLogger.verbose("updating meeting time of calendar...", req, { calendar_id: id, meetingTime: meetingTime });
+    await getWritableCalendar(id, userid, req);
+    await Calendar_schema_meta.findByIdAndUpdate(id, { meetingTime: meetingTime });
 }
 
 export async function setName(id, name, userid, req) {
-    traceLogger.verbose('updating name of calendar...', req, { calendar_id: id, name: name, user: userid });
-    if ((await getWritableCalendar(id, userid, req)) !== null) {
-	await Calendar_schema_metadata.updateOne(
-	    { _id: id },
-	    { $set: { name: name } }
-	);
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
-export async function getName(id, userid, req) {
-    traceLogger.verbose('fetching name of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.name;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+    traceLogger.verbose('updating name of calendar...', req, { calendar_id: id, name: name });
+    await getWritableCalendar(id, userid, req);
+    await Calendar_schema_metadata.findByIdAndUpdate(id, { name: name });
 }
 
 export async function setShareLink(id, sharelink, userid, req) {
-    traceLogger.verbose('updating sharelink of calendar...', req, { calendar_id: id, sharelink: sharelink, user: userid });
-    if ((await getWritableCalendar(id, userid, req)) !== null) {
-	await Calendar_schema_meta.updateOne(
-	    { _id: id },
-	    { $set: { shareLink: shareLink } }
-	);
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
-export async function getShareLink(id, userid, req) {
-    traceLogger.verbose('fetching sharelink of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.shareLink;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+    traceLogger.verbose('updating sharelink of calendar...', req, { calendar_id: id, sharelink: sharelink });
+    await getWritableCalendar(id, userid, req);
+    await Calendar_schema_meta.findByIdAndUpdate(id, { shareLink: shareLink });
 }
 
 export async function getUserList(id, userid, req) {
     traceLogger.verbose('fetching userlist of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	traceLogger.verbose("creating memberlist...", req, {});
-	const memberlist = [];
-	const nin_arr = [];
-	if (cal.owner.owner_type === 'individual') {
-	    memberlist.push({ _id: cal.owner._id, type: 'owner' });
-	    nin_arr.push(cal.owner._id);
-	}
-	for (let i = 0; i < cal.viewers.length; i++) {
-	    memberlist.push({ _id: cal.viewers[i]._id, type: 'viewer' });
-	    nin_arr.push(cal.viewers[i]._id);
-	}
 
-	const all_individual_shared = await User_schema.distinct('_id', {
-            'calendars._id': id,
-            _id: {
-		$nin: nin_arr,
-            },
-	});
-
-	for (let i = 0; i < all_individual_shared.length; i++) {
-            memberlist.push({ _id: all_individual_shared[i], type: 'user' });
-	}
-
-	return memberlist;
-    } else {
-	throw new Error('Permission denied or no calendar');
+    const cal = await getMain(id, userid, req);
+    traceLogger.verbose("creating memberlist...", req, {});
+    const memberlist = [];
+    const nin_arr = [];
+    if (cal.owner.owner_type === 'individual') {
+	memberlist.push({ _id: cal.owner._id, type: 'owner' });
+	nin_arr.push(cal.owner._id);
     }
+    for (let i = 0; i < cal.viewers.length; i++) {
+	memberlist.push({ _id: cal.viewers[i]._id, type: 'viewer' });
+	nin_arr.push(cal.viewers[i]._id);
+    }
+
+    const all_individual_shared = await User_schema.distinct('_id', {
+        'calendars._id': id,
+        _id: { $nin: nin_arr },
+    });
+
+    for (const individual of all_individual_shared) {
+        memberlist.push({ _id: individual, type: 'user' });
+    }
+
+    return memberlist;
 }
 
 export async function setOwner(id, newowner, userid, req) {
     traceLogger.verbose('updating owner of calendar...', req, { calendar_id: id, newowner: owner, user: userid });
     const cal = await getWritableCalendar(id, userid, req);
-    if (cal !== null) {
-	if (newowner.owner_type === undefined || newowner.owner_type === 'individual') {
-	    traceLogger.verbose("new owner is individual, checking if user exists...", req, { owner: newowner._id });
-	    if ((await User_schema.findOne({ _id: newowner.id })) === null) {
-		throw new Error("User does not exist");
-	    }
-	} else {
-	    traceLogger.verbose("new owner is org, checking if org exists...", req, { owner: newowner._id });
-	    if ((await Org_schema.findOne({ _id: newowner.id })) === null) {
-		throw new Error("Organization does not exist");
-	    }
+    if (newowner.owner_type === undefined || newowner.owner_type === 'individual') {
+	traceLogger.verbose("new owner is individual, checking if user exists...", req, { owner: newowner._id });
+	if ((await User_schema.findOne({ _id: newowner.id })) === null) {
+	    throw new Error("User does not exist");
 	}
-
-	/** 
-	 * possibilities
-	 * individual to individual -> easy
-	 * individual to org -> easy
-	 * org to individual
-	 * org to org
-	 */
-	// TODO: implmement
     } else {
-	throw new Error('Permission denied or no calendar');
+	traceLogger.verbose("new owner is org, checking if org exists...", req, { owner: newowner._id });
+	if ((await Org_schema.findOne({ _id: newowner.id })) === null) {
+	    throw new Error("Organization does not exist");
+	}
     }
+
+    /** 
+     * possibilities
+     * individual to individual -> easy
+     * individual to org -> easy
+     * org to individual
+     * org to org
+     */
+    // TODO: implmement
 }
 
 export async function repUserTimeblocks(id, timeblocks, userid, req) {
     traceLogger.verbose('replacing user timeblocks of calendar...', req, { calendar_id: id, timeblocks: timeblocks, user: userid });
     const cal = await getWritableCalendar(id, userid, req);
-    if (cal !== null) {
-	mongoose.connection.transaction(async () => {
-	    if (cal.owner.owner_type == "individual") {
-		await Calendar_schema_main.updateOne(
-		    { _id: id, 'users._id': userid },
-		    { $set: { 'users.$.times': timeblocks } }
-		);
-	    } else
-		// If the user does not exist in the current array of users,
-		// then add it and then set the timeblocks.
-		// If the user already exists, then just set the timeblocks.
-		// TODO: have to change this to one query instead of two seperate querys. Not sure if it is possible.
-                const calendar = await Calendar_schema_main.findOne({
-		    _id: id,
-		    'users._id': userid,
-                });
-                if (calendar === null) {
-		    await Calendar_schema_main.updateOne(
-                        { _id: id },
-                        { $push: { users: { _id: userid, times: timeblocks } } }
-		    );
-                } else {
-		    await Calendar_schema_main.updateOne(
-                        { _id: id, 'users._id': userid },
-                        { $set: { 'users.$.times': timeblocks } }
-		    );
-                }
-	    }
-
-            //update modified time in the metadata
-            const current_time = new Date().getTime();
-            await Calendar_schema_meta.updateOne(
+    mongoose.connection.transaction(async () => {
+	// We don't have to check if the calendar is individual or organization
+	// because we handle it the same in both cases:
+	//   If the user does not exist in the current array of users,
+	//      then add it and then set the timeblocks.
+	//   If the user already exists, then just set the timeblocks
+	// Only difference is that for an individual the owner is the only user
+	if (cal.users.some((item) => item._id === userid)) {
+	    await Calendar_schema_main.updateOne(
+		{ _id: id, 'users._id': userid },
+		{ $set: { 'users.$.times': timeblocks } }
+	    );
+	} else {
+	    await Calendar_schema_main.updateOne(
 		{ _id: id },
-		{ $set: { modified: current_time} }
-            );
-	});
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+		{ $push: { users: { _id: userid, times: timeblocks } } }
+	    );
+	}
+
+	// TODO: mongodb natively supports modified times, maybe look into using that
+        // Update modified time in the metadata
+        const current_time = new Date().getTime();
+        await Calendar_schema_meta.updateOne(
+	    { _id: id },
+	    { $set: { modified: current_time} }
+        );
+    });
 }
 
 // TODO: implement
@@ -273,72 +207,37 @@ export async function subUserTimeblocks(id, timeblocks, userid, req) { };
 
 export async function repTimeblocks(id, timeblocks, userid, req) {
     traceLogger.verbose('replacing timeblocks of calendar...', req, { calendar_id: id, timeblocks: timeblocks, user: userid });
-    if ((await getWritableCalendar(id, userid, req)) !== null) {
-        await Calendar_schema_main.updateOne(
-	    { _id: id },
-	    { $set: { blocks: timeblocks } }
-        );
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+    await getWritableCalendar(id, userid, req);
+    await Calendar_schema_main.findByIdAndUpdate(id, { blocks: timeblocks });
 }
 
 // TODO: implement
 export async function addTimeblocks(id, timeblocks, userid, req) { };
 export async function subTimeblocks(id, timeblocks, userid, req) { };
 
-export async function getTimeblocks(id, userid, req) {
-    traceLogger.verbose('fetching timeblocks of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.blocks;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
-export async function getUsers(id, userid, req) {
-    traceLogger.verbose('fetching users of calendar...', req, { calendar_id: id, user: userid });
-    const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return cal.users;
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
-}
-
 export async function getTimeine(id, userid, req) {
     traceLogger.verbose('fetching user\'s timeline for calendar...', req, { calendar_id: id, user: userid });
     const cal = await getReadableCalendar(id, userid, req);
-    if (cal !== null) {
-	return await Calendar_schema_main.aggregate([
-	    {
-		$match: { _id: calendar_id },
-	    },
-	    {
-		$addFields: {
-		    timeline: {
-			$filter: {
-			    input: '$users',
-			    as: 'item',
-			    cond: { $eq: ['$$item._id', userid] },
-			},
+    return await Calendar_schema_main.aggregate([
+	{ $match: { _id: id } },
+	{
+	    $addFields: {
+		timeline: {
+		    $filter: {
+			input: '$users',
+			as: 'item',
+			cond: { $eq: ['$$item._id', userid] },
 		    },
 		},
 	    },
-	    { $project: { timeline: 1 } },
-	]);
-    } else {
-	throw new Error('Permission denied or no calendar');
-    }
+	},
+	{ $project: { timeline: 1 } },
+    ]);
 }
 
 export async function shareCalendar(id, users, userid, req) {
     traceLogger.verbose("sharing calendars with users...", req, { calendar_id: id, users: users });
     const cal = await getWritableCalendar(id, user, req);
-    if (cal === null) {
-	throw new Error('Permission denied or no calendar');
-    }
 
     const payload = {
 	already_added: [],
@@ -398,9 +297,6 @@ export async function shareCalendar(id, users, userid, req) {
 export async function unshareCalendar(id, users, userid) {
     traceLogger.verbose("unsharing calendars with users...", req, { calendar_id: id, users: users });
     const cal = await getWritableCalendar(id, user, req);
-    if (cal === null) {
-	throw new Error('Permission denied or no calendar');
-    }
 
     const payload = {
 	removed: [],
@@ -500,7 +396,7 @@ export async function acceptSharelinkInvite(id, userid, req) {
 
     const user = await User_schema.findOne({ _id: userid, 'calendars._id': id });
     if (user !== null) {
-	throw new Error("User already has the calednar");
+	throw new Error("User already has the calendar");
     }
 
     // Wrap in transaction since it is multi-table modifications
@@ -578,3 +474,177 @@ export async function leaveCalendar(id, userid, req) {
     });
     return id;
 }
+
+export async function createCalendar(owner, timeblocks, name, location, public, userid, req) {
+    traceLogger.verbose("creating calendar...", req, {});
+    const calendar_maindata = new Calendar_schema_main();
+    const calendar_metadata = new Calendar_schema_meta();
+
+    const calendar_id = createHash('sha512')
+        .update(new Date().getTime().toString() + owner.owner_id + Math.random())
+        .digest('base64url');
+    calendar_maindata._id = calendar_id;
+    calendar_metadata._id = calendar_id;
+
+    calendar_metadata.name = name || 'untitled';
+    calendar_metadata.location = location || null;
+    calendar_metadata.created = new Date().getTime();
+    calendar_metadata.modified = new Date().getTime();
+    calendar_metadata.description = [];
+    calendar_maindata.links = [];
+    calendar_metadata.public = public || false; //false by default
+    calendar_metadata.shareLink = public || false; //false by default
+
+    //TODO: double check that owner and org id match
+    calendar_maindata.owner = {
+        owner_type: owner.type,
+        _id: owner.id,
+    };
+    calendar_metadata.owner = {
+        owner_type: owner.type,
+        _id: owner.id,
+    };
+    calendar_maindata.blocks = timeblocks;
+    calendar_metadata.meetingTime = { start: null, end: null };
+
+    // A little duplication, but we don't really want error paths inside of the
+    // mongoose transaction
+    traceLogger.verbose("validating owner conditions for new calendar...", req, { org: owner.id });
+    if (owner.type === 'individual' && owner.id !== userid) {
+	throw new Error('Owner does not match session');
+    } else if {
+	traceLogger.verbose("owner is org, checking if requester has permission...", req, { org: owner.id });
+	const target_org = await Org_schema.findOne({
+	    _id: owner.id,
+	    $or: [
+		{ owner: { _id: userid } },
+		{ editors: { _id: userid } },
+		{ admins: { _id: userid } },
+	    ],
+	});
+	if (target_org === null) {
+	    throw new Error('Organization not found or invalid permissions');
+	}
+    }
+
+    traceLogger.verbose("inserting calendar...", req, {});
+    await mongoose.connection.transaction(async () => {
+	if (owner.type === 'individual') {
+	    calendar_maindata.users = [{ _id: owner.id, times: [] }];
+	    await User_schema.updateOne(
+		{ _id: userid },
+		{ $push: { calendars: { _id: id } } }
+	    );
+	} else {
+            calendar_maindata.users = [];
+            await Org_schema.updateOne(
+		{ _id: owner.id },
+		{ $push: { calendars: { _id: id } } }
+            );
+	}
+
+        await calendar_metadata.save();
+        await calendar_maindata.save();
+    });
+
+    const recieved_meta = await Calendar_schema_meta.findOne(
+	calendar_metadata,
+	{ __v: 0 }
+    );
+    const recieved_main = await Calendar_schema_main.findOne(
+	calendar_maindata,
+	{ __v: 0 }
+    );
+
+    //idk what ._doc does but it gives us what we need
+    return { ...recieved_meta, ...recieved_main }._doc;
+}
+
+export async function deleteCalendar(id, userid, req) {
+    traceLogger.verbose("deleting calendar", req, { calendar_id: id, userid: userid });
+    const cal = getWritableCalendar(id, userid);
+    if (cal === null) {
+	throw new Error('Permission denied or no calendar');
+    }
+
+    traceLogger.verbose("checking owner conditions for calendar deletion", req, {});
+    if (cal.owner.owner_type === 'individual' & userid !== cal.owner._id) {
+	traceLogger.verbose("unable to delete calender, user is not owner", req, { owner: cal.owner_id });
+	throw new Error('Permission denied');
+    } else if (cal.owner.owner_type === 'organization') {
+	traceLogger.verbose("owner is org, checking if user has permission to delete...", req, { owner: cal.owner_id });
+	const org = await Org_schema.findOne({
+	    _id: cal.owner._id,
+	    $or: [{ owner: userid }, { 'admins._id': userid }],
+	});
+	if (org === null) {
+	    throw new Error('Permission denied or no organization');
+	}
+    }
+
+    await mongoose.connection.transaction(async () => {
+	traceLogger.verbose("deleting calendar...", req, {});
+
+	//delete calendar from database
+	await Calendar_schema_main.deleteOne({ _id: id });
+	await Calendar_schema_meta.deleteOne({ _id: id });
+
+	//remove calendar from all users
+	await User_schema.updateMany(
+	    { _id: { $in: cal.users._id } },
+	    { $pull: { calendars: { _id: id } } }
+	);
+	//remove all viewers
+	await User_schema.updateMany(
+	    { _id: { $in: cal.viewers._id } },
+	    { $pull: { calendars: { _id: id } } }
+	);
+	await User_schema.updateMany(
+	    { _id: { $in: cal.pendingUsers._id } },
+	    { $pull: { pendingCalendars: { _id: id } } }
+	);
+
+        if (cal.owner.owner_type === 'organization') {
+            await Org_schema.updateOne(
+                { _id: cal.owner._id },
+                { $pull: { calendars: { _id: id } } }
+            );
+	}
+	// TODO: I am pretty sure this is not needed since we already nuked the
+	// calendar from everyone
+	//delete all individually shared users in org calendar
+	// await User_schema.updateOne(
+	//     { _id: req.user.uid },
+	//     { $pull: { calendars: { _id: calendar_id } } }
+	// );
+    });
+    return id;
+}
+
+// export async function getLinks(id, userid, req) {
+//     try {
+// 	const links = await Calendar_schema_main.aggregate([
+// 	    { $unwind: '$_id' },
+// 	    { $match: { links } },
+// 	    { $group: { _id: '$_id' } },
+// 	]);
+// 	if (links === null) {
+// 	    res.json({
+// 		Status: 'error',
+// 		error:
+// 		    'Calendar does not exist or you do not have access to this calendar',
+// 	    });
+// 	    return;
+// 	}
+// 	res.json({
+// 	    Status: 'ok',
+// 	    calendar: links,
+// 	});
+// 	traceLogger.verbose("fetched calendar links", req, { uid: req.user.uid, calendar_id: req.params.calendar_id });
+//     } catch (e) {
+// 	res.json({
+// 	    Status: 'error',
+// 	    error: 'backend error occured',
+// 	});
+//     }
+// }

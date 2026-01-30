@@ -6,6 +6,15 @@ const handler = require('./calendar-handler');
 
 router.use(require('./cal'));
 
+// TODO: delete calendar for org schema
+// TODO: implement /dump
+
+router.post('/', isAuthenticated, handler.createCalendar);
+router.delete('/:calendar_id', isAuthenticated, handler.deleteCalendar);
+router.get('/:calendar_id/meta', isAuthenticated, handler.getMeta);
+router.get('/:calendar_id/main', isAuthenticated, handler.getMain);
+router.get('/:calendar_id/links', isAuthenticated, handler.getLinks);
+
 // General calendar settings
 router.patch('/:calendar_id/owner', isAuthenticated, handler.setOwner);
 router.patch('/:calendar_id/location', isAuthenticated, handler.setLocation);
