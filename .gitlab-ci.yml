@@ -261,7 +261,7 @@ build-docs-env:
   script:
     - id
     - export HOME=/tmp
-    - export _BUILDAH_STARTED_IN_USERNS=""
+    - export _CONTAINERS_USERNS_CONFIGURED=done
     # - buildah --isolation=chroot login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - buildah --isolation=chroot --userns=keep-id build -t "docs:${CI_COMMIT_SHA}" ./docs
     # - buildah push "docs:${CI_COMMIT_SHA}"
