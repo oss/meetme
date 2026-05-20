@@ -261,7 +261,7 @@ build-docs-env:
   script:
     - export HOME=/tmp
     # - buildah --isolation=chroot login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - buildah --isolation=chroot build -t "docs:${CI_COMMIT_SHA}" ./docs
+    - buildah --isolation=chroot --userns=host build -t "docs:${CI_COMMIT_SHA}" ./docs
     # - buildah push "docs:${CI_COMMIT_SHA}"
     # - buildah logout "$CI_REGISTRY"
     # - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
