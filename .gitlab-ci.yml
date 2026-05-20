@@ -259,6 +259,7 @@ build-docs-env:
     STORAGE_DRIVER: vfs
     BUILDAH_ISOLATION: chroot
   script:
+    - id
     - export HOME=/tmp
     - export _BUILDAH_STARTED_IN_USERNS=""
     # - buildah --isolation=chroot login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
