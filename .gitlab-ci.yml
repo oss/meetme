@@ -253,13 +253,21 @@ build-eslint:
 
 build-docs-env:
   stage: build-env
-  image: quay.io/openshift/origin-cli:latest
+  # image: quay.io/openshift/origin-cli:latest
+  image: quay.io/buildah/stable
+  variables:
+    STORAGE_DRIVER: vfs
   script:
-    - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
-    - oc project oit-eas-macs-meetme-ci
-    - oc get bc docs || oc new-build --strategy docker --binary --name "docs"
-    - oc start-build "docs" --from-dir ./docs --follow
-    - oc tag docs:latest docs:${CI_COMMIT_SHA}
+    - export HOME=/tmp
+    - buildah login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - buildah build -t "docs:${CI_COMMIT_SHA}" ./docs
+    - buildah push "docs:${CI_COMMIT_SHA}"
+    - buildah logout "$CI_REGISTRY"
+    # - oc login --server=https://api.ocp.ei.rutgers.edu:6443 --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+    # - oc project oit-eas-macs-meetme-ci
+    # - oc get bc docs || oc new-build --strategy docker --binary --name "docs"
+    # - oc start-build "docs" --from-dir ./docs --follow
+    # - oc tag docs:latest docs:${CI_COMMIT_SHA}
 
 build-docs:
   stage: build
