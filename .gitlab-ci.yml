@@ -257,6 +257,7 @@ build-docs-env:
   image: quay.io/buildah/stable
   variables:
     STORAGE_DRIVER: vfs
+    BUILDAH_ISOLATION: chroot
   script:
     - export HOME=/tmp
     - buildah login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
