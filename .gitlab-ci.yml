@@ -260,8 +260,17 @@ build-docs-env:
     BUILDAH_ISOLATION: chroot
   script:
     - id
-    - export HOME=/tmp
-    - export _CONTAINERS_USERNS_CONFIGURED=done
+    - whoami || true
+    - echo "$HOME"
+    - buildah info
+    - cat /etc/passwd
+    - cat /etc/subuid || true
+    - cat /etc/subgid || true
+    - cat /proc/self/uid_map
+    - cat /proc/self/gid_map
+    - mount | grep ' /proc '
+    # - export HOME=/tmp
+    # - export _CONTAINERS_USERNS_CONFIGURED=done
     # - buildah --isolation=chroot login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - buildah --isolation=chroot --userns=keep-id build -t "docs:${CI_COMMIT_SHA}" ./docs
     # - buildah push "docs:${CI_COMMIT_SHA}"
