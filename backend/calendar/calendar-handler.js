@@ -264,7 +264,7 @@ export async function setUserTimeblocks(req, res) {
 	    break;
 	}
 	res.json({ 'Status': 'ok', timeblocks: timeblocks });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -346,7 +346,7 @@ export async function getUsers(req, res) {
     try {
 	const meta = await service.getMeta(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', users: meta.users });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -382,7 +382,7 @@ export async function() getMe(req, res) {
     try {
 	const timeline = await service.getTimeline(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', timeline: timeline });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -410,7 +410,7 @@ export async function shareCalendar(req, res) {
     try {
 	const payload = await service.shareCalendar(calendar_id, new_users, req.user.id, req);
 	res.json({ Status: 'ok', payload: payload });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -438,7 +438,7 @@ export async function unshareCalendar(req, res) {
     try {
 	const payload = await service.unshareCalendar(calendar_id, users, req.user.id, req);
 	res.json({ Status: 'ok', payload: payload });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -448,7 +448,7 @@ export async function acceptInvite(req, res) {
     try {
 	const id = await service.acceptInvite(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', calendar_id: id });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -458,7 +458,7 @@ export async function acceptSharelinkInvite(req, res) {
     try {
 	const id = await service.acceptSharelinkInvite(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', calendar_id: id });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -468,7 +468,7 @@ export async function declineInvite(req, res) {
     try {
 	const id = await service.declineInvite(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', calendar_id: id });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -478,7 +478,7 @@ export async function leaveCalendar(req, res) {
     try {
 	const id = await service.leaveCalendar(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', calendar_id: id });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -517,7 +517,7 @@ export async function createCalendar(req, res) {
     try {
 	const calendar = await service.createCalendar(owner, timeblocks, name, location, public, req.user.id, req);
 	res.json({ Status: 'ok', calendar: calendar });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -528,7 +528,7 @@ export async function deleteCalendar(req, res) {
     try {
 	const calendar = await service.deleteCalendar(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', calendar: calendar });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -538,7 +538,7 @@ export async function getMeta(req, res) {
     try {
 	const meta = await service.getMeta(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', metadata: meta });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }
@@ -548,7 +548,7 @@ export async function getMain(req, res) {
     try {
 	const meta = await service.getMain(calendar_id, req.user.id, req);
 	res.json({ Status: 'ok', maindata: main });
-    } catch {
+    } catch (e) {
 	res.json({ Status: 'error', error: e.message });
     }
 }

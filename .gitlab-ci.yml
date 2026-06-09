@@ -1,6 +1,6 @@
-default:
-  tags:
-    - openshift
+# default:
+#   tags:
+#     - openshift
 
 variables:
   FF_NETWORK_PER_BUILD: 1
@@ -100,7 +100,7 @@ backend-api:
     - sed -i 's/^<?xml version="1.0" encoding="UTF-8"?>$//g;s/<testsuites time="[0-9]\+\.[0-9]\+">//g;s/<\/testsuites>//g;/^$/d' ${CI_PROJECT_DIR}/merged.xml
     - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
     - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
-  needs: [ "build-backend", "build-frontend", "build-proxy", "build-backend-proxy", "build-mongo", "build-websocket", "build-saml" ]
+  needs: [ "build-backend", "build-frontend", "build-proxy", "build-mongo", "build-websocket", "build-saml" ]
 
   artifacts:
     when: always
@@ -177,26 +177,6 @@ build-proxy:
         --local context="./proxy-ssl-upgrade/" \
         --local dockerfile="./proxy-ssl-upgrade/" \
         --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
-
-build-prod-proxy:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-prod/" \
-        --local dockerfile="./proxy-prod/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy-prod:${CI_COMMIT_SHA}",push=true
-
-build-backend-proxy:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-backend/" \
-        --local dockerfile="./proxy-backend/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}",push=true
 
 build-mongo:
   extends: .buildkit-build

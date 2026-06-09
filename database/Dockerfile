@@ -1,6 +1,6 @@
 FROM golang:latest as build-stage
 WORKDIR /go
-RUN git clone -b release-0.34.0 https://github.com/percona/mongodb_exporter.git
+RUN git clone https://github.com/percona/mongodb_exporter.git
 WORKDIR /go/mongodb_exporter
 RUN make build
 
