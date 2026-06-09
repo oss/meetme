@@ -1,21 +1,37 @@
-# syntax=docker/dockerfile:1-labs
+# Base image
+FROM node:24-slim as base
 
-FROM node as build-stage
-
+WORKDIR /app
 ARG API_URL=https://api.meetme.oss.rutgers.edu
 ARG WEBSITE_URL=https://meetme.oss.rutgers.edu
 
-RUN mkdir /root/build
-WORKDIR /root
-COPY package.json .
-RUN npm install .
+COPY package.json package-lock.json ./
+RUN npm ci .
 
-COPY --exclude=.npm --exclude=node_modules . .
+COPY . .
+RUN npm run build
 
-RUN API_URL=${API_URL} WEBSITE_URL=${WEBSITE_URL} ./build.sh
+# Run npm dev in dev
+FROM base as dev
 
+WORKDIR /app
+ARG API_URL=https://api.meetme.oss.rutgers.edu
+ARG WEBSITE_URL=https://meetme.oss.rutgers.edu
+
+CMD ["npm", "run", "dev"]
+
+# Serve file using nginx in prod
 FROM nginx:latest
 
-COPY --from=build-stage /root/build /usr/share/nginx/html
-COPY --from=build-stage /root/webpack.output /root/webpack.out
-COPY --from=build-stage /root/proxy/proxy.conf /etc/nginx/conf.d/default.conf
+ENV SITE_URL https://localhost.edu
+ENV PROD false
+
+EXPOSE 80
+EXPOSE 443
+
+RUN mkdir /logs && touch /logs/api.log 
+COPY --from=base /app/build/dist /usr/share/nginx/html
+COPY --from=base /app/nginx /etc/nginx/
+COPY --from=base entrypoint.sh .
+
+CMD ["entrypoint.sh"]
