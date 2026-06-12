@@ -1,6 +1,4 @@
 import AutoLoad from '@fastify/autoload'
-import S from 'fluent-json-schema'
-
 import path from 'node:path'
 
 export default async function (fastify, opts) {
@@ -25,7 +23,7 @@ export default async function (fastify, opts) {
     });
 
     // Log errors and return message
-    fastify.setErrorHandler((err: FastifyError, request, reply) => {
+    fastify.setErrorHandler((err, request, reply) => {
 	fastify.log.error(
 	    {
 		err,

@@ -1,16 +1,12 @@
 const UserService = require('../user-service');
 
-export default async function auth(fastify, opts) {
+export default async function auth(fastify, _opts) {
     const { authorize } = fastify;
 
-    await fastify.get('/login/callback', function (request, reply) {
+    await fastify.get('/login/callback', async function (request, reply) {
 	const token = await this.cas.getaccesstokenfromauthorizationcodeflow(request);
-	try {
-	    const user = await this.cas.userinfo(token.token);
-	    await UserService.updateLastLogin(user.netid);
-	} catch (e) {
-	    throw
-	}
+	const user = await this.cas.userinfo(token.token);
+	await UserService.updateLastLogin(user.netid);
 	// TODO: use fastify-session instead?
 	reply.setCookie("user_session", token.token, {
 	    secure: this.config.NODE_ENV === 'production',
@@ -25,7 +21,7 @@ export default async function auth(fastify, opts) {
 	return reply.redirect('/');
     });
 
-    await fastify.route(
+    await fastify.route({
 	method: 'DELETE',
 	path: '/logout',
 	onRequest: authorize,
@@ -34,7 +30,7 @@ export default async function auth(fastify, opts) {
 	    response: { 204: S.object() }
 	},
 	handler: onLogout,
-    );
+    });
 
     async function onLogout(request, reply) {
 	request.user = null;
@@ -42,7 +38,7 @@ export default async function auth(fastify, opts) {
 	reply.code(204);
     }
 
-    await fastify.route(
+    await fastify.route({
 	method: 'GET',
 	path: '/whoami',
 	onRequest: authorize,
@@ -50,9 +46,9 @@ export default async function auth(fastify, opts) {
 	    description: "Gets the current user session",
 	},
 	handler: onWhoami,
-    );
+    });
 
-    async function onWhoami(request, reply) {
+    async function onWhoami(request, _reply) {
 	return ({ 'user': request.user });
     }
 }

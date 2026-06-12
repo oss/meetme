@@ -1,10 +1,7 @@
 import logger from '#logger';
 import AppError from '#errors';
 
-const mongoose = require('mongoose');
 const User = require('./user-schema');
-
-const assert = require('node:assert').strict;
 
 /// A user is the most basic unit in this system. Users can be in an
 /// organization, in which case they inherit all calendars owned by the
@@ -155,16 +152,20 @@ export async function removeOrganization(users, org) {
 	await User.updateMany(
 	    { _id: { $in: users} },
             {
-                $pull: { organizations: { _id: org._id } },
-                $pull: { calendars: { $in: org.calendars } },
+                $pull: {
+		    organizations: { _id: org._id },
+		    calendars: { $in: org.calendars }
+		},
             }
 	);
     } else {
 	await User.updateOne(
 	    { _id: users },
             {
-                $pull: { organizations: { _id: org._id } },
-                $pull: { calendars: { $in: org.calendars } },
+                $pull: {
+		    organizations: { _id: org._id },
+		    calendars: { $in: org.calendars }
+		},
             }
 	);
     }

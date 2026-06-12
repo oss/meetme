@@ -1,9 +1,9 @@
 import fp from 'fastify-plugin'
-import env from '@fastify/env'
+import Env from '@fastify/env'
 
 // Configuration, access using fastify.config 
-async function env(fastify, opts) {
-    await fastify.register(env, {
+async function env(fastify, _opts) {
+    await fastify.register(Env, {
 	schema: S.object()
 	    .prop('BACKEND_HOST', S.string().required())
 	    .prop('COOKIE_SECRET', S.string().required())

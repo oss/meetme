@@ -4,7 +4,7 @@ const Organization = require('./organization_schema');
 
 const usersSchema = S.array().items(S.string().pattern('^[a-zA-Z0-9]+$')).minItems(1);
 
-export default async function organization(fastify, opts) {
+export default async function organization(fastify, _opts) {
     const { authorize } = fastify;
     fastify.addHook('onRequest', authorize);
 

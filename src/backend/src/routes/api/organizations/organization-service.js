@@ -1,14 +1,13 @@
 import logger from '#logger';
 import AppError from '#errors';
 
-const mongoose = require('mongoose');
-
 const UserService = require('../user-service');
 const ACTION = UserService.ACTION;
 
 const Organization = require('./organization-schema');
 const Calendar = require('./calendar-schema');
 const { createId, difference } = require('../../utils/common');
+import mongoose from 'mongoose';
 
 /// An organization provides a way to manage multiple calendars and also allow
 /// other users to manage calendars as well. Users follow a simple RBAC
@@ -109,27 +108,29 @@ export async function deleteOrganization(id, userid) {
 // system LDAP or whatever. A worthwhile discussion is if we want to enable
 // adding users who don't exist in the database yet.
 export async function shareOrganization(id, users, userid) {
-    const { org, role } = getOrganization(id, userid, true);
-    const members = difference(users, org.members.map(u => u._id));
+    const { org, _role } = await getOrganization(id, userid, true);
+    const members = difference(users, org.members.map(u => u._id))
+    const memberIds = members.map(i => ({ '_id': i, 'role': 'pending' }));
+    if (memberIds.length === 0) return org;
 
     logger.info(`Sharing organization ${id} with users ${members.toString()}`);
-    mongoose.connection.transaction(async () => {
+    return await mongoose.connection.transaction(async () => {
 	await UserService.addOrganization(members, ACTION.SHARE);
 	return await Organization.findByIdAndUpdate(id,
-	    { $push: { members: members.map(i => { '_id': i, 'role': 'pending' }) } },
+	    { $push: { members: { $each: memberIds } } },
 	    { returnDocument: 'after' }
 	);
     });
 }
 
 export async function joinOrganization(id, userid) {
-    const { org, role } = getOrganization(id, userid, false);
+    const { _org, role } = getOrganization(id, userid, false);
     if (role !== "pending") {
 	throw new AppError.badRequest("You are already a member");
     }
 
     logger.info(`User ${id} accepted invite to organization ${id}`);
-    mongoose.connection.transaction(async () => {
+    return await mongoose.connection.transaction(async () => {
 	await UserService.addOrganization(userid, id, ACTION.ACCEPT);
 	return await Organization.findOneAndUpdateOne(
             { _id: id, 'members._id': userid },
@@ -140,14 +141,14 @@ export async function joinOrganization(id, userid) {
 }
 
 export async function leaveOrganization(id, userid) {
-    const { org, role } = getOrganization(id, userid, false);
+    const { _org, role } = getOrganization(id, userid, false);
     logger.info(`User ${userid} is leaving the organization ${id}`);
     if (role === 'owner') {
 	throw new AppError.badRequest('You cannot leave as the owner, please transfer ownership first');
     }
 
     logger.info(`Removing user ${userid} with role ${role} from organization ${id}`);
-    mongoose.connection.transaction(async () => {
+    return await mongoose.connection.transaction(async () => {
 	await UserService.removeOrganization(userid, id);
         return await Organization.findByIdAndUpdate(id,
 	    { $pull: { members: { _id: userid } } },

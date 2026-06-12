@@ -1,7 +1,6 @@
 import logger from '#logger';
 import AppError from '#errors';
-
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const OrganizationService = require('../organization-service');
 const UserService = require('../user-service');
@@ -72,7 +71,7 @@ export async function getCalendar(id, userid, access) {
 		// Run only if calendar is owned by organization, this also
 		// makes individual calendars slightly faster as a side benefit,
 		// I believe we still eat the cost of using a $lookup though
-		{ $match: { $expr: {  $eq: ["$$isOrg", true] } }}
+		{ $match: { $expr: {  $eq: ["$$isOrg", true] } }},
 		// Join only the data about the member
 		{ $project: { member: { $arrayElemAt: [
 		    "$members",
@@ -126,7 +125,7 @@ export async function createCalendar(body, netid) {
 	owner = { "id": netid, "isOrg":  false },
 	name = "untitled",
 	location = "",
-	public = false,
+	public: isPublic = false,
 	shareLink = false,
 	description = "",
 	meetingTime = { start: null, end: null },
@@ -138,13 +137,13 @@ export async function createCalendar(body, netid) {
 	"owner": { "_id": owner.id, "isOrg": owner.isOrg },
 	"name": name,
 	"location": location,
-	"public": public,
+	"public": isPublic,
 	"shareLink": shareLink,
 	"created": new Date().getTime(),
 	"modified": new Date().getTime(),
 	"description": description,
 	"links": [],
-	"meetingTime": meetingTime, end: null },
+	"meetingTime": meetingTime,
 	"timeblocks": timeblocks,
 	"users": [],
     });
@@ -175,7 +174,7 @@ export async function deleteCalendar(id, userid) {
         if (cal.owner.isOrg) {
 	    await OrganizationService.removeCalendar(cal.owner._id, id);
 	}
-	await UserService.removeCalendar(cal.users.concat(userid), id);
+	await UserService.removeCalendar(users.concat(userid), id);
 	await cal.deleteOne();
     });
 }
@@ -200,21 +199,18 @@ export async function patchTimeblocks(id, patch, userid) {
 	    { $set: { "timeblocks.$.blocks": timeblocks } },
 	    { returnDocument: 'after' }
 	);
-	break;
-    case: "ADD":
+    case "ADD":
 	return await Calendar.findOneAndUpdate(
 	    { _id: id, 'timeblocks._id': userid },
 	    { $push: { "timeblocks.$.blocks": { $each: timeblocks } } },
 	    { returnDocument: 'after' }
 	);
-	break;
-    case: "SUB":
+    case "SUB":
 	return await Calendar.findOneAndUpdate(
 	    { _id: id, 'timeblocks._id': userid },
 	    { $pull: { "timeblocks.$.blocks": { $in: timeblocks } } },
 	    { returnDocument: 'after' }
 	);
-	break;
     }
 }
 
@@ -224,25 +220,27 @@ export async function patchTimeblocks(id, patch, userid) {
 export async function shareCalendar(id, users, userid) {
     const cal = await getCalendar(id, userid, ACCESS.WRITE);
     const members = difference(users, cal.users.map(u => u._id));
+    const memberIds = members.map(i => ({ _id: i, isPending: true }));
+    if (memberIds.length === 0) return cal;
 
     logger.info(`User ${userid} shared calendar ${id} with users ${members.toString()}`);
-    mongoose.connection.transaction.(async() => {
+    return await mongoose.connection.transaction(async() => {
 	await UserService.addCalendar(members, id, ACTION.SHARE);
-	await Calendar.findByIdAndUpdate(id, 
-	    { $push: { users: members.map(i => { _id: i, isPending: true })} },
+	return await Calendar.findByIdAndUpdate(id, 
+	    { $push: { users: { $each: memberIds } } },
 	    { returnDocument: 'after' }
 	);
     });
 }
 
 export async function unshareCalendar(id, users, userid) {
-    const cal = await getCalendar(id, userid, ACCESS.WRITE);
+    const _cal = await getCalendar(id, userid, ACCESS.WRITE);
     const rem = [...(new Set(users))];
 
     logger.info(`User ${userid} unshared calendar ${id} with users ${rem.toString()}`);
-    mongoose.connection.transaction(async () => {
+    return await mongoose.connection.transaction(async () => {
 	await UserService.removeCalendar(rem, id);
-        await Calendar.findByIdAndUpdate(id,
+        return await Calendar.findByIdAndUpdate(id,
 	    { $pull: { users: { _id: { $in: rem } } } },
 	    { returnDocument: 'after' }
         );

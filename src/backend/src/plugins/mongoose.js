@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin';
 import mongoose from 'mongoose';
 
-async function mongoose(fastify, opts) {
+async function db(fastify, _opts) {
     const { config } = fastify;
     const url = config.MONGODB_URL;
 
@@ -17,4 +17,4 @@ async function mongoose(fastify, opts) {
 }
 
 // We need env, which holds our config data, to load first
-export default fp(mongoose, { name: 'mongoose' }, dependencies: ['env']);
+export default fp(db, { name: 'db', dependencies: ['env'] });

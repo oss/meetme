@@ -22,7 +22,7 @@ const settingsSchema = S.object()
     .prop('description', S.string())
     .prop('meetingTime', timeblockSchema);
 
-export default async function user(fastify, opts) {
+export default async function user(fastify, _opts) {
     const { authorize } = fastify;
     fastify.addHook('onRequest', authorize);
 
@@ -71,7 +71,7 @@ export default async function user(fastify, opts) {
 	    params: S.object().prop('calendarId', S.string()).required(),
 	    body: S.object()
 		.prop('timeblocks', S.array().items(timeblockSchema).minItems(1)).required()
-		.prop('operation', S.string().enum(['ADD', 'SUB', 'SET'])).required()
+		.prop('operation', S.string().enum(['ADD', 'SUB', 'SET'])).required(),
 	    response: { 200: S.object().prop('calendar', Calendar.schema()) }
 	},
 	preHandler: validateTimeblocks,
@@ -148,7 +148,7 @@ export default async function user(fastify, opts) {
     });
 }
 
-async function validateTimeblocks(request, reply) {
+async function validateTimeblocks(request, _reply) {
     const { timeblocks } = request.body;
     if (timeblocks === undefined || timeblocks.length < 1) {
 	return;
@@ -174,16 +174,18 @@ async function validateTimeblocks(request, reply) {
     }
 }
 
-async function validateSettings(request, reply) {
-    if (meeting_time.start > meeting_time.end) {
+async function validateSettings(request, _reply) {
+    const { meetingTime, name } = request.body;
+    if (meetingTime.start > meetingTime.end) {
 	throw new AppError.badRequest("Start block time is after end block time!");
     }
 
-    if (!(await valid_name(new_name))) {
+    if (!(await valid_name(name))) {
 	throw new AppError.badRequest("Invalid name!");
     }
 }
 
-async function valid_name(potential_name) {
+// TODO: implement
+async function valid_name(_potential_name) {
     return true;
 }

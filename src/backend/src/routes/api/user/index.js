@@ -2,11 +2,11 @@ const S = require('fluent-json-schema')
 const handler = require('./user-handler');
 const User = require('./user-schema');
 
-export default async function user(fastify, opts) {
+export default async function user(fastify, _opts) {
     const { authorize } = fastify;
     fastify.addHook('onRequest', authorize);
 
-    // TODO: validat alias
+    // TODO: validate alias
     fastify.route({
 	method: 'PATCH',
 	path: '/alias',
@@ -39,3 +39,8 @@ export default async function user(fastify, opts) {
 	handler: handler.getUser
     });
 }
+
+
+// function valid_alias(alias) {
+//     return true;
+// }

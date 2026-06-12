@@ -1,12 +1,12 @@
 import fp from 'fastify-plugin'
 import OAuth from '@fastify/oauth2'
 import Cookie from '@fastify/cookie'
-import Csrf from '@fastify/csrf-protection'
+// import Csrf from '@fastify/csrf-protection'
 
 import AppError from '#errors';
 
-async function auth(fastify, opts) {
-    const { httpErrors, config } = fastify;
+async function auth(fastify, _opts) {
+    const { config } = fastify;
 
     await fastify.register(Cookie, {
 	secret: config.COOKIE_SECRET
@@ -35,7 +35,7 @@ async function auth(fastify, opts) {
     fastify.decorate('authorize', authorize);
     fastify.decorateRequest('user', null);
 
-    async function authorize(request, reply) {
+    async function authorize(request, _reply) {
 	const { session } = request.cookies;
 	if (!session) {
 	    throw AppError.unauthorized("Missing session cookie");

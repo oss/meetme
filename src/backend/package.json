@@ -10,6 +10,10 @@
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check"
     },
+    "imports": {
+        "#logger": "./src/utils/logger.js",
+        "#errors": "./src/utils/errors.js"
+    },
     "dependencies": {
         "@fastify/cookie": "^11.0.2",
         "@fastify/cors": "^11.2.0",
