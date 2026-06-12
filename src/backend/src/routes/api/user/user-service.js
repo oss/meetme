@@ -1,7 +1,7 @@
-import logger from '#logger';
-import AppError from '#errors';
+import logger from "#logger";
+import AppError from "#errors";
 
-const User = require('./user-schema');
+const User = require("./user-schema");
 
 /// A user is the most basic unit in this system. Users can be in an
 /// organization, in which case they inherit all calendars owned by the
@@ -15,18 +15,18 @@ const User = require('./user-schema');
 /// or `Organization`. This helps centralize handling of adding properties to
 /// a user. Note that the life cycle of how something is added is as follows
 ///
-///   CREATE: the owner has the calendar or organization added to their schema 
+///   CREATE: the owner has the calendar or organization added to their schema
 ///   SHARE: the owner can share the object with other users
 ///   ACCEPT: the other users can only view the object until they accept
 ///
 /// Once the user accepts, the status of the object switches from pending to
 /// notpending, and they are now allowed more permissions. Deleting is simpler
-/// as we can just remove the object, instead of checking beforehand if it 
+/// as we can just remove the object, instead of checking beforehand if it
 /// exists first before setting or creating the object.
 export const ACTION = Object.freeze({
-    SHARE: 'SHARE',
-    CREATE: 'CREATE',
-    ACCEPT: 'ACCEPT',
+  SHARE: "SHARE",
+  CREATE: "CREATE",
+  ACCEPT: "ACCEPT",
 });
 
 /// Gets information about the given user. Limited information is returned if
@@ -37,29 +37,29 @@ export const ACTION = Object.freeze({
 ///
 /// If no user is found throw 404 error, otherwise return the modified User
 export async function getUser(userid, isSelf) {
-    logger.info(`Fetching user data for ${userid} with isSelf = ${isSelf}`);
-    const user = await User.findById(userid).select(isSelf ? {} : { alias: 1, name: 1 });
-    if (user === null) {
-	throw new AppError.notFound();
-    }
-    return user;
+  logger.info(`Fetching user data for ${userid} with isSelf = ${isSelf}`);
+  const user = await User.findById(userid).select(isSelf ? {} : { alias: 1, name: 1 });
+  if (user === null) {
+    throw new AppError.notFound();
+  }
+  return user;
 }
 
 /// Sets the alias of the given `userid`.
 /// Returns the User after modification
 export async function setAlias(userid, alias) {
-    logger.info(`Seting user ${userid} alias from ${user.alias} to ${alias}`);
-    return await User.findByIdAndUpdate(userid, { alias: alias }, { returnDocument: 'after' });
+  logger.info(`Seting user ${userid} alias from ${user.alias} to ${alias}`);
+  return await User.findByIdAndUpdate(userid, { alias: alias }, { returnDocument: "after" });
 }
 
 /// Updates the last login field of the `userid`.
 /// Returns the User after modification
 export async function updateLastLogin(userid) {
-    return await User.findByIdAndUpdate(
-	userid,
-	{ last_signin: new Date().getTime()},
-	{ returnDocument: 'after' }
-    );
+  return await User.findByIdAndUpdate(
+    userid,
+    { last_signin: new Date().getTime() },
+    { returnDocument: "after" },
+  );
 }
 
 /// Adds the given calendar to the given users. How the calendar is added is
@@ -71,25 +71,25 @@ export async function updateLastLogin(userid) {
 ///
 /// No return value
 export async function addCalendar(users, cal, action) {
-    if (action === ACTION.CREATE) {
-	logger.info(`Creating calendar ${cal._id} for user ${users}`);
-	await User.updateOne(
-	    { _id: { $in: users } },
-	    { $push: { calendars: { _id: cal._id, isPending: false } } }
-	);
-    } else if (action === ACTION.ACCEPT) {
-	logger.info(`Accepting calendar ${cal._id} for user ${users}`);
-	await User.updateOne(
-	    { _id: users, 'calendars._id': cal._id },
-	    { $set: { "calendars.$.isPending": false } }
-	);
-    } else if (action === ACTION.SHARE) {
-	logger.info(`Adding calendar ${cal._id} to users ${users.toString()}`);
-	await User.updateMany(
-	    { _id: { $in: users } },
-	    { $push: { calendars: { _id: cal._id, isPending: true } } }
-	);
-    }
+  if (action === ACTION.CREATE) {
+    logger.info(`Creating calendar ${cal._id} for user ${users}`);
+    await User.updateOne(
+      { _id: { $in: users } },
+      { $push: { calendars: { _id: cal._id, isPending: false } } },
+    );
+  } else if (action === ACTION.ACCEPT) {
+    logger.info(`Accepting calendar ${cal._id} for user ${users}`);
+    await User.updateOne(
+      { _id: users, "calendars._id": cal._id },
+      { $set: { "calendars.$.isPending": false } },
+    );
+  } else if (action === ACTION.SHARE) {
+    logger.info(`Adding calendar ${cal._id} to users ${users.toString()}`);
+    await User.updateMany(
+      { _id: { $in: users } },
+      { $push: { calendars: { _id: cal._id, isPending: true } } },
+    );
+  }
 }
 
 /// Removes the given calendar from all of the given `users`. This removes both
@@ -97,18 +97,12 @@ export async function addCalendar(users, cal, action) {
 /// invite or to leave a calendar as a member.
 /// No return value.
 export async function removeCalendar(users, cal) {
-    logger.info(`Removing calendar ${cal._id} from users ${users.toString()}`);
-    if (Array.isArray(users)) {
-	await User.updateMany(
-	    { _id: { $in: users} },
-	    { $pull: { calendars: { _id: cal._id } } }
-	);
-    } else {
-	await User.updateOne(
-	    { _id: users },
-	    { $pull: { calendars: { _id: cal._id } } }
-	);
-    }
+  logger.info(`Removing calendar ${cal._id} from users ${users.toString()}`);
+  if (Array.isArray(users)) {
+    await User.updateMany({ _id: { $in: users } }, { $pull: { calendars: { _id: cal._id } } });
+  } else {
+    await User.updateOne({ _id: users }, { $pull: { calendars: { _id: cal._id } } });
+  }
 }
 
 /// Adds the given organization to the given users. How the organization is added is
@@ -120,25 +114,25 @@ export async function removeCalendar(users, cal) {
 ///
 /// No return value
 export async function addOrganization(users, org, action) {
-    if (action === ACTION.CREATE) {
-	logger.info(`Creating organization ${org._id} for user ${users}`);
-	await User.updateOne(
-	    { _id: users },
-	    { $push: { organizations: { _id: org._id, isPending: false } } }
-	);
-    } else if (action === ACTION.ACCEPT) {
-	logger.info(`Accepting organization ${org._id} for user ${users}`);
-	await User.updateOne(
-	    { _id: users, 'organizations._id': org._id },
-	    { $set: { "organizations.$.isPending": false } }
-	);
-    } else if (action === ACTION.SHARE) {
-	logger.info(`Adding organization ${org._id} to users ${users.toString()}`);
-	await User.updateMany(
-	    { _id: { $in: users } },
-	    { $push: { organizations: { _id: org._id, isPending: true } } }
-	);
-    }
+  if (action === ACTION.CREATE) {
+    logger.info(`Creating organization ${org._id} for user ${users}`);
+    await User.updateOne(
+      { _id: users },
+      { $push: { organizations: { _id: org._id, isPending: false } } },
+    );
+  } else if (action === ACTION.ACCEPT) {
+    logger.info(`Accepting organization ${org._id} for user ${users}`);
+    await User.updateOne(
+      { _id: users, "organizations._id": org._id },
+      { $set: { "organizations.$.isPending": false } },
+    );
+  } else if (action === ACTION.SHARE) {
+    logger.info(`Adding organization ${org._id} to users ${users.toString()}`);
+    await User.updateMany(
+      { _id: { $in: users } },
+      { $push: { organizations: { _id: org._id, isPending: true } } },
+    );
+  }
 }
 
 /// Removes the given organization from all of the given `users`. This removes
@@ -147,26 +141,26 @@ export async function addOrganization(users, org, action) {
 /// all calendars held by the organization.
 /// No return value.
 export async function removeOrganization(users, org) {
-    logger.info(`Removing organization ${org._id} from users ${users.toString()}`);
-    if (Array.isArray(users)) {
-	await User.updateMany(
-	    { _id: { $in: users} },
-            {
-                $pull: {
-		    organizations: { _id: org._id },
-		    calendars: { $in: org.calendars }
-		},
-            }
-	);
-    } else {
-	await User.updateOne(
-	    { _id: users },
-            {
-                $pull: {
-		    organizations: { _id: org._id },
-		    calendars: { $in: org.calendars }
-		},
-            }
-	);
-    }
+  logger.info(`Removing organization ${org._id} from users ${users.toString()}`);
+  if (Array.isArray(users)) {
+    await User.updateMany(
+      { _id: { $in: users } },
+      {
+        $pull: {
+          organizations: { _id: org._id },
+          calendars: { $in: org.calendars },
+        },
+      },
+    );
+  } else {
+    await User.updateOne(
+      { _id: users },
+      {
+        $pull: {
+          organizations: { _id: org._id },
+          calendars: { $in: org.calendars },
+        },
+      },
+    );
+  }
 }

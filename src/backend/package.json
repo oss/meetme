@@ -1,33 +1,33 @@
 {
-    "name": "meetme-backend",
-    "version": "0.1.0",
-    "main": "app.js",
-    "type": "module",
-    "scripts": {
-        "start": "fastify start src/server.js",
-        "lint": "oxlint",
-        "lint:fix": "oxlint --fix",
-        "fmt": "oxfmt",
-        "fmt:check": "oxfmt --check"
-    },
-    "imports": {
-        "#logger": "./src/utils/logger.js",
-        "#errors": "./src/utils/errors.js"
-    },
-    "dependencies": {
-        "@fastify/cookie": "^11.0.2",
-        "@fastify/cors": "^11.2.0",
-        "@fastify/csrf-protection": "^8.0.0",
-        "@fastify/env": "^7.0.0",
-        "@fastify/oauth2": "^8.2.0",
-        "fastify": "^5.8.5",
-        "fastify-cli": "^8.0.0",
-        "fluent-json-schema": "^6.0.0",
-        "mongoose": "^9.7.0",
-        "mongoose-schema-jsonschema": "^4.0.1"
-    },
-    "devDependencies": {
-        "oxfmt": "^0.54.0",
-        "oxlint": "^1.69.0"
-    }
+  "name": "meetme-backend",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "app.js",
+  "imports": {
+    "#logger": "./src/utils/logger.js",
+    "#errors": "./src/utils/errors.js"
+  },
+  "scripts": {
+    "start": "fastify start src/server.js",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/csrf-protection": "^8.0.0",
+    "@fastify/env": "^7.0.0",
+    "@fastify/oauth2": "^8.2.0",
+    "fastify": "^5.8.5",
+    "fastify-cli": "^8.0.0",
+    "fluent-json-schema": "^6.0.0",
+    "mongoose": "^9.7.0",
+    "mongoose-schema-jsonschema": "^4.0.1"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.54.0",
+    "oxlint": "^1.69.0"
+  }
 }
