@@ -1,7 +1,0 @@
-{
-    "imports": {
-        "#config": "./config.js",
-        "#logger": "./logging.js",
-        "#util/*": "./util/*.js"
-    }
-}
