@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo:
+  mongo0:
     image: mongo:latest
     environment:
       - PRIMARY=1
@@ -10,14 +10,14 @@ services:
       - no-internet
       - mongo-net
 
-  mongo-jr:
+  mongo1:
     image: mongo:latest
     entrypoint: ./database/entrypoint.sh
     networks:
       - no-internet
       - mongo-net
 
-  mongo-the-third:
+  mongo2:
     image: mongo:latest
     entrypoint: ./database/entrypoint.sh
     networks:
@@ -31,7 +31,7 @@ services:
     networks:
       - no-internet
     volumes:
-      - ./frontend:/root
+      - ./frontend:/app
 
   backend:
     build: ./backend
@@ -41,14 +41,21 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - mongo
-      - mongo-jr
-      - mongo-the-third
+      - mongo0
+      - mongo1
+      - mongo2
+      - cas
 
   openldap:
     build: ./openldap/
     ports:
       - 1389:1389
+
+  cas:
+    build: cas
+    ports:
+     - 8443:8443
+     - 8080:8080
 
 networks:
   no-internet:
@@ -56,6 +63,4 @@ networks:
   authnet:
     attachable: true
   mongo-net:
-    attachable: true
-  socat-net:
     attachable: true

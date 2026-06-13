@@ -1,0 +1,31 @@
+{
+  "@class": "org.apereo.cas.services.OidcRegisteredService",
+  "clientId": "meetme",
+  "clientSecret": "meetme-secret",
+  "serviceId": "^http://localhost:3000/api/auth/login",
+  "name": "meetme",
+  "id": 2,
+  "bypassApprovalPrompt": true,
+  "supportedResponseTypes": [ "java.util.HashSet", [ "code" ] ],
+  "supportedGrantTypes": [ "java.util.HashSet", [ "authorization_code" ] ],
+  "scopes": ["java.util.HashSet", ["openid", "profile", "eduPerson"]],
+  "attributeReleasePolicy": {
+    "@class": "org.apereo.cas.services.ChainingAttributeReleasePolicy",
+    "policies": [
+      "java.util.ArrayList",
+      [
+	{
+	  "@class": "org.apereo.cas.oidc.claims.OidcCustomScopeAttributeReleasePolicy",
+	  "order": 1,
+	  "scopeName": "eduPerson",
+	  "allowedAttributes" : [ "java.util.ArrayList", [ "eduPersonAffiliation", "eduPersonPrimaryAffiliation" ] ],
+	  "claimMappings" : {
+	    "@class" : "java.util.TreeMap",
+	    "eduPersonAffiliation":  "eduPersonAffiliation",
+	    "eduPersonPrimaryAffiliation":  "eduPersonPrimaryAffiliation"
+	  }
+	}
+      ]
+    ]
+  }
+}
