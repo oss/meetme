@@ -1,4 +1,4 @@
-const service = require("./organization-service");
+import * as service from "./organization-service";
 
 export async function createOrganization(request, reply) {
   const { name } = request.body;

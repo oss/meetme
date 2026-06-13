@@ -1,6 +1,8 @@
-const S = require("fluent-json-schema");
-const handler = require("./user-handler");
-const Organization = require("./organization_schema");
+import S from "fluent-json-schema";
+
+import Organization from "./organization-schema";
+
+import * as handler from "./user-handler";
 
 const usersSchema = S.array().items(S.string().pattern("^[a-zA-Z0-9]+$")).minItems(1);
 

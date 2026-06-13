@@ -1,4 +1,4 @@
-const service = require("./calendar-service");
+import * as service from "./calendar-service";
 
 export async function createCalendar(request, _reply) {
   const { netid } = request.user;

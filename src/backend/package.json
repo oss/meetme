@@ -8,13 +8,14 @@
     "#errors": "./src/utils/errors.js"
   },
   "scripts": {
-    "start": "fastify start src/server.js",
+    "start": "node src/server.js",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@fastify/autoload": "^6.3.1",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
     "@fastify/csrf-protection": "^8.0.0",

@@ -54,4 +54,4 @@ async function auth(fastify, _opts) {
   }
 }
 
-export default fp(auth, { name: "auth" });
+export default fp(auth, { name: "auth", dependencies: ["env"] });

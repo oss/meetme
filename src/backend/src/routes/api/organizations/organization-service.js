@@ -1,13 +1,15 @@
+import mongoose from "mongoose";
+
 import logger from "#logger";
 import AppError from "#errors";
+import Organization from "./organization-schema";
+import Calendar from "./calendar-schema";
 
-const UserService = require("../user-service");
+import * as UserService from "../user-service";
+
+import { createId, difference } from "../../utils/common";
+
 const ACTION = UserService.ACTION;
-
-const Organization = require("./organization-schema");
-const Calendar = require("./calendar-schema");
-const { createId, difference } = require("../../utils/common");
-import mongoose from "mongoose";
 
 /// An organization provides a way to manage multiple calendars and also allow
 /// other users to manage calendars as well. Users follow a simple RBAC

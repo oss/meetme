@@ -1,8 +1,9 @@
-const S = require("fluent-json-schema");
-const handler = require("./calendar-handler");
-const Calendar = require("./calendar-schema");
+import S from "fluent-json-schema";
 
+import Calendar from "./calendar-schema";
 import AppError from "#errors";
+
+import * as handler from "./calendar-handler";
 
 const userSchema = S.string().pattern("^[a-zA-Z0-9]+$");
 const usersSchema = S.array().items(userSchema).minItems(1);

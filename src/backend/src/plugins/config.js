@@ -1,3 +1,4 @@
+import S from "fluent-json-schema";
 import fp from "fastify-plugin";
 import Env from "@fastify/env";
 

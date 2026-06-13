@@ -1,7 +1,7 @@
 import AutoLoad from "@fastify/autoload";
 import path from "node:path";
 
-export default async function (fastify, opts) {
+export default async function app(fastify, opts) {
   // Load all plugins
   await fastify.register(AutoLoad, {
     dir: path.join(import.meta.dirname, "plugins"),
@@ -15,7 +15,7 @@ export default async function (fastify, opts) {
   });
 
   // Log request.body
-  await fastify.addHook("preHandler", function (req, reply, done) {
+  fastify.addHook("preHandler", function (req, reply, done) {
     if (req.body) {
       req.log.info({ body: req.body }, "parsed body");
     }

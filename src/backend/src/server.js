@@ -1,16 +1,19 @@
 import Fastify from "fastify";
-import App from "./app.js";
+import fp from "fastify-plugin";
+import app from "./app.js";
 
-const logger = ".util/logger.js";
+import logger from "#logger";
 
 async function start() {
+  const port = 3000;
   const fastify = Fastify({
     loggerInstance: logger,
     trustProxy: true,
   });
-  await fastify.register(App);
-  const port = 8000;
-  await fastify.listen(port);
+
+  await fastify.register(fp(app));
+  await fastify.ready();
+  await fastify.listen({ port: port });
 }
 
 start().catch((err) => {

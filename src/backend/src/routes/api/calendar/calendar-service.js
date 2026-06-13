@@ -1,13 +1,15 @@
-import logger from "#logger";
-import AppError from "#errors";
 import mongoose from "mongoose";
 
-const OrganizationService = require("../organization-service");
-const UserService = require("../user-service");
-const ACTION = UserService.ACTION;
-const { createId, difference } = require("../../utils/common");
+import logger from "#logger";
+import AppError from "#errors";
+import Calendar from "./calendar-schema";
 
-const Calendar = require("./calendar-schema");
+import * as OrganizationService from "../organization-service";
+import * as UserService from "../user-service";
+
+import { createId, difference } from "../../utils/common";
+
+const ACTION = UserService.ACTION;
 
 /// A calendar contains metadata in addition to timeblocks. Each user can add
 /// their own timeblocks to the calendar. If the calendar is owned by an

@@ -1,4 +1,4 @@
-const { createHash } = require("crypto");
+import createHash from "crypto";
 
 export function createId(userid) {
   return createHash("sha512")

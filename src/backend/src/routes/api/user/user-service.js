@@ -1,7 +1,7 @@
 import logger from "#logger";
 import AppError from "#errors";
 
-const User = require("./user-schema");
+import User from "./user-schema";
 
 /// A user is the most basic unit in this system. Users can be in an
 /// organization, in which case they inherit all calendars owned by the

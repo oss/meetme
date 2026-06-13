@@ -1,6 +1,8 @@
-const S = require("fluent-json-schema");
-const handler = require("./user-handler");
-const User = require("./user-schema");
+import S from "fluent-json-schema";
+
+import User from "./user-schema";
+
+import * as handler from "./user-handler";
 
 export default async function user(fastify, _opts) {
   const { authorize } = fastify;
