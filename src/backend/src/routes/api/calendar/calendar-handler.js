@@ -1,4 +1,4 @@
-import * as service from "./calendar-service";
+import * as service from "./calendar-service.js";
 
 export async function createCalendar(request, _reply) {
   const { netid } = request.user;

@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
-
-let organization = new Schema({
+let organization = new mongoose.Schema({
   _id: String,
   name: String,
   created: Number,
@@ -19,7 +17,5 @@ let organization = new Schema({
   ],
   viewers: [{ _id: String }],
 });
-
 const Organization = mongoose.model("organizations", organization);
-
-module.exports = Organization;
+export default Organization

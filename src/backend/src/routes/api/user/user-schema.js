@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
-
-const user = new Schema({
+const user = new mongoose.Schema({
   _id: String,
   alias: String,
   accountCreated: Number,
@@ -11,7 +9,5 @@ const user = new Schema({
   calendars: [{ _id: String, isPending: Boolean }],
   organizations: [{ _id: String, isPending: Boolean }],
 });
-
 const User = mongoose.model("users", user);
-
-module.exports = User;
+export default User

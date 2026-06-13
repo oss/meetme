@@ -5,7 +5,9 @@
   "main": "app.js",
   "imports": {
     "#logger": "./src/utils/logger.js",
-    "#errors": "./src/utils/errors.js"
+    "#errors": "./src/utils/errors.js",
+    "#utils": "./src/utils/common.js",
+    "#package.json": "./package.json"
   },
   "scripts": {
     "start": "node src/server.js",

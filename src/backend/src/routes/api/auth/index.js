@@ -1,4 +1,6 @@
-const UserService = require("../user-service");
+import S from "fluent-json-schema";
+
+import * as UserService from "../user/user-service.js";
 
 export default async function auth(fastify, _opts) {
   const { authorize } = fastify;

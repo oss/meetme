@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
-
 // TODO: mongodb natively supports modified times, maybe look into using that
 // Update modified time in the metadata
-let calendar = new Schema({
+let calendar = new mongoose.Schema({
   _id: String,
   name: String,
   owner: { _id: String, isOrg: Boolean },
@@ -30,7 +28,5 @@ let calendar = new Schema({
     timeDeleted: Number,
   },
 });
-
 const Calendar = mongoose.model("calendars", calendar);
-
-module.exports = Calendar;
+export default Calendar;

@@ -1,9 +1,9 @@
 import S from "fluent-json-schema";
 
-import Calendar from "./calendar-schema";
+import Calendar from "./calendar-schema.js";
 import AppError from "#errors";
 
-import * as handler from "./calendar-handler";
+import * as handler from "./calendar-handler.js";
 
 const userSchema = S.string().pattern("^[a-zA-Z0-9]+$");
 const usersSchema = S.array().items(userSchema).minItems(1);

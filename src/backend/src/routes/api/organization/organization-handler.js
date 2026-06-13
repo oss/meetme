@@ -1,4 +1,4 @@
-import * as service from "./organization-service";
+import * as service from "./organization-service.js";
 
 export async function createOrganization(request, reply) {
   const { name } = request.body;

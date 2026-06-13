@@ -1,7 +1,9 @@
+import S from "fluent-json-schema";
 import { readFileSync } from "fs";
 import path from "node:path";
 
-const { version } = JSON.parse(readFileSync(path.join(import.meta.url, "../package.json")));
+import pkg from '#package.json' with { type: 'json' };
+const { version } = pkg;
 
 export default async function status(fastify, _opts) {
   fastify.route({

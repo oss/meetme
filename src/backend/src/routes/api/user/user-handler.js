@@ -1,4 +1,4 @@
-import * as service from "./user-service";
+import * as service from "./user-service.js";
 
 export async function setAlias(request, _reply) {
   const { alias } = request.body;

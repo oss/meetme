@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 import logger from "#logger";
 import AppError from "#errors";
-import Calendar from "./calendar-schema";
+import { createId, difference } from "#utils";
+import Calendar from "./calendar-schema.js";
 
-import * as OrganizationService from "../organization-service";
-import * as UserService from "../user-service";
+import * as OrganizationService from "../organization/organization-service.js";
+import * as UserService from "../user/user-service.js";
 
-import { createId, difference } from "../../utils/common";
 
 const ACTION = UserService.ACTION;
 

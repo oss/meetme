@@ -1,8 +1,8 @@
 import S from "fluent-json-schema";
 
-import Organization from "./organization-schema";
+import Organization from "./organization-schema.js";
 
-import * as handler from "./user-handler";
+import * as handler from "./organization-handler.js";
 
 const usersSchema = S.array().items(S.string().pattern("^[a-zA-Z0-9]+$")).minItems(1);
 
