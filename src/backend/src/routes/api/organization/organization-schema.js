@@ -18,4 +18,4 @@ let organization = new mongoose.Schema({
   viewers: [{ _id: String }],
 });
 const Organization = mongoose.model("organizations", organization);
-export default Organization
+export default Organization;

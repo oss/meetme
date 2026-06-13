@@ -8,7 +8,6 @@ import Calendar from "../calendar/calendar-schema.js";
 
 import * as UserService from "../user/user-service.js";
 
-
 const ACTION = UserService.ACTION;
 
 /// An organization provides a way to manage multiple calendars and also allow

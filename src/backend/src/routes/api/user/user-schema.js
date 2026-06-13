@@ -10,4 +10,4 @@ const user = new mongoose.Schema({
   organizations: [{ _id: String, isPending: Boolean }],
 });
 const User = mongoose.model("users", user);
-export default User
+export default User;

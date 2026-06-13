@@ -8,7 +8,6 @@ import Calendar from "./calendar-schema.js";
 import * as OrganizationService from "../organization/organization-service.js";
 import * as UserService from "../user/user-service.js";
 
-
 const ACTION = UserService.ACTION;
 
 /// A calendar contains metadata in addition to timeblocks. Each user can add

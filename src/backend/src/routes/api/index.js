@@ -2,7 +2,7 @@ import S from "fluent-json-schema";
 import { readFileSync } from "fs";
 import path from "node:path";
 
-import pkg from '#package.json' with { type: 'json' };
+import pkg from "#package.json" with { type: "json" };
 const { version } = pkg;
 
 export default async function status(fastify, _opts) {
