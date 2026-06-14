@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+@plugin "daisyui" {
+    /* themes: light --default, dark --prefersdark; */
+    themes: all;
+}
+
+.dashed-lines {
+    background: repeating-linear-gradient(-45deg,var(--color-base-100),var(--color-base-100)13px,var(--color-base-300)13px,var(--color-base-300)14px);
+}
