@@ -13,6 +13,7 @@
     "start": "node src/server.js",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "lint:gitlab": "oxlint --format=gitlab > report.json",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },

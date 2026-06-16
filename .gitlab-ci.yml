@@ -7,268 +7,64 @@ variables:
   CI_DEBUG_SERVICES: 1
 
 stages:
-  - build-env
+  - check
   - build
-  - pre-test
   - test
 
-.job_template:
-  &job_configuration # Hidden yaml configuration that defines an anchor named 'job_configuration'
-  services:
-    - name: ${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}
-      alias: saml idp.localhost.edu
-
-    - name: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
-      alias: frontend
-
-    - name: ${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}
-      alias: socket
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          sleep 80;
-          node main.js;
-
-    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
-      alias: mongo
-    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
-      alias: mongo-jr
-    - name: ${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}
-      alias: mongo-the-third
-
-    - name: mongo:latest
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});';
-          while [ $? -ne 0 ]; do sleep 2 && mongosh --host mongo:27017 --eval 'rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "mongo:27017","priority": 5},{"_id" : 1,"host" : "mongo-jr:27017","priority": 1},{"_id" : 2,"host" : "mongo-the-third:27017","priority": 1}]});'; done;
-
-    - name: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}
-      alias: backend
-      command:
-        - '/bin/bash'
-        - '-c'
-        - |
-          sleep 80;
-          node main.js;
-
-    - name: ${CI_REGISTRY_IMAGE}/backend-proxy:${CI_COMMIT_SHA}
-      alias: backend-proxy
-
-    - name: bitnami/openldap:2
-      alias: openldap ldap.localhost.edu
-      variables:
-        LDAP_ADMIN_USERNAME: admin
-        LDAP_ADMIN_PASSWORD: adminpassword
-        LDAP_USERS: netid1,netid2,netid3,netid4,netid5,netid6
-        LDAP_PASSWORDS: rutgers1,rutgers2,rutgers3,rutgers4,rutgers5,rutgers6
-
-    - name: ${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}
-      alias: nginx localhost.edu api.localhost.edu
-
-# common buildkit configuration needed to build containers
-.buildkit-build:
-  stage: build
-  image:
-    name: moby/buildkit:rootless
-    entrypoint: ["sh", "-c"]
+.buildah:
+  image: quay.io/buildah/stable
   variables:
-    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+    STORAGE_DRIVER: vfs
+    BUILDAH_ISOLATION: chroot
   before_script:
-    - mkdir -p ~/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - buildah login -u "$CI_REGISTRY_USER" --password $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-backend-api:
-  <<: *job_configuration
-  stage: test
-  image:
-    name: ${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}
-    entrypoint: ['']
-  before_script:
-    - bash -c 'sleep 5 && curl -fk https://api.localhost.edu; while [ $? -ne 0 ]; do sleep 1 && echo "waiting for backend to start" && curl -fks https://api.localhost.edu; done;'
+.images:
+  parallel:
+    matrix:
+      - IMAGE: ["backend", "openldap", "cas"]
+
+.check-images:
+  parallel:
+    matrix:
+      - IMAGE: ["backend"]
+
+lint:
+  stage: check
+  image: node:24-slim
+  extends: .check-images
   script:
-    - apt-get install bc -y
-    - cd
-    - ls
-    - /bin/bash /root/docker-entrypoint.sh --formatter junit
-    - cp -r /root/test_output ${CI_PROJECT_DIR}/test_output
-    - touch ${CI_PROJECT_DIR}/merged.xml
-    - for i in $(ls ${CI_PROJECT_DIR}/test_output); do cat ${CI_PROJECT_DIR}/test_output/$i >> ${CI_PROJECT_DIR}/merged.xml; done;
-    - TOTAL_TIME=$(cat ${CI_PROJECT_DIR}/merged.xml | grep -E '<testsuites time="[0-9]+\.[0-9]+">' | grep -Eo '[0-9]+\.[0-9]+' | paste -sd+ | bc )
-    - sed -i 's/^<?xml version="1.0" encoding="UTF-8"?>$//g;s/<testsuites time="[0-9]\+\.[0-9]\+">//g;s/<\/testsuites>//g;/^$/d' ${CI_PROJECT_DIR}/merged.xml
-    - sed -i "1s/^/<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites time=\"$TOTAL_TIME\">\n/" ${CI_PROJECT_DIR}/merged.xml
-    - echo "</testsuites>" >> ${CI_PROJECT_DIR}/merged.xml
-  needs: [ "build-backend", "build-frontend", "build-proxy", "build-mongo", "build-websocket", "build-saml" ]
-
+    - cd ${IMAGE}
+    - npm ci
+    - npm run lint:gitlab
   artifacts:
-    when: always
-    paths:
-      - ${CI_PROJECT_DIR}/test_output/*.xml
-      - ${CI_PROJECT_DIR}/merged.xml
     reports:
-      junit: ${CI_PROJECT_DIR}/merged.xml
-
-frontend-lint:
-  stage: test
-  image:
-    name: ${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}
-    entrypoint: ['']
+      codequality:
+        - ${IMAGE}/report.json
+    
+format:
+  stage: check
+  image: node:24-slim
+  extends: .check-images
   script:
-    - npm install eslint eslint-plugin-react @babel/core @babel/eslint-parser globals eslint-plugin-react-compiler eslint-formatter-junit
-    - npx eslint -c "${CI_PROJECT_DIR}/testing/frontend/linter/eslint.config.mjs" --color --format junit "${CI_PROJECT_DIR}/frontend/**/*.{jsx,js}" > ${CI_PROJECT_DIR}/linter_results.xml
-  artifacts:
-    when: always
-    paths:
-      - ${CI_PROJECT_DIR}/linter_results.xml
-    reports:
-      junit: ${CI_PROJECT_DIR}/linter_results.xml
-  needs: ["build-frontend", "build-eslint"]
+    - cd ${IMAGE}
+    - npm ci
+    - npm run fmt:check
 
-backend-docs-uptodate:
-  image:
-    name: ${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}
-    entrypoint: ['']
-  needs: [ "build-docs-testing" ]
-  stage: test
+typecheck:
+  stage: check
+  image: node:24-slim
+  extends: .check-images
   script:
-    - PROJECT_DIR="${CI_PROJECT_DIR}" /bin/bash /root/verify_updated_docs.sh
+    - cd ${IMAGE}
+    - npm ci
+    - npm run check
 
-build-docs-testing:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./testing/docs/" \
-        --local dockerfile="./testing/docs/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/test-docs:${CI_COMMIT_SHA}",push=true
-
-build-backend:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./backend/" \
-        --local dockerfile="./backend/" \
-        --opt build-arg:GIT_BRANCH=${CI_COMMIT_BRANCH} \
-        --opt build-arg:GIT_HASH=${CI_COMMIT_SHA} \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}",push=true
-
-build-frontend:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./frontend/" \
-        --local dockerfile="./frontend/" \
-        --opt build-arg:BUILD="dev" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}",push=true
-
-build-proxy:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./proxy-ssl-upgrade/" \
-        --local dockerfile="./proxy-ssl-upgrade/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/proxy:${CI_COMMIT_SHA}",push=true
-
-build-mongo:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./database/" \
-        --local dockerfile="./database/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/database:${CI_COMMIT_SHA}",push=true
-
-build-websocket:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./websocket/" \
-        --local dockerfile="./websocket/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/websocket:${CI_COMMIT_SHA}",push=true
-
-build-saml:
-  extends: .buildkit-build
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./shib-idp/" \
-        --local dockerfile="./shib-idp/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/saml:${CI_COMMIT_SHA}",push=true
-
-build-test:
-  extends: .buildkit-build
-  stage: build-env
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./testing/backend/api/" \
-        --local dockerfile="./testing/backend/api/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/test-suite:${CI_COMMIT_SHA}",push=true
-
-build-eslint:
-  extends: .buildkit-build
-  stage: build-env
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./testing/frontend/linter/" \
-        --local dockerfile="./testing/frontend/linter/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/frontend-lint:${CI_COMMIT_SHA}",push=true
-
-build-docs-env:
-  extends: .buildkit-build
-  stage: build-env
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context="./docs/" \
-        --local dockerfile="./docs/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}",push=true
-
-build-docs:
+build:
+  extends:
+    - .buildah
+    - .images
   stage: build
-  needs: ["build-docs-env"]
-  image:
-    name: ${CI_REGISTRY_IMAGE}/docs:${CI_COMMIT_SHA}
-    entrypoint: ['']
   script:
-    - mkdocs build -f docs/mkdocs.yml -d ${CI_PROJECT_DIR}/build
-  artifacts:
-    when: always
-    paths:
-      - ${CI_PROJECT_DIR}/build/
-
-build-tsc-env:
-  extends: .buildkit-build
-  stage: build-env
-  script:
-    - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local dockerfile="./testing/frontend/type_checking/" \
-        --output type=image,name="${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}",push=true
-
-typecheck-frontend:
-  stage: test
-  image:
-    name: ${CI_REGISTRY_IMAGE}/tscheck:${CI_COMMIT_SHA}
-    entrypoint: ['']
-  script:
-    - npx tsc -p ${CI_PROJECT_DIR}/frontend/tsconfig.json
-  needs: ['build-tsc-env','build-frontend']
+    - buildah build -t "$CI_REGISTRY_IMAGE/${IMAGE}:${CI_COMMIT_SHA}" ${IMAGE}
+    # - buildah push "$CI_REGISTRY_IMAGE/${IMAGE}:${CI_COMMIT_SHA}"
