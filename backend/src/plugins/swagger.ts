@@ -5,6 +5,7 @@ import SwaggerUI from "@fastify/swagger-ui";
 import pkg from "#package.json" with { type: "json" };
 const { version } = pkg;
 
+/// Automatically serves OpenAPI documentation
 export default fp(async function (fastify) {
   fastify.register(Swagger, {
     openapi: {

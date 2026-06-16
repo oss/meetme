@@ -10,6 +10,7 @@ declare module "fastify" {
   }
 }
 
+/// Provides OIDC and OAuth helpers.
 export default fp(async function (fastify) {
   const { config } = fastify;
   fastify.register(Cookie);

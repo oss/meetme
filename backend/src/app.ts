@@ -9,6 +9,7 @@ export default async function app(fastify: FastifyInstance, opts: FastifyPluginO
     options: { ...opts },
   });
 
+  // Load our modules (this is our "business logic folder")
   await fastify.register(AutoLoad, {
     dir: path.join(import.meta.dirname, "modules"),
     options: { ...opts },
