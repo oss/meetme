@@ -1,0 +1,10 @@
+{
+	"/": [
+		"src/routes/+page.server.js"
+	],
+	"/calendar/create": [],
+	"/calendar/[id]": [],
+	"/dashboard": [
+		"src/routes/dashboard/+page.js"
+	]
+}
