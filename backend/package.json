@@ -4,12 +4,12 @@
   "type": "module",
   "main": "app.js",
   "imports": {
-    "#logger": "./src/utils/logger.js",
-    "#errors": "./src/utils/errors.js",
-    "#utils": "./src/utils/common.js",
+    "#common/*.js": "./src/common/*.js",
     "#package.json": "./package.json"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit",
     "start": "node src/server.js",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -22,17 +22,22 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/csrf-protection": "^8.0.0",
     "@fastify/env": "^7.0.0",
+    "@fastify/helmet": "^13.0.2",
     "@fastify/oauth2": "^8.2.0",
+    "@fastify/session": "^11.1.1",
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^6.0.0",
+    "@fastify/type-provider-typebox": "^6.1.0",
+    "drizzle-orm": "^1.0.0-rc.3",
     "fastify": "^5.8.5",
-    "fastify-cli": "^8.0.0",
-    "fluent-json-schema": "^6.0.0",
-    "mongoose": "^9.7.0",
-    "mongoose-schema-jsonschema": "^4.0.1"
+    "pg": "^8.21.0",
+    "typebox": "^1.2.10"
   },
   "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/pg": "^8.20.0",
     "oxfmt": "^0.54.0",
-    "oxlint": "^1.69.0"
+    "oxlint": "^1.69.0",
+    "typescript": "^6.0.3"
   }
 }
