@@ -144,8 +144,7 @@ export default function createCalendarService(
     async getTimeblocks(id: number, userid: number) {
       logger.info(`User ${userid} is fetching timeblocks of calendar ${id}`);
       await this.getCalendar(id, userid, { role: Role.VIEWER });
-      // const blocks = db.select().from(timeblocks).where(eq(timeblocks.calendarId, id));
-      const blocks = db.select().from(timeblocks);
+      const blocks = db.select().from(timeblocks).where(eq(timeblocks.calendarId, id));
       return blocks;
     },
 
