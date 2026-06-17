@@ -1,5 +1,6 @@
 import AutoLoad from "@fastify/autoload";
 import path from "node:path";
+import modules from "./modules/index.js";
 import type { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
 
 export default async function app(fastify: FastifyInstance, opts: FastifyPluginOptions) {
@@ -10,10 +11,7 @@ export default async function app(fastify: FastifyInstance, opts: FastifyPluginO
   });
 
   // Load our modules (this is our "business logic folder")
-  await fastify.register(AutoLoad, {
-    dir: path.join(import.meta.dirname, "modules"),
-    options: { ...opts },
-  });
+  await fastify.register(modules, opts);
 
   // Load all routes
   await fastify.register(AutoLoad, {

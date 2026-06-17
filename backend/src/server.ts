@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import fp from "fastify-plugin";
 import app from "./app.js";
 
+import { drizzle } from "drizzle-orm/node-postgres";
+
 async function start() {
   const port = 3000;
   const fastify = Fastify({
@@ -9,7 +11,9 @@ async function start() {
     trustProxy: true,
   });
 
-  await fastify.register(fp(app));
+  await fastify.register(fp(app), {
+    modules: { database: (url: string) => drizzle(url) }
+  });
   await fastify.ready();
   await fastify.listen({ port: port });
 }
