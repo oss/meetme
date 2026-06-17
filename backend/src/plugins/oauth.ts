@@ -14,18 +14,20 @@ declare module "fastify" {
 export default fp(async function (fastify) {
   const { config } = fastify;
   fastify.register(Cookie);
-  fastify.register(OAuth, {
-    name: "cas",
-    credentials: {
-      client: {
-        id: config.CLIENT_ID,
-        secret: config.CLIENT_SECRET,
+  if (process.env.NODE_ENV !== "testing") {
+    fastify.register(OAuth, {
+      name: "cas",
+      credentials: {
+        client: {
+          id: config.CLIENT_ID,
+          secret: config.CLIENT_SECRET,
+        },
       },
-    },
-    scope: ["profile", "email", "eduPerson"],
-    startRedirectPath: "/api/auth/login/",
-    // TODO: change this in prod
-    callbackUri: "http://localhost:3000/api/auth/login/callback",
-    discovery: { issuer: config.OIDC_ISSUER },
-  });
+      scope: ["profile", "email", "eduPerson"],
+      startRedirectPath: "/api/auth/login/",
+      // TODO: change this in prod
+      callbackUri: "http://localhost:3000/api/auth/login/callback",
+      discovery: { issuer: config.OIDC_ISSUER },
+    });
+  }
 });
