@@ -56,6 +56,9 @@ export default function createCalendarService(
         }
         logger.info(`User ${userid} accessed calendar ${id} with insufficient permissions`);
         throw AppError.forbidden();
+      } else if (!data.users_calendars && !data.users_organizations) {
+        logger.warn(`Calendar ${id} has no users or organization owners, this shouldn't happen`);
+        throw AppError.forbidden();
       }
 
       return data.calendars;
@@ -77,7 +80,7 @@ export default function createCalendarService(
       if (!calendar) {
         throw AppError.serverError("Unable to create calendar");
       }
-      if (orgId === null) {
+      if (!orgId || orgId === null) {
         logger.info(`User ${netid} created a calendar`);
         await db.insert(usersCalendars).values({
           userId: netid,
@@ -141,9 +144,6 @@ export default function createCalendarService(
       return cal;
     },
 
-    // TODO: we might want to consider checking if members actually exist in the
-    // system LDAP or whatever. A worthwhile discussion is if we want to enable
-    // adding users who don't exist in the database yet.
     async shareCalendar(id: number, sharedWith: number[], userid: number) {
       logger.info(`User ${userid} is sharing calendar ${id} with users ${sharedWith.toString()}`);
       const cal = await this.getCalendar(id, userid, { role: Role.EDITOR });
@@ -156,7 +156,7 @@ export default function createCalendarService(
             role: "INVITED" as const,
           })),
         )
-        .onConflictDoNothing({ target: usersCalendars.userId });
+        .onConflictDoNothing({ target: [ usersCalendars.userId, usersCalendars.calendarId ]});
       return cal;
     },
 
@@ -196,9 +196,6 @@ export default function createCalendarService(
       return calendar;
     },
 
-    // TODO: should verify organization and user actually exists? Or maybe save
-    // it for the frontend? Backend-check is more correct, frontend check is
-    // more performant. Probably should do both.
     async setOwner(id: number, owner: number, isOrg: boolean, userid: number) {
       logger.info(
         `User ${userid} transferring ownership of calendar ${id} to User ${JSON.stringify(owner)}`,
@@ -208,6 +205,9 @@ export default function createCalendarService(
         if (isOrg) {
           tx.update(calendars).set({ organizationId: owner }).where(eq(calendars.id, id));
         } else {
+          tx.delete(usersCalendars).where(
+            and(eq(usersCalendars.calendarId, id), eq(usersCalendars.userId, owner)),
+          );
           tx.insert(usersCalendars).values({
             userId: owner,
             calendarId: id,
