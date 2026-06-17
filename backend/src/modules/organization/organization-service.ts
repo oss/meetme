@@ -1,4 +1,4 @@
-import { organizations, usersOrganizations, users } from "../../db/schema.js";
+import { organizations, usersOrganizations } from "../../db/schema.js";
 
 import { type LoggerInstance, type DatabaseInstance } from "#common/types.js";
 import { type Policy, Role, CompareType, canAccess } from "#common/rbac.js";
@@ -59,7 +59,7 @@ export default function createOrganizationService(
       } else if (!canAccess(org.users_organizations.role, policy)) {
         if (policy.compareType === CompareType.Not && policy.role === Role.OWNER) {
           throw AppError.badRequest(
-            "You cannot perform this action as the owner, please transfer ownership first ",
+            "You cannot perform this action as the owner, please transfer ownership first",
           );
         }
         throw AppError.forbidden();
@@ -73,60 +73,57 @@ export default function createOrganizationService(
     async deleteOrganization(id: number, userid: number) {
       logger.info(`User ${userid} deleting organization ${id}`);
       await this.getOrganization(id, userid, { role: Role.OWNER });
-      await db.delete(organizations).where(eq(users.id, id));
+      const [org] = await db.delete(organizations).where(eq(organizations.id, id)).returning();
+      if (!org) {
+        throw AppError.serverError("Could not delete organization");
+      }
     },
 
-    /// TODO: we might want to consider checking if members actually exist in the
-    /// system LDAP or whatever. A worthwhile discussion is if we want to enable
-    /// adding users who don't exist in the database yet.
-    async shareOrganization(id: number, sharedWith: number[], userid: number) {
+    async shareOrganization(id: number, users: number[], userid: number) {
       logger.info(`User ${userid} is sharing organization ${id} with users ${users.toString()}`);
-      const org = await this.getOrganization(id, userid, { role: Role.ADMIN });
-      await db
+      await this.getOrganization(id, userid, { role: Role.ADMIN });
+      const sharedWith = await db
         .insert(usersOrganizations)
         .values(
-          sharedWith.map((i) => ({
+          users.map((i) => ({
             userId: i,
             organizationId: id,
-            // Required because of the map
-            role: "OWNER" as const,
+            role: "INVITED" as const, // Required because of the map
           })),
         )
-        .onConflictDoNothing({ target: users.id });
-      return org;
+        .onConflictDoNothing({ target: [usersOrganizations.userId, usersOrganizations.organizationId ]})
+        .returning();
+      return sharedWith;
     },
 
     /// Joins the organization. The user `userid` must be invited to join.
     /// Throws bad request if user is already a member.
     async joinOrganization(id: number, userid: number) {
       logger.info(`User ${id} accepted invite to organization ${id}`);
-      const org = await this.getOrganization(id, userid, {
-        role: Role.INVITED,
-        compareType: CompareType.Exact,
-      });
-      await db
+      await this.getOrganization(id, userid, {role: Role.INVITED, compareType: CompareType.Exact});
+      const [user] = await db
         .update(usersOrganizations)
         .set({ role: "MEMBER" })
         .where(
           and(eq(usersOrganizations.organizationId, id), eq(usersOrganizations.userId, userid)),
-        );
-      return org;
+        )
+        .returning();
+      if (!user) {
+        throw AppError.serverError("Unable to join the organization");
+      }
     },
 
     /// Leaves the organization as the user `userid`. The user cannot leave if
     /// they are the owner of the organization.
     async leaveOrganization(id: number, userid: number) {
       logger.info(`User ${userid} is leaving the organization ${id}`);
-      const data = await this.getOrganization(id, userid, {
-        role: Role.OWNER,
-        compareType: CompareType.Not,
-      });
-      await db
-        .delete(usersOrganizations)
-        .where(
-          and(eq(usersOrganizations.userId, userid), eq(usersOrganizations.organizationId, id)),
-        );
-      return data;
+      await this.getOrganization(id, userid, { role: Role.OWNER, compareType: CompareType.Not});
+      const [user] = await db.delete(usersOrganizations)
+        .where(and(eq(usersOrganizations.userId, userid), eq(usersOrganizations.organizationId, id)))
+        .returning();
+      if (!user) {
+        throw AppError.serverError("Unable to leave organization");
+      }
     },
   };
 }
