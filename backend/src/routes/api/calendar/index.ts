@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     handler: async (request) => {
       if ("organizationId" in request.body) {
-        throw AppError.badRequest("Please use PUT /calendar/:id/owner to transfer to an organization");
+        throw AppError.badRequest("Please use PUT /api/calendar/:id/owner to transfer to an organization");
       }
       const { calendarId } = request.params;
       const { userid } = request.session.user;
@@ -102,39 +102,54 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.route({
-    method: "PATCH",
+    method: "POST",
     url: "/:calendarId/timeblocks",
     schema: {
-      description: "Modifies timeblocks for the calendar",
+      description: "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
       params: Type.Object({ calendarId: Type.Integer() }),
-      body: Type.Object({ operation: Type.Enum(["ADD", "SET", "SUB"]), block: timeblocksSchema }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      body: Type.Object({ block: timeblocksSchema }),
+      response: { 200: Type.Object({ timeblock: timeblocksSchema }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
-      const { operation, block } = request.body;
-      const calendar = await service.patchTimeblocks(calendarId, operation, block, userid);
-      return { calendar: calendar };
+      const { block } = request.body;
+      const b = await service.addTimeblock(calendarId, block, userid);
+      return { timeblock: b };
     },
   });
 
-  // TODO: implement
+  fastify.route({
+    method: "DELETE",
+    url: "/:calendarId/timeblocks",
+    schema: {
+      description: "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
+      params: Type.Object({ calendarId: Type.Integer() }),
+      body: Type.Object({ timeblockId: Type.Number() }),
+      response: { 204: Type.Object({ message: Type.String() }) },
+    },
+    handler: async (request, reply) => {
+      const { calendarId } = request.params;
+      const { userid } = request.session.user;
+      const { timeblockId } = request.body;
+      await service.deleteTimeblock(calendarId, timeblockId, userid);
+      reply.code(204);
+    },
+  });
+
   fastify.route({
     method: "GET",
     url: "/:calendarId/timeblocks",
     schema: {
-      description: "Modifies timeblocks for the calendar",
+      description: "Gets all timeblocks for the given calendar",
       params: Type.Object({ calendarId: Type.Integer() }),
-      body: Type.Object({ operation: Type.Enum(["ADD", "SET", "SUB"]), block: timeblocksSchema }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksSchema) }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
-      const { operation, block } = request.body;
-      const calendar = await service.patchTimeblocks(calendarId, operation, block, userid);
-      return { calendar: calendar };
+      const blocks = await service.getTimeblocks(calendarId, userid);
+      return { timeblocks: blocks };
     },
   });
 

@@ -6,7 +6,6 @@ import AppError from "#common/errors.js";
 
 import { eq, and, inArray } from "drizzle-orm";
 
-type Operation = "ADD" | "SUB" | "SET";
 type InsertCalendar = typeof calendars.$inferInsert;
 type InsertTimeblock = typeof timeblocks.$inferInsert;
 
@@ -116,32 +115,38 @@ export default function createCalendarService(
       return cal;
     },
 
-    async patchTimeblocks(
-      id: number,
-      operation: Operation,
-      block: InsertTimeblock,
-      userid: number,
-    ) {
-      logger.info(`User ${userid} is applying ${operation} to timeblocks of calendar ${id}`);
-      const cal = await this.getCalendar(id, userid, { role: Role.MEMBER });
-
-      switch (operation) {
-        case "SET":
-          db.update(timeblocks)
-            .set({
-              start: block.start,
-              end: block.end,
-              description: block.description,
-            })
-            .where(eq(timeblocks.id, block.id));
-          break;
-        case "ADD":
-          db.insert(timeblocks).values(block).onConflictDoNothing();
-          break;
-        case "SUB":
-          db.delete(timeblocks).where(eq(timeblocks.id, block.id));
+    async addTimeblock(id: number, block: InsertTimeblock, userid: number) {
+      logger.info(`User ${userid} is adding timeblock ${JSON.stringify(block)} calendar ${id}`);
+      await this.getCalendar(id, userid, { role: Role.MEMBER });
+      const [timeblock] = await db.insert(timeblocks).values(block)
+        .onConflictDoUpdate({ target: timeblocks.id, set: {
+          start: block.start,
+          end: block.end,
+          description: block.description,
+        } })
+        .returning();
+      if (!timeblock) {
+        throw AppError.serverError("Unable to add the timeblock");
       }
-      return cal;
+      return timeblock;
+    },
+
+    async deleteTimeblock(id: number, timeblockid: number, userid: number) {
+      logger.info(`User ${userid} is deleting timeblock ${timeblockid} calendar ${id}`);
+      await this.getCalendar(id, userid, { role: Role.MEMBER });
+      const [timeblock] = await db.delete(timeblocks).where(eq(timeblocks.id, timeblockid)).returning();
+      if (!timeblock) {
+        throw AppError.serverError("Unable to delete the timeblock");
+      }
+      return timeblock;
+    },
+
+    async getTimeblocks(id: number, userid: number) {
+      logger.info(`User ${userid} is fetching timeblocks of calendar ${id}`);
+      await this.getCalendar(id, userid, { role: Role.VIEWER });
+      // const blocks = db.select().from(timeblocks).where(eq(timeblocks.calendarId, id));
+      const blocks = db.select().from(timeblocks);
+      return blocks;
     },
 
     async shareCalendar(id: number, sharedWith: number[], userid: number) {

@@ -225,54 +225,99 @@ describe("PATCH /api/calendar/:calendarId/settings", () => {
 
     assert.deepStrictEqual(JSON.parse(res.payload), {
       error: "Bad Request",
-      message: "Please use PUT /calendar/:id/owner to transfer to an organization",
+      message: "Please use PUT /api/calendar/:id/owner to transfer to an organization",
       statusCode: 400
     })
   });
 });
 
-describe("PATCH /api/calendar/:calendarId/timeblocks", () => {
+describe("POST /api/calendar/:calendarId/timeblocks", () => {
   it("should successfully ADD a timeblock", async (t) => {
     const app = await build(t);
     const calendar = await app.seedCalendar("MEMBER");
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
     const res = await app.injectWithLogin({
       url: `/api/calendar/${calendar.id}/timeblocks`,
-      method: "PATCH",
+      method: "POST",
       body: {
-	operation: "ADD",
 	block: {
           id: 101,
           userId: 1,
           calendarId: calendar.id,
           description: "Focus Time",
-          start: "09:00:00",
-          end: "10:00:00",
+          start: now.toISOString(),
+          end: later.toISOString(),
 	},
       },
     });
-    assert.strictEqual(res.statusCode, 200);
+    assert.partialDeepStrictEqual(JSON.parse(res.payload), {
+      timeblock: {
+	userId: 1,
+	calendarId: calendar.id,
+	description: "Focus Time",
+	start: now.toISOString(),
+	end: later.toISOString()
+      }
+    });
+    const res2 = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}/timeblocks`,
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res2.payload), {
+      timeblocks: [{
+	userId: 1,
+	calendarId: calendar.id,
+	description: "Focus Time",
+	start: now.toISOString(),
+	end: later.toISOString()
+      }]
+    });
   });
 
-  it("should fail for invalid operations", async (t) => {
+  it("should successfully SET a timeblock", async (t) => {
     const app = await build(t);
     const calendar = await app.seedCalendar("MEMBER");
-
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
     const res = await app.injectWithLogin({
       url: `/api/calendar/${calendar.id}/timeblocks`,
-      method: "PATCH",
+      method: "POST",
       body: {
-	operation: "INVALID_OP",
 	block: {
-	  id: 102,
-	  userId: 1,
-	  calendarId: calendar.id,
-	  start: "13:00:00",
-	  end: "14:00:00",
+          id: 101,
+          userId: 1,
+          calendarId: calendar.id,
+          description: "Focus Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
 	},
       },
     });
-
-    assert.strictEqual(res.statusCode, 400);
+    const res2 = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}/timeblocks`,
+      method: "POST",
+      body: {
+	block: {
+          id: 101,
+          userId: 1,
+          calendarId: calendar.id,
+          description: "new description",
+          start: now.toISOString(),
+          end: later.toISOString(),
+	},
+      },
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res2.payload), {
+      timeblock: {
+	userId: 1,
+	calendarId: calendar.id,
+	description: "new description",
+	start: now.toISOString(),
+	end: later.toISOString()
+      }
+    });
   });
 });
 

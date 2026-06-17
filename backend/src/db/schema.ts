@@ -130,8 +130,8 @@ export const timeblocks = pgTable("timeblocks", {
     .notNull()
     .references(() => calendars.id, { onDelete: 'cascade' }),
   description: varchar(),
-  start: time().notNull(),
-  end: time().notNull(),
+  start: timestamp({ withTimezone: true }).notNull(),
+  end: timestamp({ withTimezone: true }).notNull(),
 });
 
 // Not used for now, might be used later to track visits and viwers.
