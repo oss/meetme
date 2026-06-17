@@ -2,17 +2,16 @@ import { type FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typ
 import { createInsertSchema, createUpdateSchema } from "drizzle-orm/typebox";
 
 import { calendars, timeblocks } from "../../../db/schema.js";
-// import AppError from "common/errors.js";
+import { Role } from "#common/rbac.js"
+import AppError from "#common/errors.js";
 
 const calendarSchema = createInsertSchema(calendars, {
   links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
 });
 const timeblocksSchema = createInsertSchema(timeblocks);
-const settingsSchema = createUpdateSchema(calendars, {
-  organizationId: Type.Never(),
-  created: Type.Never(),
+const settingsSchema = Type.Omit(createUpdateSchema(calendars, {
   links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
-});
+}), Type.Union([Type.Literal("organizationId"), Type.Literal("created")]));
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const service = fastify.calendarService;
@@ -58,6 +57,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       response: { 200: Type.Object({ calendar: calendarSchema }) },
     },
     handler: async (request) => {
+      if ("organizationId" in request.body) {
+        throw AppError.badRequest("Please use PUT /calendar/:id/owner to transfer to an organization");
+      }
       const { calendarId } = request.params;
       const { userid } = request.session.user;
       const calendar = await service.patchSettings(calendarId, request.body, userid);
