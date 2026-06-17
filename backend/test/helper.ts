@@ -74,7 +74,7 @@ async function seedUser(this: FastifyInstance, name: string, netid: string) {
   return user;
 }
 
-type Role = "OWNER" | "ADMIN" | "EDITOR" | "MEMBER" | "VIEWER" | "INVITED";
+type Role = "OWNER" | "ADMIN" | "EDITOR" | "MEMBER" | "VIEWER" | "INVITED" | null;
 async function seedOrganization(this: FastifyInstance, role: Role ) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
@@ -82,9 +82,14 @@ async function seedOrganization(this: FastifyInstance, role: Role ) {
   });
   assert.ok(user);
   const organization = await this.organizationService.createOrganization("Apple Orchard", user.id);
-  await this.database.update(usersOrganizations).set({
-    role: role
-  }).where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
+  if (role !== null) {
+    await this.database.update(usersOrganizations).set({
+      role: role
+    }).where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
+  } else {
+    await this.database.delete(usersOrganizations)
+      .where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
+  }
   return organization;
 }
 

@@ -187,7 +187,6 @@ describe("DELETE /api/calendar/:calendarId", () => {
       statusCode: 403
     });
   });
-
 })
 
 describe("PATCH /api/calendar/:calendarId/settings", () => {
