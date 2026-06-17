@@ -3,7 +3,72 @@ import { build } from "../../helper.js";
 import { it, describe } from 'node:test'
 import assert from 'node:assert'
 
-describe("POST /api/calendar", () =>{
+describe("GET /api/calendar", () => {
+  it("should return calendar data if user is a owner", async (t) => {
+    const app = await build(t)
+    const calendar = await app.seedCalendar("OWNER");
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}`,
+      method: "GET",
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res.payload), {
+      calendar: {
+	description: 'short description',
+	name: 'calendar',
+	organizationId: null,
+	public: false,
+	shareLink: false,
+      }
+    });
+  });
+
+  it("should return calendar data if user is a viewer", async (t) => {
+    const app = await build(t)
+    const calendar = await app.seedCalendar("VIEWER");
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}`,
+      method: "GET",
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res.payload), {
+      calendar: {
+	description: 'short description',
+	name: 'calendar',
+	organizationId: null,
+	public: false,
+	shareLink: false,
+      }
+    });
+  });
+
+  it("should fail if user is not a member", async (t) => {
+    const app = await build(t)
+    const calendar = await app.seedCalendar(null);
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}`,
+      method: "GET",
+    });
+    assert.deepStrictEqual(JSON.parse(res.payload), {
+      error: "Forbidden",
+      message: "Access Denied",
+      statusCode: 403
+    });
+  });
+
+  it("should fail if calendar does not exist", async (t) => {
+    const app = await build(t)
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/123`,
+      method: "GET",
+    });
+    assert.deepStrictEqual(JSON.parse(res.payload), {
+      error: "Forbidden",
+      message: "Access Denied",
+      statusCode: 403
+    });
+  });
+});
+
+describe("POST /api/calendar", () => {
   it("should work for individual", async (t) => {
     const app = await build(t)
     const res = await app.injectWithLogin({
@@ -128,7 +193,7 @@ describe("DELETE /api/calendar/:calendarId", () => {
 describe("PATCH /api/calendar/:calendarId/settings", () => {
   it("should successfully update description", async (t) => {
     const app = await build(t);
-    const calendar = await app.seedCalendar();
+    const calendar = await app.seedCalendar("OWNER");
 
     const res = await app.injectWithLogin({
       url: `/api/calendar/${calendar.id}/settings`,
@@ -147,7 +212,7 @@ describe("PATCH /api/calendar/:calendarId/settings", () => {
 
   it("should fail to change organization owner", async (t) => {
     const app = await build(t);
-    const calendar = await app.seedCalendar();
+    const calendar = await app.seedCalendar("OWNER");
 
     const res = await app.injectWithLogin({
       url: `/api/calendar/${calendar.id}/settings`,
@@ -159,9 +224,9 @@ describe("PATCH /api/calendar/:calendarId/settings", () => {
     });
 
     assert.deepStrictEqual(JSON.parse(res.payload), {
-      error: "Forbidden",
-      message: "Access Denied",
-      statusCode: 403
+      error: "Bad Request",
+      message: "Please use PUT /calendar/:id/owner to transfer to an organization",
+      statusCode: 400
     })
   });
 });
@@ -214,7 +279,7 @@ describe("PATCH /api/calendar/:calendarId/timeblocks", () => {
 describe("PUT /api/calendar/:calendarId/share", () => {
   it("should share with specific users", async (t) => {
     const app = await build(t);
-    const calendar = await app.seedCalendar();
+    const calendar = await app.seedCalendar("OWNER");
     const userA = await app.seedUser("userA", "aa");
     const userB = await app.seedUser("userB", "bb");
     assert.ok(userA);

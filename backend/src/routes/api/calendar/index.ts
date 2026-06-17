@@ -32,6 +32,22 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.route({
+    method: "GET",
+    url: "/:calendarId",
+    schema: {
+      description: "Gets the information of the calendar given by the calendarId ",
+      params: Type.Object({ calendarId: Type.Integer() }),
+      response: { 200: Type.Object({ calendar: calendarSchema }) },
+    },
+    handler: async (request) => {
+      const { calendarId } = request.params;
+      const { userid } = request.session.user;
+      const calendar = await service.getCalendar(calendarId, userid, { role: Role.INVITED });
+      return { calendar: calendar };
+    },
+  });
+
+  fastify.route({
     method: "DELETE",
     url: "/:calendarId",
     schema: {
@@ -69,9 +85,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.route({
     method: "PUT",
-    url: "/:calendarId/transferOwner",
+    url: "/:calendarId/owner",
     schema: {
-      description: "Transfers ownership to the given owner",
+      description: "Transfers ownership of the calendar to the given owner",
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ owner: Type.Number(), isOrg: Type.Boolean() }),
       response: { 200: Type.Object({ calendar: calendarSchema }) },

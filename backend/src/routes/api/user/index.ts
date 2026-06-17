@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.route({
     method: "GET",
-    url: "/:netid",
+    url: "/:userid",
     schema: {
       description: "Gets user data of the user with the given netid",
       params: Type.Object({ userid: Type.Number() }),

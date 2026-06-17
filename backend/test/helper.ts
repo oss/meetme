@@ -88,7 +88,7 @@ async function seedOrganization(this: FastifyInstance, role: Role ) {
   return organization;
 }
 
-async function seedCalendar(this: FastifyInstance, role?: Role) {
+async function seedCalendar(this: FastifyInstance, role?: Role | null) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
     name: "Airy Apple",
@@ -103,6 +103,9 @@ async function seedCalendar(this: FastifyInstance, role?: Role) {
     await this.database.update(usersCalendars).set({
       role: role
     }).where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
+  } else if (role == null) {
+    await this.database.delete(usersCalendars)
+      .where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
   }
   return calendar;
 }
