@@ -5,12 +5,12 @@ export enum CompareType {
   Not,
 }
 export enum Role {
-  INVITED,
-  VIEWER,
-  MEMBER,
-  EDITOR,
-  ADMIN,
-  OWNER,
+  INVITED = 0,
+  VIEWER = 1,
+  MEMBER = 2,
+  EDITOR = 3,
+  ADMIN = 4,
+  OWNER = 5,
 }
 
 export type Policy = {

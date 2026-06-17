@@ -3,19 +3,25 @@
   "version": "0.1.0",
   "type": "module",
   "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
   "imports": {
     "#common/*.js": "./src/common/*.js",
     "#package.json": "./package.json"
   },
   "scripts": {
     "start": "npm run build && node dist/server.js",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
     "check": "tsc --noEmit",
+    "dev": "tsx src/server.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:gitlab": "oxlint --format=gitlab > report.json",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "test": "tsx --test test/**/*.ts",
+    "test:coverage": "tsx --experimental-test-coverage --test test/**/*.ts"
   },
   "dependencies": {
     "@fastify/autoload": "^6.3.1",
@@ -35,10 +41,14 @@
     "typebox": "^1.2.10"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.3",
     "@types/node": "^25.9.3",
     "@types/pg": "^8.20.0",
+    "drizzle-kit": "^1.0.0-rc.3",
+    "glob": "^13.0.6",
     "oxfmt": "^0.54.0",
     "oxlint": "^1.69.0",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
 }
