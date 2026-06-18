@@ -1,8 +1,7 @@
 import { canAccess, Role, CompareType } from "#common/rbac.js";
 
-import { test } from 'node:test'
-import assert from 'node:assert'
-
+import { test } from "node:test";
+import assert from "node:assert";
 
 test("RBAC Ordered", () => {
   assert.equal(canAccess("VIEWER", { role: Role.ADMIN }), false);

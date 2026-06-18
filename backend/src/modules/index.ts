@@ -2,7 +2,12 @@ import createOrganizationService from "./organization/organization-service.js";
 import createCalendarService from "./calendar/calendar-service.js";
 import createUserService from "./user/user-service.js";
 
-import type { OrganizationService, CalendarService, UserService, DatabaseInstance } from "#common/types.js";
+import type {
+  OrganizationService,
+  CalendarService,
+  UserService,
+  DatabaseInstance,
+} from "#common/types.js";
 import type { FastifyPluginOptions } from "fastify";
 
 import fp from "fastify-plugin";

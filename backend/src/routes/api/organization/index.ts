@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     handler: async (request) => {
       const { organizationId } = request.params;
       const { userid } = request.session.user;
-      const  users = await service.shareOrganization(organizationId, request.body.users, userid);
+      const users = await service.shareOrganization(organizationId, request.body.users, userid);
       return { users: users };
     },
   });

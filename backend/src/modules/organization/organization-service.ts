@@ -91,7 +91,9 @@ export default function createOrganizationService(
             role: "INVITED" as const, // Required because of the map
           })),
         )
-        .onConflictDoNothing({ target: [usersOrganizations.userId, usersOrganizations.organizationId ]})
+        .onConflictDoNothing({
+          target: [usersOrganizations.userId, usersOrganizations.organizationId],
+        })
         .returning();
       return sharedWith;
     },
@@ -100,7 +102,10 @@ export default function createOrganizationService(
     /// Throws bad request if user is already a member.
     async joinOrganization(id: number, userid: number) {
       logger.info(`User ${id} accepted invite to organization ${id}`);
-      await this.getOrganization(id, userid, {role: Role.INVITED, compareType: CompareType.Exact});
+      await this.getOrganization(id, userid, {
+        role: Role.INVITED,
+        compareType: CompareType.Exact,
+      });
       const [user] = await db
         .update(usersOrganizations)
         .set({ role: "MEMBER" })
@@ -117,9 +122,12 @@ export default function createOrganizationService(
     /// they are the owner of the organization.
     async leaveOrganization(id: number, userid: number) {
       logger.info(`User ${userid} is leaving the organization ${id}`);
-      await this.getOrganization(id, userid, { role: Role.OWNER, compareType: CompareType.Not});
-      const [user] = await db.delete(usersOrganizations)
-        .where(and(eq(usersOrganizations.userId, userid), eq(usersOrganizations.organizationId, id)))
+      await this.getOrganization(id, userid, { role: Role.OWNER, compareType: CompareType.Not });
+      const [user] = await db
+        .delete(usersOrganizations)
+        .where(
+          and(eq(usersOrganizations.userId, userid), eq(usersOrganizations.organizationId, id)),
+        )
         .returning();
       if (!user) {
         throw AppError.serverError("Unable to leave organization");

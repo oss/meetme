@@ -118,12 +118,17 @@ export default function createCalendarService(
     async addTimeblock(id: number, block: InsertTimeblock, userid: number) {
       logger.info(`User ${userid} is adding timeblock ${JSON.stringify(block)} calendar ${id}`);
       await this.getCalendar(id, userid, { role: Role.MEMBER });
-      const [timeblock] = await db.insert(timeblocks).values(block)
-        .onConflictDoUpdate({ target: timeblocks.id, set: {
-          start: block.start,
-          end: block.end,
-          description: block.description,
-        } })
+      const [timeblock] = await db
+        .insert(timeblocks)
+        .values(block)
+        .onConflictDoUpdate({
+          target: timeblocks.id,
+          set: {
+            start: block.start,
+            end: block.end,
+            description: block.description,
+          },
+        })
         .returning();
       if (!timeblock) {
         throw AppError.serverError("Unable to add the timeblock");
@@ -134,7 +139,10 @@ export default function createCalendarService(
     async deleteTimeblock(id: number, timeblockid: number, userid: number) {
       logger.info(`User ${userid} is deleting timeblock ${timeblockid} calendar ${id}`);
       await this.getCalendar(id, userid, { role: Role.MEMBER });
-      const [timeblock] = await db.delete(timeblocks).where(eq(timeblocks.id, timeblockid)).returning();
+      const [timeblock] = await db
+        .delete(timeblocks)
+        .where(eq(timeblocks.id, timeblockid))
+        .returning();
       if (!timeblock) {
         throw AppError.serverError("Unable to delete the timeblock");
       }
@@ -160,7 +168,7 @@ export default function createCalendarService(
             role: "INVITED" as const,
           })),
         )
-        .onConflictDoNothing({ target: [ usersCalendars.userId, usersCalendars.calendarId ]})
+        .onConflictDoNothing({ target: [usersCalendars.userId, usersCalendars.calendarId] })
         .returning();
       return sharedWith;
     },
@@ -169,11 +177,11 @@ export default function createCalendarService(
       logger.info(`User ${userid} is unsharing calendar ${id} with user ${user}`);
       await this.getCalendar(id, userid, { role: Role.EDITOR });
       if (user === userid) {
-        throw AppError.badRequest("You cannot remove yourself, please use /api/calendar/:id/leave instead");
+        throw AppError.badRequest(
+          "You cannot remove yourself, please use /api/calendar/:id/leave instead",
+        );
       }
-      const deleted = await db.delete(usersCalendars).where(and(
-        eq(usersCalendars.userId, user),
-      ));
+      const deleted = await db.delete(usersCalendars).where(and(eq(usersCalendars.userId, user)));
       if (!deleted) {
         throw AppError.serverError("Unable to remove user, maybe the user isn't in the calendar?");
       }
@@ -201,7 +209,7 @@ export default function createCalendarService(
 
     async leaveCalendar(id: number, userid: number) {
       logger.info(`User ${userid} is leaving calendar ${id}`);
-      await this.getCalendar(id, userid, {role: Role.OWNER, compareType: CompareType.Not});
+      await this.getCalendar(id, userid, { role: Role.OWNER, compareType: CompareType.Not });
       const [user] = await db
         .delete(usersCalendars)
         .where(and(eq(usersCalendars.userId, userid), eq(usersCalendars.calendarId, id)))

@@ -1,14 +1,14 @@
 import serviceApp from "../src/app.js";
-import {usersOrganizations, usersCalendars} from "../src/db/schema.js";
+import { usersOrganizations, usersCalendars } from "../src/db/schema.js";
 import AppError from "#common/errors.js";
 
-import Fastify, { type FastifyInstance, type InjectOptions } from 'fastify'
+import Fastify, { type FastifyInstance, type InjectOptions } from "fastify";
 import type { SessionStore } from "@fastify/session";
-import fp from 'fastify-plugin'
+import fp from "fastify-plugin";
 
-import { PGlite } from '@electric-sql/pglite';
+import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { migrate } from 'drizzle-orm/pglite/migrator';
+import { migrate } from "drizzle-orm/pglite/migrator";
 import { and, eq } from "drizzle-orm";
 
 import { type TestContext } from "node:test";
@@ -33,7 +33,7 @@ interface User {
   userid: number;
 }
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyInstance {
     injectWithLogin: typeof injectWithLogin;
     sessionStore: SessionStore;
@@ -49,21 +49,18 @@ declare module 'fastify' {
   }
 }
 
-async function injectWithLogin (
-  this: FastifyInstance,
-  opts: InjectOptions
-) {
+async function injectWithLogin(this: FastifyInstance, opts: InjectOptions) {
   const res = await this.inject({
     method: "POST",
     url: "/test/login",
-  })
+  });
 
   return this.inject({
     ...opts,
     cookies: {
-      [this.config.COOKIE_NAME]: res?.cookies[0]?.value || ""
-    }
-  })
+      [this.config.COOKIE_NAME]: res?.cookies[0]?.value || "",
+    },
+  });
 }
 
 async function seedUser(this: FastifyInstance, name: string, netid: string) {
@@ -75,7 +72,7 @@ async function seedUser(this: FastifyInstance, name: string, netid: string) {
 }
 
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "MEMBER" | "VIEWER" | "INVITED" | null;
-type Member = { id: number, role: Role};
+type Member = { id: number; role: Role };
 async function seedOrganization(this: FastifyInstance, role: Role, member?: Member) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
@@ -84,20 +81,34 @@ async function seedOrganization(this: FastifyInstance, role: Role, member?: Memb
   assert.ok(user);
   const organization = await this.organizationService.createOrganization("Apple Orchard", user.id);
   if (role !== null) {
-    await this.database.update(usersOrganizations).set({
-      role: role
-    }).where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
+    await this.database
+      .update(usersOrganizations)
+      .set({
+        role: role,
+      })
+      .where(
+        and(
+          eq(usersOrganizations.userId, user.id),
+          eq(usersOrganizations.organizationId, organization.id),
+        ),
+      );
   } else {
-    await this.database.delete(usersOrganizations)
-      .where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
+    await this.database
+      .delete(usersOrganizations)
+      .where(
+        and(
+          eq(usersOrganizations.userId, user.id),
+          eq(usersOrganizations.organizationId, organization.id),
+        ),
+      );
   }
   if (member) {
     assert.ok(member.role);
     await this.database.insert(usersOrganizations).values({
       userId: member.id,
       organizationId: organization.id,
-      role: member.role
-    })
+      role: member.role,
+    });
   }
   return organization;
 }
@@ -108,17 +119,24 @@ async function seedCalendar(this: FastifyInstance, role: Role | null, member?: M
     name: "Airy Apple",
   });
   assert.ok(user);
-  const calendar = await this.calendarService.createCalendar({
-    name: "calendar",
-    description: "short description",
-    links: [{ sharelink: true, url: "https://my.calendar.stuff" }]
-  }, user.id);
+  const calendar = await this.calendarService.createCalendar(
+    {
+      name: "calendar",
+      description: "short description",
+      links: [{ sharelink: true, url: "https://my.calendar.stuff" }],
+    },
+    user.id,
+  );
   if (role) {
-    await this.database.update(usersCalendars).set({
-      role: role
-    }).where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
+    await this.database
+      .update(usersCalendars)
+      .set({
+        role: role,
+      })
+      .where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
   } else if (role == null) {
-    await this.database.delete(usersCalendars)
+    await this.database
+      .delete(usersCalendars)
       .where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
   }
   if (member) {
@@ -126,38 +144,40 @@ async function seedCalendar(this: FastifyInstance, role: Role | null, member?: M
     await this.database.insert(usersCalendars).values({
       userId: member.id,
       calendarId: calendar.id,
-      role: "MEMBER"
-    })
+      role: "MEMBER",
+    });
   }
   return calendar;
 }
 
-export async function build (t?: TestContext) {
+export async function build(t?: TestContext) {
   const app = Fastify();
   const client = new PGlite();
   const db = drizzle({ client });
   await migrate(db, {
-    migrationsFolder: path.join(import.meta.dirname, "../drizzle")
+    migrationsFolder: path.join(import.meta.dirname, "../drizzle"),
   });
 
   app.register(fp(serviceApp), {
-    modules: { database: (_url: string) => db}
+    modules: { database: (_url: string) => db },
   });
   // Stimulate a login
-  app.register(fp(async(fastify) => {
-    fastify.post("/test/login", async (request) => {
-      const user = await app.userService.createOrLoginUser({
-	netid: "aa123",
-	name: "Airy Apple",
+  app.register(
+    fp(async (fastify) => {
+      fastify.post("/test/login", async (request) => {
+        const user = await app.userService.createOrLoginUser({
+          netid: "aa123",
+          name: "Airy Apple",
+        });
+        if (!user) {
+          throw AppError.notFound();
+        }
+        request.session.user = { netid: user.netid, userid: user.id };
+        await request.session.save();
+        return request.session.user;
       });
-      if (!user) {
-	throw AppError.notFound();
-      }
-      request.session.user = { netid: user.netid, userid: user.id };
-      await request.session.save();
-      return request.session.user;
-    });
-  }));
+    }),
+  );
 
   await app.ready();
   app.injectWithLogin = injectWithLogin;
@@ -166,7 +186,7 @@ export async function build (t?: TestContext) {
   app.seedCalendar = seedCalendar;
 
   if (t) {
-    t.after(() => app.close())
+    t.after(() => app.close());
   }
-  return app
+  return app;
 }

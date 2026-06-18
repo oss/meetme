@@ -2,7 +2,7 @@ import { type FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typ
 import { createInsertSchema, createUpdateSchema } from "drizzle-orm/typebox";
 
 import { calendars, timeblocks, usersCalendars } from "../../../db/schema.js";
-import { Role } from "#common/rbac.js"
+import { Role } from "#common/rbac.js";
 import AppError from "#common/errors.js";
 
 const calendarSchema = createInsertSchema(calendars, {
@@ -10,9 +10,14 @@ const calendarSchema = createInsertSchema(calendars, {
 });
 const usersCalendarsSchema = createInsertSchema(usersCalendars);
 const timeblocksSchema = createInsertSchema(timeblocks);
-const settingsSchema = Type.Omit(createUpdateSchema(calendars, {
-  links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
-}), Type.Union([Type.Literal("organizationId"), Type.Literal("created")]));
+const settingsSchema = Type.Omit(
+  createUpdateSchema(calendars, {
+    links: Type.Optional(
+      Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() })),
+    ),
+  }),
+  Type.Union([Type.Literal("organizationId"), Type.Literal("created")]),
+);
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const service = fastify.calendarService;
@@ -75,7 +80,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     handler: async (request) => {
       if ("organizationId" in request.body) {
-        throw AppError.badRequest("Please use PUT /api/calendar/:id/owner to transfer to an organization");
+        throw AppError.badRequest(
+          "Please use PUT /api/calendar/:id/owner to transfer to an organization",
+        );
       }
       const { calendarId } = request.params;
       const { userid } = request.session.user;
@@ -106,7 +113,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     method: "POST",
     url: "/:calendarId/timeblocks",
     schema: {
-      description: "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
+      description:
+        "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: timeblocksSchema }),
       response: { 200: Type.Object({ timeblock: timeblocksSchema }) },
@@ -124,7 +132,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     method: "DELETE",
     url: "/:calendarId/timeblocks",
     schema: {
-      description: "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
+      description:
+        "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },

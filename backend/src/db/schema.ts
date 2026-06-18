@@ -84,7 +84,9 @@ export const organizations = pgTable("organizations", {
 export const calendars = pgTable("calendars", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar("name").notNull().default("untitled calendar"),
-  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: 'cascade' }),
+  organizationId: integer("organization_id").references(() => organizations.id, {
+    onDelete: "cascade",
+  }),
   description: varchar("description"),
   location: varchar("location"),
   timezone: varchar("timezone"),
@@ -105,10 +107,10 @@ export const usersCalendars = pgTable(
   {
     userId: integer("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
+      .references(() => users.id, { onDelete: "cascade" }),
     calendarId: integer("calendar_id")
       .notNull()
-      .references(() => calendars.id, { onDelete: 'cascade' }),
+      .references(() => calendars.id, { onDelete: "cascade" }),
     role: roleEnum().notNull().default("VIEWER"),
   },
   (t) => [
@@ -125,10 +127,10 @@ export const timeblocks = pgTable("timeblocks", {
   id: integer().primaryKey(),
   userId: integer("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: "cascade" }),
   calendarId: integer("calendar_id")
     .notNull()
-    .references(() => calendars.id, { onDelete: 'cascade' }),
+    .references(() => calendars.id, { onDelete: "cascade" }),
   description: varchar(),
   start: timestamp({ withTimezone: true }).notNull(),
   end: timestamp({ withTimezone: true }).notNull(),
@@ -136,7 +138,7 @@ export const timeblocks = pgTable("timeblocks", {
 
 // Not used for now, might be used later to track visits and viwers.
 export const viewers = pgTable("viewers", {
-  calendarId: integer("calendar_id").references(() => calendars.id, { onDelete: 'cascade' }),
+  calendarId: integer("calendar_id").references(() => calendars.id, { onDelete: "cascade" }),
   viewer: varchar(),
 });
 
@@ -145,10 +147,10 @@ export const usersOrganizations = pgTable(
   {
     userId: integer("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
+      .references(() => users.id, { onDelete: "cascade" }),
     organizationId: integer("organization_id")
       .notNull()
-      .references(() => organizations.id, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: "cascade" }),
     role: roleEnum().notNull().default("VIEWER"),
   },
   (t) => [
