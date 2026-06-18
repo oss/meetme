@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="azul/zulu-openjdk:25"
+ARG BASE_IMAGE="docker.io/azul/zulu-openjdk:25"
 
 FROM $BASE_IMAGE AS overlay
 
