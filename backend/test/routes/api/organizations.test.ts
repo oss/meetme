@@ -180,7 +180,7 @@ describe("PATCH /api/organization/:organizationId/join", () => {
     const organization = await app.seedOrganization("INVITED");
     const res = await app.injectWithLogin({
       url: `/api/organization/${organization.id}/join`,
-      method: "PATCH",
+      method: "PUT",
     });
     assert.strictEqual(res.statusCode, 204);
   });
@@ -190,7 +190,7 @@ describe("PATCH /api/organization/:organizationId/join", () => {
     const organization = await app.seedOrganization(null);
     const res = await app.injectWithLogin({
       url: `/api/organization/${organization.id}/join`,
-      method: "PATCH",
+      method: "PUT",
     });
     assert.partialDeepStrictEqual(JSON.parse(res.payload), {
       error: "Forbidden",

@@ -92,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.route({
-    method: "PATCH",
+    method: "PUT",
     url: "/:organizationId/join",
     schema: {
       description: "Joins the organization as the logged in user, user must be invited",

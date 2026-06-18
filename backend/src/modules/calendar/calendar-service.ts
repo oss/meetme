@@ -4,7 +4,7 @@ import type { OrganizationService, LoggerInstance, DatabaseInstance } from "#com
 import { type Policy, Role, CompareType, canAccess } from "#common/rbac.js";
 import AppError from "#common/errors.js";
 
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 type InsertCalendar = typeof calendars.$inferInsert;
 type InsertTimeblock = typeof timeblocks.$inferInsert;
@@ -148,27 +148,35 @@ export default function createCalendarService(
       return blocks;
     },
 
-    async shareCalendar(id: number, sharedWith: number[], userid: number) {
-      logger.info(`User ${userid} is sharing calendar ${id} with users ${sharedWith.toString()}`);
-      const cal = await this.getCalendar(id, userid, { role: Role.EDITOR });
-      await db
+    async shareCalendar(id: number, users: number[], userid: number) {
+      logger.info(`User ${userid} is sharing calendar ${id} with users ${users.toString()}`);
+      await this.getCalendar(id, userid, { role: Role.EDITOR });
+      const sharedWith = await db
         .insert(usersCalendars)
         .values(
-          sharedWith.map((uid) => ({
+          users.map((uid) => ({
             userId: uid,
             calendarId: id,
             role: "INVITED" as const,
           })),
         )
-        .onConflictDoNothing({ target: [ usersCalendars.userId, usersCalendars.calendarId ]});
-      return cal;
+        .onConflictDoNothing({ target: [ usersCalendars.userId, usersCalendars.calendarId ]})
+        .returning();
+      return sharedWith;
     },
 
-    async unshareCalendar(id: number, deleted: number[], userid: number) {
-      logger.info(`User ${userid} is unsharing calendar ${id} with users ${deleted.toString()}`);
-      const cal = await this.getCalendar(id, userid, { role: Role.EDITOR });
-      await db.delete(usersCalendars).where(inArray(usersCalendars.userId, deleted));
-      return cal;
+    async unshareCalendar(id: number, user: number, userid: number) {
+      logger.info(`User ${userid} is unsharing calendar ${id} with user ${user}`);
+      await this.getCalendar(id, userid, { role: Role.EDITOR });
+      if (user === userid) {
+        throw AppError.badRequest("You cannot remove yourself, please use /api/calendar/:id/leave instead");
+      }
+      const deleted = await db.delete(usersCalendars).where(and(
+        eq(usersCalendars.userId, user),
+      ));
+      if (!deleted) {
+        throw AppError.serverError("Unable to remove user, maybe the user isn't in the calendar?");
+      }
     },
 
     async joinCalendar(id: number, isSharelink: boolean, userid: number) {
@@ -181,23 +189,26 @@ export default function createCalendarService(
         throw AppError.badRequest("ShareLink disabled, request is invalid");
       }
 
-      await db
+      const [user] = await db
         .update(usersCalendars)
         .set({ role: "MEMBER" })
-        .where(and(eq(usersCalendars.userId, userid), eq(usersCalendars.calendarId, id)));
-      return cal;
+        .where(and(eq(usersCalendars.userId, userid), eq(usersCalendars.calendarId, id)))
+        .returning();
+      if (!user) {
+        throw AppError.serverError("Unable to join the calendar");
+      }
     },
 
     async leaveCalendar(id: number, userid: number) {
       logger.info(`User ${userid} is leaving calendar ${id}`);
-      const calendar = await this.getCalendar(id, userid, {
-        role: Role.OWNER,
-        compareType: CompareType.Not,
-      });
-      await db
+      await this.getCalendar(id, userid, {role: Role.OWNER, compareType: CompareType.Not});
+      const [user] = await db
         .delete(usersCalendars)
-        .where(and(eq(usersCalendars.userId, userid), eq(usersCalendars.calendarId, id)));
-      return calendar;
+        .where(and(eq(usersCalendars.userId, userid), eq(usersCalendars.calendarId, id)))
+        .returning();
+      if (!user) {
+        throw AppError.serverError("Unable to leave the calendar");
+      }
     },
 
     async setOwner(id: number, owner: number, isOrg: boolean, userid: number) {

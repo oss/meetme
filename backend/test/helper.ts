@@ -1,5 +1,5 @@
 import serviceApp from "../src/app.js";
-import {users, usersOrganizations, usersCalendars} from "../src/db/schema.js";
+import {usersOrganizations, usersCalendars} from "../src/db/schema.js";
 import AppError from "#common/errors.js";
 
 import Fastify, { type FastifyInstance, type InjectOptions } from 'fastify'
@@ -75,7 +75,8 @@ async function seedUser(this: FastifyInstance, name: string, netid: string) {
 }
 
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "MEMBER" | "VIEWER" | "INVITED" | null;
-async function seedOrganization(this: FastifyInstance, role: Role ) {
+type Member = { id: number, role: Role};
+async function seedOrganization(this: FastifyInstance, role: Role, member?: Member) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
     name: "Airy Apple",
@@ -90,10 +91,18 @@ async function seedOrganization(this: FastifyInstance, role: Role ) {
     await this.database.delete(usersOrganizations)
       .where(and(eq(usersOrganizations.userId, user.id), eq(usersOrganizations.organizationId, organization.id)));
   }
+  if (member) {
+    assert.ok(member.role);
+    await this.database.insert(usersOrganizations).values({
+      userId: member.id,
+      organizationId: organization.id,
+      role: member.role
+    })
+  }
   return organization;
 }
 
-async function seedCalendar(this: FastifyInstance, role?: Role | null) {
+async function seedCalendar(this: FastifyInstance, role: Role | null, member?: Member) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
     name: "Airy Apple",
@@ -111,6 +120,14 @@ async function seedCalendar(this: FastifyInstance, role?: Role | null) {
   } else if (role == null) {
     await this.database.delete(usersCalendars)
       .where(and(eq(usersCalendars.userId, user.id), eq(usersCalendars.calendarId, calendar.id)));
+  }
+  if (member) {
+    assert.ok(member.role);
+    await this.database.insert(usersCalendars).values({
+      userId: member.id,
+      calendarId: calendar.id,
+      role: "MEMBER"
+    })
   }
   return calendar;
 }

@@ -1,13 +1,14 @@
 import { type FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typebox";
 import { createInsertSchema, createUpdateSchema } from "drizzle-orm/typebox";
 
-import { calendars, timeblocks } from "../../../db/schema.js";
+import { calendars, timeblocks, usersCalendars } from "../../../db/schema.js";
 import { Role } from "#common/rbac.js"
 import AppError from "#common/errors.js";
 
 const calendarSchema = createInsertSchema(calendars, {
   links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
 });
+const usersCalendarsSchema = createInsertSchema(usersCalendars);
 const timeblocksSchema = createInsertSchema(timeblocks);
 const settingsSchema = Type.Omit(createUpdateSchema(calendars, {
   links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
@@ -125,14 +126,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     schema: {
       description: "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
       params: Type.Object({ calendarId: Type.Integer() }),
-      body: Type.Object({ timeblockId: Type.Number() }),
+      body: Type.Object({ block: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
     handler: async (request, reply) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
-      const { timeblockId } = request.body;
-      await service.deleteTimeblock(calendarId, timeblockId, userid);
+      const { block } = request.body;
+      await service.deleteTimeblock(calendarId, block, userid);
       reply.code(204);
     },
   });
@@ -154,38 +155,38 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.route({
-    method: "PUT",
+    method: "POST",
     url: "/:calendarId/share",
     schema: {
       description: "Share the calendar with the given users",
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ users: Type.Array(Type.Number(), { minItems: 1 }) }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      response: { 200: Type.Object({ users: Type.Array(usersCalendarsSchema) }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;
       const { users } = request.body;
       const { userid } = request.session.user;
-      const calendar = await service.shareCalendar(calendarId, users, userid);
-      return { calendar: calendar };
+      const res = await service.shareCalendar(calendarId, users, userid);
+      return { users: res };
     },
   });
 
   fastify.route({
-    method: "PUT",
+    method: "DELETE",
     url: "/:calendarId/unshare",
     schema: {
-      description: "Unshare the calendar with the given users",
+      description: "Unshare the calendar with the given user",
       params: Type.Object({ calendarId: Type.Number() }),
-      body: Type.Object({ users: Type.Array(Type.Number(), { minItems: 1 }) }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      body: Type.Object({ user: Type.Number() }),
+      response: { 204: Type.Object({ message: Type.String() }) },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { calendarId } = request.params;
-      const { users } = request.body;
+      const { user } = request.body;
       const { userid } = request.session.user;
-      const calendar = await service.unshareCalendar(calendarId, users, userid);
-      return { calendar: calendar };
+      await service.unshareCalendar(calendarId, user, userid);
+      reply.code(204);
     },
   });
 
@@ -195,45 +196,29 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     schema: {
       description: "Join the calendar as the logged-in user",
       params: Type.Object({ calendarId: Type.Number() }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      response: { 204: Type.Object({ message: Type.String() }) },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
-      const calendar = await service.joinCalendar(calendarId, false, userid);
-      return { calendar: calendar };
+      await service.joinCalendar(calendarId, false, userid);
+      reply.code(204);
     },
   });
 
   fastify.route({
-    method: "PUT",
-    url: "/:calendarId/joinSharelink",
-    schema: {
-      description: "Join the calendar as the logged-in user via a sharelink",
-      params: Type.Object({ calendarId: Type.Number() }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
-    },
-    handler: async (request) => {
-      const { calendarId } = request.params;
-      const { userid } = request.session.user;
-      const calendar = await service.joinCalendar(calendarId, true, userid);
-      return { calendar: calendar };
-    },
-  });
-
-  fastify.route({
-    method: "PUT",
+    method: "DELETE",
     url: "/:calendarId/leave",
     schema: {
       description: "Leave the calendar as the logged-in user",
       params: Type.Object({ calendarId: Type.Number() }),
-      response: { 200: Type.Object({ calendar: calendarSchema }) },
+      response: { 204: Type.Object({ message: Type.String() }) },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
-      const calendar = await service.leaveCalendar(calendarId, userid);
-      return { calendar: calendar };
+      await service.leaveCalendar(calendarId, userid);
+      reply.code(204);
     },
   });
 };
