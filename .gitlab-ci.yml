@@ -8,8 +8,8 @@ variables:
 
 stages:
   - check
-  - build
   - test
+  - build
 
 .buildah:
   image: quay.io/buildah/stable
@@ -59,6 +59,14 @@ typecheck:
     - cd ${IMAGE}
     - npm ci
     - npm run check
+
+test:
+  stage: test
+  image: node:24-slim
+  script:
+    - cd backend
+    - npm ci
+    - npm run test:coverage
 
 build:
   extends:
