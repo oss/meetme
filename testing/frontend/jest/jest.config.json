@@ -1,9 +1,0 @@
-{
-    "transform": {
-        "\\.[jt]sx?$": "babel-jest"
-    },
-    "collectCoverage": true,
-    "coverageDirectory": "/coverage",
-    "coverageProvider": "babel",
-    "testEnvironment": "jsdom"
-}
