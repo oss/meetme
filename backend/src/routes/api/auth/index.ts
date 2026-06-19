@@ -8,8 +8,8 @@ import Schema from "typebox/schema";
 const userinfoSchema = Schema.Compile(
   Type.Object({
     sub: Type.String(),
-    name: Type.Optional(Type.String()),
     attributes: Type.Optional(Type.Record(Type.String(), Type.Any())),
+    auth_time: Type.Number()
   }),
 );
 
@@ -24,16 +24,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const info = userinfoSchema.Parse(res);
       const user = await userService.createOrLoginUser({
         netid: info.sub,
-        name: info.name,
+        name: info.attributes?.name ?? info.attributes?.given_name ?? "No Name",
       });
       if (!user) {
         request.log.info(`Could not get create account for ${info}`);
         throw AppError.serverError("Unable to create user account");
       }
 
+      request.log.info(`User with subject of ${user.netid} has logged in at ${info.auth_time}`);
       request.session.user = { netid: user.netid, userid: user.id };
       await request.session.save();
-      return reply.redirect("/dashboard");
+      return reply.redirect(fastify.config.WEBSITE_HOST + "/dashboard");
     },
   });
 

@@ -23,8 +23,8 @@ export default fp(async function (fastify) {
           secret: config.CLIENT_SECRET,
         },
       },
-      scope: ["profile", "email", "eduPerson"],
-      startRedirectPath: "/api/auth/login/",
+      scope: ["openid", "profile", "email", "eduPerson"],
+      startRedirectPath: "/api/auth/login",
       // TODO: change this in prod
       callbackUri: "http://localhost:3000/api/auth/login/callback",
       discovery: { issuer: config.OIDC_ISSUER },

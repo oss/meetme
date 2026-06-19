@@ -23,7 +23,7 @@ declare module "fastify" {
 
 export default fp(async function (fastify, opts: FastifyPluginOptions) {
   const { log } = fastify;
-  const database = opts.modules.database(fastify.config.DATABASE_URL);
+  const database = opts.modules.database();
   const organizationService = createOrganizationService(log, database);
 
   fastify.decorate("database", database);

@@ -159,7 +159,7 @@ export async function build(t?: TestContext) {
   });
 
   app.register(fp(serviceApp), {
-    modules: { database: (_url: string) => db },
+    modules: { database: () => db },
   });
   // Stimulate a login
   app.register(

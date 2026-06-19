@@ -12,10 +12,10 @@ async function start() {
   });
 
   await fastify.register(fp(app), {
-    modules: { database: (url: string) => drizzle(url) },
+    modules: { database: () => drizzle(fastify.config.DATABASE_URL) },
   });
   await fastify.ready();
-  await fastify.listen({ port: port });
+  await fastify.listen({ port: port, host: '0.0.0.0' });
 }
 
 start().catch((err) => {
