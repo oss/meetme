@@ -1,66 +1,60 @@
-version: '3'
-
 services:
-  mongo0:
-    image: mongo:latest
-    environment:
-      - PRIMARY=1
-    entrypoint: ./database/entrypoint.sh
-    networks:
-      - no-internet
-      - mongo-net
-
-  mongo1:
-    image: mongo:latest
-    entrypoint: ./database/entrypoint.sh
-    networks:
-      - no-internet
-      - mongo-net
-
-  mongo2:
-    image: mongo:latest
-    entrypoint: ./database/entrypoint.sh
-    networks:
-      - no-internet
-      - mongo-net
-
   frontend:
-    build:
-      context: ./frontend
-      target: dev
-    networks:
-      - no-internet
+    build: ./frontend
+    depends_on:
+      - backend
     volumes:
       - ./frontend:/app
+    ports:
+      - "5173:5173"
 
   backend:
     build: ./backend
-    networks:
-      - no-internet
-      - authnet
     volumes:
       - ./backend:/app
-    depends_on:
-      - mongo0
-      - mongo1
-      - mongo2
-      - cas
-
-  openldap:
-    build: ./openldap/
+    env_file:
+      - ./.env
     ports:
-      - 1389:1389
+      - 3000:3000
+    # This reroutes localhost requests inside the container to the actual
+    # localhost of your computer. This is needed to test OIDC properly using the
+    # CAS container since its ISSUER ENDPOINT is set to localhost, without this
+    # the backend will see that it has to query localhost (itself), instead of
+    # the CAS container.
+    extra_hosts:
+      - "localhost:host-gateway"
+    depends_on:
+      cas:
+         condition: service_healthy
+      database:
+         condition: service_healthy
+
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./backend/drizzle/20260617200525_mean_eternals/migration.sql:/docker-entrypoint-initdb.d/migration.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   cas:
-    build: cas
+    build: ./auth/cas
+    depends_on:
+      - openldap
     ports:
      - 8443:8443
      - 8080:8080
+    healthcheck:
+      # backend boots up way too quickly while CAS is still starting up and not
+      # able to receive connections. Sleep for a bit so CAS has time to catch up.
+      test: "sleep 5s && exit 0"
 
-networks:
-  no-internet:
-    attachable: true
-  authnet:
-    attachable: true
-  mongo-net:
-    attachable: true
+  openldap:
+    build: ./auth/openldap/
+    ports:
+      - 1389:1389

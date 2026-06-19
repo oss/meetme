@@ -2,7 +2,7 @@
   "@class": "org.apereo.cas.services.OidcRegisteredService",
   "clientId": "meetme",
   "clientSecret": "meetme-secret",
-  "serviceId": "^http://localhost:3000/api/auth/login",
+  "serviceId": "^http://localhost:3000/api/auth/login/callback",
   "name": "meetme",
   "id": 2,
   "bypassApprovalPrompt": true,
