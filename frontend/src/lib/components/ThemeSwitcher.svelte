@@ -6,7 +6,6 @@
   }
 
   function saveTheme(event) {
-    console.log(event.target.value);
     window.localStorage.setItem("theme", event.target.value);
   }
 </script>

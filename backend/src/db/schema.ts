@@ -91,7 +91,7 @@ export const calendars = pgTable("calendars", {
   location: varchar("location"),
   timezone: varchar("timezone"),
   public: boolean("public").default(false),
-  shareLink: boolean("share_link").default(false),
+  sharelink: boolean("share_link").default(false),
   meetingStart: time(),
   meetingEnd: time(),
   links: jsonb("links").$type<{ sharelink: boolean; url: string }[]>().notNull().default([]),
