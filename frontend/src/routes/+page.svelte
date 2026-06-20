@@ -1,3 +1,6 @@
+<script lang=ts>
+  import { authstore } from "$lib/auth/store.svelte.js";
+</script>
 <div class="">
   <div class="flex justify-center m-auto pt-16 pb-12 max-w-8/10 gap-8">
     <div class="prose lg:prose">
@@ -11,7 +14,11 @@
 	</p>
       </article>
       <div class="flex gap-8">
-	<button class="btn btn-primary btn-lg">Login with CAS</button>
+        {#if authstore.authenticated}
+	<a class="btn btn-primary btn-lg" href="/dashboard">Dashboard</a>
+        {:else}
+	<a class="btn btn-primary btn-lg" href="/api/auth/login">Login with CAS</a>
+        {/if}
 	<button class="btn btn-soft btn-lg">See a demo</button>
       </div>
     </div>

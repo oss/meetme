@@ -16,7 +16,6 @@ class AuthStore {
   }
 
   get authenticated() {
-    console.log(this.user);
     return this.user !== null;
   }
 
