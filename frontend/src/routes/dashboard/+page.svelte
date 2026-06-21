@@ -1,6 +1,7 @@
 <script lang=ts>
+    import CalendarLayout from '$lib/layout/CalendarView.svelte';
     import { onMount } from 'svelte';
-    import CalendarView from '$lib/CalendarView.svelte';
+
     let calendar;
     let searchModal
 
@@ -17,10 +18,10 @@
     }
 </script>
 
-<CalendarView bind:this={calendar}>
+<CalendarLayout bind:this={calendar}>
   {#snippet sidebar(options)}
   <div class="flex gap-2 w-full">
-    <button class="btn flex grow" on:click={openSearch}>
+    <button class="btn flex grow" onclick={openSearch}>
       <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.3-4.3"></path> </g> </svg>
       <div class="grow text-start">Add Calendar</div>
       <kbd class="kbd kbd-sm">⌘ K</kbd>
@@ -45,13 +46,13 @@
         Remember me
       </label>
     </fieldset>
-    <calendar-date on:change={setDate} class="cally bg-base-100 border border-base-300 shadow-lg rounded-box mt-4">
+    <calendar-date onchange={setDate} class="cally bg-base-100 border border-base-300 shadow-lg rounded-box mt-4">
       <svg aria-label="Previous" class="fill-current size-4" slot="previous" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M15.75 19.5 8.25 12l7.5-7.5"></path></svg>
       <svg aria-label="Next" class="fill-current size-4" slot="next" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path></svg>
       <calendar-month></calendar-month>
     </calendar-date>
   {/snippet}
-</CalendarView>
+</CalendarLayout>
 
 <dialog id="search-modal" class="modal">
   <div class="modal-box">

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import CalendarView from '$lib/CalendarView.svelte';
   import CalendarSettings from '$lib/components/CalendarSettings.svelte';
+  import CalendarLayout from '$lib/layout/CalendarView.svelte';
   import { authstore } from "$lib/auth/store.svelte.js";
   
   let calendar;
@@ -9,7 +9,7 @@
   }
 </script>
 
-<CalendarView bind:this={calendar}>
+<CalendarLayout bind:this={calendar}>
   {#snippet sidebar(options)}
   <!-- Owner of the calendar -->
   <div class="flex w-full content-center">
@@ -25,5 +25,5 @@
     <calendar-month></calendar-month>
   </calendar-date>
   {/snippet}
-</CalendarView>
+</CalendarLayout>
 

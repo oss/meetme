@@ -1,12 +1,12 @@
 <!-- Layout for calendar views, basically shows a sidebar and a calendar
      Also adds a modal for editing events. Accepts children and sidebar props.
   -- -->
-<script lang=ts>
+<script lang="ts">
     import {Calendar, TimeGrid, DayGrid, Interaction} from '@event-calendar/core';
     import type { Attachment } from 'svelte/attachments';
     import { onMount } from 'svelte';
 
-    let { sidebar, children } = $props();
+    let { sidebar, children, calendar } = $props();
     let date = new Date();
     date.setHours(date.getHours() - 2);
 
@@ -43,7 +43,7 @@
       element.showModal();
     };
 
-    function addEvent(info) {
+    async function addEvent(info) {
         ec.addEvent({
           id: Date.now(),
           start: info.start,
@@ -56,10 +56,8 @@
         selectedEvent = info.event;
     }
 
-    function saveEvent() {
+    async function saveEvent() {
         const data = new FormData(form);
-        console.log(selectedEvent.id);
-        console.log(data.get("description"));
         ec.updateEvent({
           id: selectedEvent.id,
           start: data.get("startDate"),

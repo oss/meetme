@@ -1,6 +1,6 @@
 <script lang=ts>
   import CalendarSettings from '$lib/components/CalendarSettings.svelte';
-  import CalendarView from '$lib/CalendarView.svelte';
+  import CalendarLayout from '$lib/layout/CalendarView.svelte';
   import type { PageProps } from './$types';
 
   let calendar;
@@ -11,7 +11,7 @@
   }
 </script>
 
-<CalendarView bind:this={calendar}>
+<CalendarLayout bind:this={calendar}>
   {#snippet sidebar(options)}
   <div class="flex w-full content-center">
     <h1 class="ml-3 text-lg grow">Studious Student</h1>
@@ -37,4 +37,4 @@
     <div class="tab-content bg-base-100 border-base-300 p-6">Tab content 3</div>
   </div>
   {/snippet}
-</CalendarView>
+</CalendarLayout>
