@@ -10,6 +10,7 @@
     let date = new Date();
     date.setHours(date.getHours() - 2);
 
+    let form;
     let editModal;
     onMount(() => {
       import('cally');
@@ -22,7 +23,7 @@
         view: 'timeGridWeek',
         headerToolbar: {start: 'prev,next today', center: 'title', end: 'timeGridDay,timeGridWeek,dayGridMonth'},
         height: '650px',
-        slotHeight: 40,
+        slotHeight: 25,
         nowIndicator: true,
         scrollTime: date,
         editable: true,
@@ -55,6 +56,19 @@
         selectedEvent = info.event;
     }
 
+    function saveEvent() {
+        const data = new FormData(form);
+        console.log(selectedEvent.id);
+        console.log(data.get("description"));
+        ec.updateEvent({
+          id: selectedEvent.id,
+          start: data.get("startDate"),
+          end: data.get("endDate"),
+          title: data.get("description"),
+        });
+        selectedEvent = null;
+    }
+
     function closeModal() {
         selectedEvent = null;
     }
@@ -84,32 +98,34 @@
 </div>
 
 {#if selectedEvent}
-  <dialog id="event-edit-modal" class="modal" {@attach modalAttachment} on:close={closeModal}>
-  <div class="modal-box max-w-110">
-    <h1 class="text-lg font-bold text-wrap">Edit Event</h1>
-    <p class="py-4">Press ESC key to abort and discard all changes. Fun tip: use
-      <kbd class="kbd kbd-sm">PgUp</kbd>,
-      <kbd class="kbd kbd-sm">PgDn</kbd>
-      to add or subtract 10 seconds.
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Description</legend>
-      <textarea class="textarea h-24 w-full" placeholder="Write something awesome">{selectedEvent?.title ?? ""}</textarea>
-      <div class="label">Optional</div>
-    </fieldset>
+  <dialog id="event-edit-modal" class="modal" {@attach modalAttachment} onclose={closeModal}>
+  <form bind:this={form} onsubmit={saveEvent}>
+    <div class="modal-box max-w-110">
+      <h1 class="text-lg font-bold text-wrap">Edit Event</h1>
+      <p class="py-4">Press ESC key to abort and discard all changes. Fun tip: use
+        <kbd class="kbd kbd-sm">PgUp</kbd>,
+        <kbd class="kbd kbd-sm">PgDn</kbd>
+        to add or subtract 10 seconds.
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">Description</legend>
+          <textarea class="textarea h-24 w-full" placeholder="Write something awesome" name="description">{selectedEvent?.title ?? ""}</textarea>
+          <div class="label">Optional</div>
+        </fieldset>
 
-    <label class="input mt-2 w-full">
-      <span class="label">Start date</span>
-      <input type="datetime-local" defaultValue={selectedEvent.start.toISOString().slice(0,16) ?? ""}/>
-    </label>
-    <label class="input mt-2 w-full">
-      <span class="label pr-5">End date</span>
-      <input type="datetime-local" defaultValue={selectedEvent.end.toISOString().slice(0,16) ?? ""}/>
-    </label>
-    <div class="flex w-full gap-8">
-      <button class="btn btn-error mt-4 grow-1">Delete</button>
-      <button class="btn btn-success mt-4 grow-3">Save</button>
+        <label class="input mt-2 w-full">
+          <span class="label">Start date</span>
+          <input type="datetime-local" name="startDate" defaultValue={selectedEvent.start.toISOString().slice(0,16) ?? ""}/>
+        </label>
+        <label class="input mt-2 w-full">
+          <span class="label pr-5">End date</span>
+          <input type="datetime-local" name="endDate" defaultValue={selectedEvent.end.toISOString().slice(0,16) ?? ""}/>
+        </label>
+        <div class="flex w-full gap-8">
+          <button class="btn btn-error mt-4 grow-1">Delete</button>
+          <button type="submit" class="btn btn-success mt-4 grow-3">Save</button>
+        </div>
     </div>
-  </div>
+  </form>
 </dialog>
 {/if}
 

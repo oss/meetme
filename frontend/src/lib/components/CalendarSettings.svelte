@@ -53,7 +53,7 @@
     </label>
 
     <!-- Calendar description -->
-    <textarea class="textarea textarea-xs textarea-ghost min-h-12 text-base" placeholder="Description" name="description"></textarea>
+    <textarea class="textarea textarea-xs textarea-ghost min-h-12 text-xs" placeholder="Description" name="description"></textarea>
 
     <!-- Calendar location -->
     <label class="input input-xs input-ghost input-sm validator">
