@@ -35,7 +35,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
-      - ./backend/drizzle/20260617200525_mean_eternals/migration.sql:/docker-entrypoint-initdb.d/migration.sql
+      - ./backend/drizzle/test.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "user"]
       interval: 10s
