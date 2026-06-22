@@ -1,6 +1,6 @@
 <script lang="ts">
   import CalendarSettings from '$lib/components/CalendarSettings.svelte';
-  import CalendarLayout from '$lib/layout/CalendarView.svelte';
+  import CalendarLayout from '$lib/layout/CalendarLayout.svelte';
   import { authstore } from "$lib/auth/store.svelte.js";
   
   let calendar;

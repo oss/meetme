@@ -6,7 +6,9 @@
     import type { Attachment } from 'svelte/attachments';
     import { onMount } from 'svelte';
 
-    let { sidebar, children, calendar } = $props();
+    let { sidebar, children, calendarId, events } = $props();
+    // Used to set the scroll of the calendar, we want to show at least two
+    // hours before the current time
     let date = new Date();
     date.setHours(date.getHours() - 2);
 
@@ -37,6 +39,7 @@
             theme['active'] = 'btn-primary';
             return theme;
         },
+        events: events ?? []
     });
 
     const modalAttachment: Attachment = (element) => {
@@ -44,12 +47,29 @@
     };
 
     async function addEvent(info) {
-        ec.addEvent({
-          id: Date.now(),
-          start: info.start,
-          end: info.end,
-          allDay: info.allDay
-        });
+        if (calendarId) {
+          const res = await fetch(`/api/calendar/${calendarId}/timeblocks`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              block: {
+                start: info.start,
+                end: info.end,
+                allDay: info.allDay
+              }
+            }),
+          });
+          const json = await res.json();
+          const timeblock = json.timeblock;
+
+          ec.addEvent({
+            id: timeblock.id,
+            resourceIds: [timeblock.userId],
+            title: timeblock.description,
+            start: timeblock.start,
+            end: timeblock.end,
+          });
+        }
     }
 
     function editEvent(info) {

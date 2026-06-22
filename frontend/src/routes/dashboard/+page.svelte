@@ -1,5 +1,5 @@
 <script lang=ts>
-    import CalendarLayout from '$lib/layout/CalendarView.svelte';
+    import CalendarLayout from '$lib/layout/CalendarLayout.svelte';
     import { onMount } from 'svelte';
 
     let calendar;

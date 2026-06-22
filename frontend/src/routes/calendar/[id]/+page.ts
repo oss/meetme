@@ -1,7 +1,18 @@
+import * as Calendar from "$lib/api/calendar.js";
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch, params }) => {
-  const res = await fetch(`/api/calendar/${params.id}`);
-  const json = await res.json();
-  return json.calendar;
+  const data = await Calendar.data(params.id);
+  const timeblocks = await Calendar.timeblocks(params.id);
+  const events = timeblocks.map(block => ({
+    id: block.id,
+    resourceIds: [block.userId],
+    title: block.description,
+    start: block.start,
+    end: block.end,
+  }));
+  return {
+    calendar: data,
+    events: events
+  };
 };

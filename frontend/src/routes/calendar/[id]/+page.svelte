@@ -1,7 +1,8 @@
 <script lang=ts>
   import CalendarSettings from '$lib/components/CalendarSettings.svelte';
-  import CalendarLayout from '$lib/layout/CalendarView.svelte';
+  import CalendarLayout from '$lib/layout/CalendarLayout.svelte';
   import type { PageProps } from './$types';
+  import { page } from '$app/state';
 
   let calendar;
   let { data }: PageProps = $props();
@@ -11,14 +12,14 @@
   }
 </script>
 
-<CalendarLayout bind:this={calendar}>
+<CalendarLayout bind:this={calendar} calendarId={page.params.id} events={data.events}>
   {#snippet sidebar(options)}
   <div class="flex w-full content-center">
     <h1 class="ml-3 text-lg grow">Studious Student</h1>
     <div class="badge badge-neutral">Owner</div>
   </div>
 
-  <CalendarSettings calendar={data}></CalendarSettings>
+  <CalendarSettings calendar={data.calendar}></CalendarSettings>
 
   <div class="tabs tabs-lift mt-4">
     <input type="radio" name="tabs" class="tab" aria-label="Calendar" checked="checked"/>
