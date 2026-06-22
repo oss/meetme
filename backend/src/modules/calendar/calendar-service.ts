@@ -193,7 +193,7 @@ export default function createCalendarService(
         role: Role.INVITED,
         compareType: CompareType.Exact,
       });
-      if (isSharelink && cal.shareLink === false) {
+      if (isSharelink && cal.sharelink === false) {
         throw AppError.badRequest("ShareLink disabled, request is invalid");
       }
 

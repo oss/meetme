@@ -20,8 +20,8 @@
     "lint:gitlab": "oxlint --format=gitlab > report.json",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "tsx --test test/**/*.ts",
-    "test:coverage": "tsx --experimental-test-coverage --test test/**/*.ts"
+    "test": "tsx --env-file ../.env --test test/**/*.ts",
+    "test:coverage": "tsx --env-file ../.env --experimental-test-coverage --test test/**/*.ts"
   },
   "dependencies": {
     "@fastify/autoload": "^6.3.1",

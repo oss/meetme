@@ -17,7 +17,7 @@ describe("GET /api/calendar", () => {
         name: "calendar",
         organizationId: null,
         public: false,
-        shareLink: false,
+        sharelink: false,
       },
     });
   });
@@ -35,7 +35,7 @@ describe("GET /api/calendar", () => {
         name: "calendar",
         organizationId: null,
         public: false,
-        shareLink: false,
+        sharelink: false,
       },
     });
   });
@@ -89,7 +89,7 @@ describe("POST /api/calendar", () => {
         location: null,
         timezone: null,
         public: false,
-        shareLink: false,
+        sharelink: false,
         meetingStart: null,
         meetingEnd: null,
       },
@@ -118,7 +118,7 @@ describe("POST /api/calendar", () => {
         location: null,
         timezone: null,
         public: false,
-        shareLink: false,
+        sharelink: false,
         meetingStart: null,
         meetingEnd: null,
       },
@@ -246,9 +246,6 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
       method: "POST",
       body: {
         block: {
-          id: 101,
-          userId: 1,
-          calendarId: calendar.id,
           description: "Focus Time",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -291,9 +288,6 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
       method: "POST",
       body: {
         block: {
-          id: 101,
-          userId: 1,
-          calendarId: calendar.id,
           description: "Focus Time",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -305,9 +299,6 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
       method: "POST",
       body: {
         block: {
-          id: 101,
-          userId: 1,
-          calendarId: calendar.id,
           description: "new description",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -336,9 +327,6 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
       method: "POST",
       body: {
         block: {
-          id: 101,
-          userId: 1,
-          calendarId: calendar.id,
           description: "Focus Time",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -365,9 +353,6 @@ describe("DELETE /api/calendar/:calendarId/timeblocks", () => {
       method: "POST",
       body: {
         block: {
-          id: 101,
-          userId: 1,
-          calendarId: calendar.id,
           description: "Focus Time",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -378,7 +363,7 @@ describe("DELETE /api/calendar/:calendarId/timeblocks", () => {
       url: `/api/calendar/${calendar.id}/timeblocks`,
       method: "DELETE",
       body: {
-        block: 101,
+        block: 1,
       },
     });
     assert.strictEqual(res.statusCode, 204);

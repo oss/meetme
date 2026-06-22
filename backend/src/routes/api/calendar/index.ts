@@ -9,7 +9,10 @@ const calendarSchema = createInsertSchema(calendars, {
   links: Type.Optional(Type.Array(Type.Object({ sharelink: Type.Boolean(), url: Type.String() }))),
 });
 const usersCalendarsSchema = createInsertSchema(usersCalendars);
-const timeblocksSchema = createInsertSchema(timeblocks);
+const timeblocksSchema = Type.Omit(createInsertSchema(timeblocks), 
+  Type.Union([Type.Literal("userId"), Type.Literal("calendarId")]),
+);
+const timeblocksReturnSchema = createInsertSchema(timeblocks);
 const settingsSchema = Type.Omit(
   createUpdateSchema(calendars, {
     links: Type.Optional(
@@ -117,13 +120,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: timeblocksSchema }),
-      response: { 200: Type.Object({ timeblock: timeblocksSchema }) },
+      response: { 200: Type.Object({ timeblock: timeblocksReturnSchema }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
       const { block } = request.body;
-      const b = await service.addTimeblock(calendarId, block, userid);
+      const b = await service.addTimeblock(calendarId, {
+        ...block,
+        userId: userid,
+        calendarId: calendarId,
+      }, userid);
       return { timeblock: b };
     },
   });
@@ -153,7 +160,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     schema: {
       description: "Gets all timeblocks for the given calendar",
       params: Type.Object({ calendarId: Type.Integer() }),
-      response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksSchema) }) },
+      response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksReturnSchema) }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;

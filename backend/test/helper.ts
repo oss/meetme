@@ -16,17 +16,6 @@ import assert from "node:assert";
 import path from "node:path";
 
 process.env.NODE_ENV = "testing";
-process.env.BACKEND_HOST = "http://test.backend.com";
-process.env.DATABASE_URL = "test";
-process.env.DATABASE_PASSWORD = "test";
-/// Must be length 32 or larger
-process.env.COOKIE_SECRET = "cNaoPYAwF60HZJzkcNaoPYAwF60HZJzk";
-process.env.COOKIE_NAME = "test_session";
-process.env.COOKIE_SECURED = "false";
-process.env.CLIENT_SECRET = "random";
-process.env.CLIENT_ID = "random";
-process.env.OIDC_ISSUER = "http://cas:8080/cas/oidc";
-process.env.PROD = "false";
 
 interface User {
   netid: string;

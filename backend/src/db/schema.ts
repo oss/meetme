@@ -124,7 +124,7 @@ export const usersCalendars = pgTable(
 // To avoid locking up tables while users edit, and also provide flexibility
 // in case we decided to change the timeblock format.
 export const timeblocks = pgTable("timeblocks", {
-  id: integer().primaryKey(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
