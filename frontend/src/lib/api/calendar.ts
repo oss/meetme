@@ -50,7 +50,6 @@ export async function addTimeblock(calendarId: number, event: Calendar.Event): P
   const timeblock = json.timeblock;
   return {
     ...event,
-    id: timeblock.id,
     resourceIds: [timeblock.userId],
   };
 }

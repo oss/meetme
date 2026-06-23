@@ -1,5 +1,5 @@
 <script lang=ts>
-  import { authstore } from "$lib/auth/store.svelte.js";
+  import { authstore } from "$lib/services/auth.svelte.js";
 </script>
 <div class="">
   <div class="flex justify-center m-auto pt-16 pb-12 max-w-8/10 gap-8">

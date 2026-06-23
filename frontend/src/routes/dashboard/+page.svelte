@@ -9,7 +9,7 @@
     }
 </script>
 
-<CalendarLayout bind:this={calendar} events={[]} calendarId={null} children={null}>
+<CalendarLayout bind:this={calendar}>
   {#snippet sidebar()}
   <div class="flex gap-2 w-full">
     <button class="btn flex grow" onclick={() => searchModal.showModal()}>
@@ -38,8 +38,8 @@
       </label>
     </fieldset>
     <calendar-date onchange={setDate} class="cally bg-base-100 border border-base-300 shadow-lg rounded-box mt-4">
-      <svg aria-label="Previous" class="fill-current size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M15.75 19.5 8.25 12l7.5-7.5"></path></svg>
-      <svg aria-label="Next" class="fill-current size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path></svg>
+      <svg aria-label="Previous" slot="previous" class="fill-current size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M15.75 19.5 8.25 12l7.5-7.5"></path></svg>
+      <svg aria-label="Next" slot="next" class="fill-current size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path></svg>
       <calendar-month></calendar-month>
     </calendar-date>
   {/snippet}

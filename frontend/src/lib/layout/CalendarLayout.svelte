@@ -1,12 +1,21 @@
 <!-- Layout for calendar views, basically shows a sidebar and a calendar
-     Also adds a modal for editing events. Accepts children and sidebar props.
+     Also adds a modal for editing events. Accepts sidebar props.
   -- -->
 <script lang="ts">
     import {Calendar, TimeGrid, DayGrid, Interaction} from "@event-calendar/core";
+    import { notifstore } from "$lib/services/notif.svelte.js";
     import * as CalendarAPI from "$lib/api/calendar.js";
-    import { onMount, SvelteComponent } from 'svelte';
+    import { onMount } from 'svelte';
 
-    let { sidebar, children, calendarId, events } = $props();
+    import type { Snippet, SvelteComponent } from 'svelte';
+
+    interface Props {
+        sidebar: Snippet<[]>;
+        calendarId?: number;
+        events?: [Calendar.Event];
+    }
+
+    let { sidebar, calendarId, events }: Props = $props();
 
     let selectedEvent = $state<Calendar.Event | null>(null);
     let editModal: HTMLDialogElement;
@@ -46,21 +55,30 @@
     });
 
     function addEvent(info: Calendar.SelectInfo) {
+        if (!calendarId) {
+          notifstore.info("Please create the calendar first");
+          return;
+        }
         CalendarAPI.addTimeblock(calendarId, {
           start: info.start,
           end: info.end,
           allDay: info.allDay,
         } as unknown as Calendar.Event)
         .then((event) => { calendar?.addEvent(event) });
+        notifstore.success("Saved timeblock to calendar");
     }
 
     async function saveEvent() {
+        if (!calendarId) {
+          notifstore.info("Please create the calendar first");
+          return;
+        }
         if (selectedEvent === null || !calendar) {
           return;
         }
         const data = new FormData(form);
         const start = data.get("startDate")?.toString() ?? "";
-        const end = data.get("startDate")?.toString() ?? "";
+        const end = data.get("endDate")?.toString() ?? "";
         const description = data.get("description")?.toString() ?? "";
 
         const event = await CalendarAPI.addTimeblock(calendarId, {
@@ -70,7 +88,8 @@
           title: description,
         } as unknown as Calendar.Event);
         calendar.updateEvent(event);
-        selectedEvent = null;
+        editModal.close();
+        notifstore.success("Saved timeblock to calendar");
     }
 
     export function setDate(value: Date) {
@@ -90,11 +109,6 @@
   <div class="basis-3/4 dashed-lines p-2">
     <Calendar bind:this={calendar} plugins={[TimeGrid, DayGrid, Interaction]} {options} />
   </div>
-</div>
-<div>
-  {#if children}
-    {@render children()}
-  {/if}
 </div>
 
 <dialog class="modal" bind:this={editModal} onclose={() => {selectedEvent = null}}>

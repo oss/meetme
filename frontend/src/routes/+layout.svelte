@@ -1,6 +1,7 @@
 <script lang="ts">
   import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
   import { authstore } from "$lib/services/auth.svelte.js";
+  import { notifstore } from "$lib/services/notif.svelte.js";
   import favicon from '$lib/assets/favicon.svg';
 
   import { onMount } from 'svelte';
@@ -17,6 +18,14 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+
+<div class="toast toast-top toast-center z-8">
+  {#each notifstore.notifications as notification}
+    <div role="alert" class="alert alert-{notification.type} alert-soft">
+      <span>{notification.message}</span>
+    </div>
+  {/each}
+</div>
 
 {#if authstore.loading}
   <div class="bg-base-100 w-full h-full">

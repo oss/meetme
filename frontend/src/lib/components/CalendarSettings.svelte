@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { notifstore } from "$lib/services/notif.svelte.js";
   import * as CalendarAPI from "$lib/api/calendar.js";
   import { goto } from '$app/navigation';
 
@@ -12,10 +13,14 @@
     const json = JSON.stringify(Object.fromEntries(data));
     if (calendar !== null) {
       await CalendarAPI.patch(calendar.id, json);
+      notifstore.success("Modified calendar settings.")
     } else {
       const res = await CalendarAPI.create(json);
       if (res) {
+        notifstore.success("Created calendar, redirecting now.");
         goto(`/calendar/${res.id}`);
+      } else {
+        notifstore.error("Could not create calendar");
       }
     }
   }
