@@ -84,6 +84,20 @@
           end: data.get("endDate"),
           title: data.get("description"),
         });
+
+        const res = await fetch(`/api/calendar/${calendarId}/timeblocks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            block: {
+              id: selectedEvent.id,
+              start: data.get("startDate"),
+              end: data.get("endDate"),
+              title: data.get("description"),
+            }
+          }),
+        });
+
         selectedEvent = null;
     }
 
