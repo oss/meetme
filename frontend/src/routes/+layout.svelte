@@ -20,7 +20,7 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 {#if authstore.isLoading}
-  <div>
+  <div class="bg-base-100 w-full h-full">
     <span class="loading loading-dots loading-xl"></span>
   </div>
 {:else if authstore.authenticated || page.url.pathname === "/"}
@@ -28,18 +28,28 @@
   <div class="navbar bg-base-100 shadow-sm">
     <!-- Logo  -->
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl" href="/dashboard">Rutgers Meetme</a>
+      <a class="btn btn-ghost text-xl" href={authstore.authenticated ? "/dashboard" : "/"}>Rutgers Meetme</a>
     </div>
 
     <!-- Theme switcher -->
     <ThemeSwitcher></ThemeSwitcher>
 
     <!-- Login button or profile button -->
-
     {#if authstore.authenticated}
-      <button class="btn btn-primary btn mr-2 ml-4">{authstore.get.netid}</button>
+      <div class="dropdown dropdown-bottom dropdown-end dropdown-hover">
+      <div class="btn bgn-ghost mr-2 ml-4">{authstore.get.netid}</div>
+      <ul tabindex="-1" class="dropdown-content menu bg-base-300 rounded-box z-4 w-52 p-2 mt-1 shadow-sm">
+	<li><a>Dashboard</a></li>
+	<li><a>Organizations</a></li>
+	<li><a>Calendars</a></li>
+	<li><a>Profile</a></li>
+	<li><a>Invites</a></li>
+	<li><a>Logout</a></li>
+      </ul>
+      </div>     
+
     {:else}
-      <a class="btn btn-primary btn mr-2 ml-4" href="/api/auth/login">Login</a>
+      <a class="btn btn-primary mr-2 ml-4" href="/api/auth/login">Login</a>
     {/if}
   </div>
   
@@ -58,5 +68,5 @@
     </aside>
   </footer>
 {:else}
-  <div> Redirecting to homepage, please login first </div>
+  <div class="bg-base-100 w-full h-full"> Redirecting to homepage, please login first </div>
 {/if}
