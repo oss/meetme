@@ -1,7 +1,6 @@
 <script lang="ts">
   import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-  import { authstore } from "$lib/auth/store.svelte.js";
-  import { authenticate } from "$lib/auth/session.js";
+  import { authstore } from "$lib/services/auth.svelte.js";
   import favicon from '$lib/assets/favicon.svg';
 
   import { onMount } from 'svelte';
@@ -13,13 +12,13 @@
   let { children }: LayoutProps = $props();
 
   onMount(async () => {
-    await authenticate(page.url.pathname !== "/");
+    await authstore.authenticate(page.url.pathname !== "/");
   })
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-{#if authstore.isLoading}
+{#if authstore.loading}
   <div class="bg-base-100 w-full h-full">
     <span class="loading loading-dots loading-xl"></span>
   </div>
@@ -37,7 +36,7 @@
     <!-- Login button or profile button -->
     {#if authstore.authenticated}
       <div class="dropdown dropdown-bottom dropdown-end dropdown-hover">
-      <div class="btn bgn-ghost mr-2 ml-4">{authstore.get!.netid}</div>
+      <div class="btn bgn-ghost mr-2 ml-4">{authstore.user!.netid}</div>
       <ul tabindex="-1" class="dropdown-content menu bg-base-300 rounded-box z-4 w-52 p-2 mt-1 shadow-sm">
 	<li><a href="/dashboard">Dashboard</a></li>
 	<li><a href="/organizations/">Organizations</a></li>
