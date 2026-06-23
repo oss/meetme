@@ -5,7 +5,7 @@
     return str.charAt(0).toUpperCase() + str.substring(1).toLowerCase();
   }
 
-  function saveTheme(event) {
+  function onclick(event: any) {
     window.localStorage.setItem("theme", event.target.value);
   }
 </script>
@@ -28,7 +28,7 @@
 	class="theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"
 	aria-label={titleCase(theme)}
 	value={theme}
-	onclick={saveTheme}
+	{onclick}
 	checked={(window.localStorage.getItem("theme") || "default") === theme}
 	/>
     </li>

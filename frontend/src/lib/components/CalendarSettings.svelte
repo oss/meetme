@@ -1,39 +1,27 @@
 <script lang="ts">
+  import * as CalendarAPI from "$lib/api/calendar.js";
   import { goto } from '$app/navigation';
 
   let { calendar } = $props();
 
-  let form;
+  let form: HTMLFormElement;
   let bgColor = $derived(calendar ? "bg-base-100" : "bg-base-200");
-  let onSubmit = $derived(calendar ? () => modifyCalendar() : () => createCalendar());
 
-  async function createCalendar() {
+  async function onsubmit() {
     const data = new FormData(form);
     const json = JSON.stringify(Object.fromEntries(data));
-    const res = await fetch("/api/calendar/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: json,
-    });
-    const payload = await res.json();
-    if (res) {
-      goto(`/calendar/${payload.calendar.id}`);
+    if (calendar !== null) {
+      await CalendarAPI.patch(calendar.id, json);
+    } else {
+      const res = await CalendarAPI.create(json);
+      if (res) {
+        goto(`/calendar/${res.id}`);
+      }
     }
-  }
-
-  async function modifyCalendar() {
-    const data = new FormData(form);
-    const json = JSON.stringify(Object.fromEntries(data));
-    const res = await fetch(`/api/calendar/${calendar.id}/settings`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: json,
-    });
-    const payload = await res.json();
   }
 </script>
 
-<form onsubmit={onSubmit} bind:this={form}>
+<form {onsubmit} bind:this={form}>
   <fieldset class="fieldset {bgColor} border-base-300 rounded-box border p-4">
     <legend class="fieldset-legend">Calendar Settings</legend>
     <!-- Calendar name  -->
@@ -42,10 +30,10 @@
 	type="text"
 	required
 	placeholder="Calendar Name"
-	pattern="[A-Za-z][A-Za-z0-9\-]*"
+	pattern="[A-Za-z][A-Za-z0-9\-\s]*"
 	minlength="3"
 	maxlength="30"
-	title="Only letters, numbers or dash",
+	title="Only letters, numbers or dash"
 	class="text-lg"
 	name="name"
 	value={calendar?.name ?? ""}
@@ -53,7 +41,7 @@
     </label>
 
     <!-- Calendar description -->
-    <textarea class="textarea textarea-xs textarea-ghost min-h-12 text-xs" placeholder="Description" name="description"></textarea>
+    <textarea class="textarea textarea-xs textarea-ghost min-h-12 text-xs" placeholder="Description" name="description">{calendar?.description ?? ""}</textarea>
 
     <!-- Calendar location -->
     <label class="input input-xs input-ghost input-sm validator">
@@ -116,5 +104,3 @@
     {/if}
   </fieldset>
 </form>
-
-  

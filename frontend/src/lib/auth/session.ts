@@ -1,7 +1,7 @@
 import { authstore } from "$lib/auth/store.svelte.js";
 import { goto } from "$app/navigation";
 
-export async function authenticate(redirect: bool) {
+export async function authenticate(redirect: boolean) {
   if (authstore.authenticated) {
     return true;
   }

@@ -21,6 +21,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
+		"@types/event-calendar__core": "^5.6.0",
 		"cally": "^0.9.2",
 		"daisyui": "^5.5.23",
 		"svelte": "^5.56.1",

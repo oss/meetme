@@ -2,8 +2,9 @@ import * as Calendar from "$lib/api/calendar.js";
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch, params }) => {
-  const data = await Calendar.data(params.id);
-  const timeblocks = await Calendar.timeblocks(params.id);
+  const id = parseInt(params.id);
+  const data = await Calendar.data(id);
+  const timeblocks = await Calendar.timeblocks(id);
   const events = timeblocks.map(block => ({
     id: block.id,
     resourceIds: [block.userId],

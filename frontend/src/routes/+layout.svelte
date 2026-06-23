@@ -1,20 +1,20 @@
 <script lang="ts">
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-	import { authstore } from "$lib/auth/store.svelte.js";
-	import { authenticate } from "$lib/auth/session.js";
-	import favicon from '$lib/assets/favicon.svg';
+  import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+  import { authstore } from "$lib/auth/store.svelte.js";
+  import { authenticate } from "$lib/auth/session.js";
+  import favicon from '$lib/assets/favicon.svg';
 
-	import { onMount } from 'svelte';
-	import { page } from '$app/state';
-	import './layout.css';
+  import { onMount } from 'svelte';
+  import { page } from '$app/state';
+  import './layout.css';
 
-	import type { PageProps } from './$types';
+  import type { LayoutProps } from './$types';
 
-	let { children }: PageProps = $props();
+  let { children }: LayoutProps = $props();
 
-	onMount(async () => {
-	  await authenticate(page.url.pathname !== "/");
-	})
+  onMount(async () => {
+    await authenticate(page.url.pathname !== "/");
+  })
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -37,14 +37,14 @@
     <!-- Login button or profile button -->
     {#if authstore.authenticated}
       <div class="dropdown dropdown-bottom dropdown-end dropdown-hover">
-      <div class="btn bgn-ghost mr-2 ml-4">{authstore.get.netid}</div>
+      <div class="btn bgn-ghost mr-2 ml-4">{authstore.get!.netid}</div>
       <ul tabindex="-1" class="dropdown-content menu bg-base-300 rounded-box z-4 w-52 p-2 mt-1 shadow-sm">
-	<li><a>Dashboard</a></li>
-	<li><a>Organizations</a></li>
-	<li><a>Calendars</a></li>
-	<li><a>Profile</a></li>
-	<li><a>Invites</a></li>
-	<li><a>Logout</a></li>
+	<li><a href="/dashboard">Dashboard</a></li>
+	<li><a href="/organizations/">Organizations</a></li>
+	<li><a href="/calendars">Calendars</a></li>
+	<li><a href="/profile">Profile</a></li>
+	<li><a href="/invites">Invites</a></li>
+	<li><a href="/api/auth/logout">Logout</a></li>
       </ul>
       </div>     
 

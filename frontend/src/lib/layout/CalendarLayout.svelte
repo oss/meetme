@@ -81,7 +81,7 @@
 <div class="flex max-w-9/10 gap-2 mt-8 m-auto">
   <div class="basis-1/8">
     {#if sidebar}
-    {@render sidebar(calendar)}
+    {@render sidebar()}
     {/if}
   </div>
 
