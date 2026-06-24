@@ -535,3 +535,73 @@ describe("DELETE /api/calendar/:calendarId/unshare", () => {
     });
   });
 });
+
+describe("GET /api/calendar/list", () => {
+  it("should get all of a users calendars", async (t) => {
+    const app = await build(t);
+    await app.seedCalendar("OWNER");
+    await app.seedCalendar("MEMBER");
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/list`,
+    });
+    assert.deepStrictEqual(JSON.parse(res.payload), {
+      calendars: [
+        {
+          id: 1,
+          name: "calendar",
+          organizationId: null,
+          role: "OWNER"
+        },
+        {
+          id: 2,
+          name: "calendar",
+          organizationId: null,
+          role: "MEMBER"
+        },
+      ]
+    });
+  });
+
+  it("should not get calendars a user is not in", async (t) => {
+    const app = await build(t);
+    await app.seedCalendar("OWNER");
+    await app.seedCalendar("MEMBER");
+    await app.seedCalendar(null);
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/list`,
+    });
+    assert.deepStrictEqual(JSON.parse(res.payload), {
+      calendars: [
+        {
+          id: 1,
+          name: "calendar",
+          organizationId: null,
+          role: "OWNER"
+        },
+        {
+          id: 2,
+          name: "calendar",
+          organizationId: null,
+          role: "MEMBER"
+        },
+      ]
+    });
+  });
+
+  it("should also get org calendars", async (t) => {
+    const app = await build(t);
+    await app.seedOrganization("EDITOR", undefined, true);
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/list`,
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res.payload), {
+      calendars: [
+        {
+          name: "org calendar",
+          organizationId: 1,
+          role: "EDITOR"
+        },
+      ]
+    });
+  });
+});

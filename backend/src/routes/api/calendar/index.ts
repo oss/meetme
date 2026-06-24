@@ -24,6 +24,13 @@ const settingsSchema = Type.Omit(
   }),
   Type.Union([Type.Literal("organizationId"), Type.Literal("created")]),
 );
+const calendarListingSchema = Type.Array(Type.Object({
+  id: Type.Number(),
+  organizationId: Type.Union([Type.Number(), Type.Null()]),
+  name: Type.String(),
+  // TODO: extract out to rbac.ts
+  role: Type.Union([Type.Enum(["OWNER","ADMIN", "EDITOR", "MEMBER", "VIEWER", "INVITED"]), Type.Null()]),
+}));
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const service = fastify.calendarService;
@@ -36,9 +43,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       body: calendarSchema,
       response: { 201: Type.Object({ calendar: calendarSchema }) },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { userid } = request.session.user;
       const calendar = await service.createCalendar(request.body, userid);
+      reply.code(201);
       return { calendar: calendar };
     },
   });
@@ -202,13 +210,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       description: "Share the calendar with the given users",
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ users: Type.Array(Type.Number(), { minItems: 1 }) }),
-      response: { 200: Type.Object({ users: Type.Array(usersCalendarsSchema) }) },
+      response: { 201: Type.Object({ users: Type.Array(usersCalendarsSchema) }) },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { calendarId } = request.params;
       const { users } = request.body;
       const { userid } = request.session.user;
       const res = await service.shareCalendar(calendarId, users, userid);
+      reply.code(201);
       return { users: res };
     },
   });
@@ -260,6 +269,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { userid } = request.session.user;
       await service.leaveCalendar(calendarId, userid);
       reply.code(204);
+    },
+  });
+
+  fastify.route({
+    method: "GET",
+    url: "/list",
+    schema: {
+      description: "Gets all calendars available to the user, the returned result will only have the id, name, organizationId, and user's role for the calendar",
+      response: { 200: Type.Object({ calendars: calendarListingSchema }) },
+    },
+    handler: async (request) => {
+      const { userid } = request.session.user;
+      const list = await service.getCalendars(userid);
+      return { calendars: list };
     },
   });
 };

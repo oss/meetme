@@ -62,7 +62,7 @@ async function seedUser(this: FastifyInstance, name: string, netid: string) {
 
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "MEMBER" | "VIEWER" | "INVITED" | null;
 type Member = { id: number; role: Role };
-async function seedOrganization(this: FastifyInstance, role: Role, member?: Member) {
+async function seedOrganization(this: FastifyInstance, role: Role, member?: Member, calendar?: boolean) {
   const user = await this.userService.createOrLoginUser({
     netid: "aa123",
     name: "Airy Apple",
@@ -98,6 +98,17 @@ async function seedOrganization(this: FastifyInstance, role: Role, member?: Memb
       organizationId: organization.id,
       role: member.role,
     });
+  }
+  if (calendar) {
+    await this.calendarService.createCalendar(
+      {
+        name: "org calendar",
+        description: "short description",
+        organizationId: organization.id,
+        links: [{ sharelink: true, url: "https://my.calendar.stuff" }],
+      },
+      user.id,
+    );
   }
   return organization;
 }

@@ -4,10 +4,12 @@ import type { OrganizationService, LoggerInstance, DatabaseInstance } from "#com
 import { type Policy, Role, CompareType, canAccess } from "#common/rbac.js";
 import AppError from "#common/errors.js";
 
+import { unionAll } from "drizzle-orm/pg-core";
 import { eq, and } from "drizzle-orm";
 
 type InsertCalendar = typeof calendars.$inferInsert;
 type InsertTimeblock = typeof timeblocks.$inferInsert;
+type UpdateTimeblock = typeof timeblocks.$inferSelect;
 
 export default function createCalendarService(
   logger: LoggerInstance,
@@ -116,7 +118,7 @@ export default function createCalendarService(
     },
 
     async addTimeblock(id: number, block: InsertTimeblock, userid: number) {
-      logger.info(`User ${userid} is adding timeblock ${JSON.stringify(block)} calendar ${id}`);
+      logger.info(`User ${userid} is adding timeblock ${JSON.stringify(block)} for calendar ${id}`);
       await this.getCalendar(id, userid, { role: Role.MEMBER });
       const [timeblock] = await db
         .insert(timeblocks)
@@ -128,13 +130,14 @@ export default function createCalendarService(
       return timeblock;
     },
 
-    async patchTimeblock(id: number, block: UpdateTimeblock, userid: number) {
-      logger.info(`User ${userid} is modifying timeblock ${JSON.stringify(block)} for calendar ${id}`);
-      await this.getCalendar(id, userid, { role: Role.MEMBER });
+    async patchTimeblock(calid: number, block: UpdateTimeblock, userid: number) {
+      logger.info(`User ${userid} is modifying timeblock ${JSON.stringify(block)} for calendar ${calid}`);
+      await this.getCalendar(calid, userid, { role: Role.MEMBER });
+      const { id, ...props } = block;
       const [timeblock] = await db
         .update(timeblocks)
-        .set(block)
-        .where(eq(timeblocks.id, block.id))
+        .set(props)
+        .where(eq(timeblocks.id, id))
         .returning();
       if (!timeblock) {
         throw AppError.serverError("Unable to add the timeblock");
@@ -250,5 +253,33 @@ export default function createCalendarService(
       });
       return cal;
     },
+
+    async getCalendars(userid: number) {
+      logger.info(`User ${userid} fetching all calendars`);
+      const userQuery = db.select({
+        id: calendars.id,
+        name: calendars.name,
+        organizationId: calendars.organizationId,
+        role: usersCalendars.role
+      })
+        .from(usersCalendars)
+        .innerJoin(calendars, eq(usersCalendars.calendarId, calendars.id))
+        .where(eq(usersCalendars.userId, userid));
+
+      const orgQuery = db.select({
+        id: calendars.id,
+        name: calendars.name,
+        organizationId: calendars.organizationId,
+        role: usersOrganizations.role
+      })
+        .from(usersOrganizations)
+        .innerJoin(calendars, eq(calendars.organizationId, usersOrganizations.organizationId))
+        .where(eq(usersOrganizations.userId, userid));
+
+      const data = await unionAll(userQuery, orgQuery);
+      
+      if (!data) return [];
+      return data;
+    }
   };
 }
