@@ -1,5 +1,5 @@
 import { type FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typebox";
-import { createInsertSchema, createUpdateSchema } from "drizzle-orm/typebox";
+import { createInsertSchema, createUpdateSchema, createSelectSchema } from "drizzle-orm/typebox";
 
 import { calendars, timeblocks, usersCalendars } from "../../../db/schema.js";
 import { Role } from "#common/rbac.js";
@@ -12,7 +12,10 @@ const usersCalendarsSchema = createInsertSchema(usersCalendars);
 const timeblocksSchema = Type.Omit(createInsertSchema(timeblocks), 
   Type.Union([Type.Literal("userId"), Type.Literal("calendarId")]),
 );
-const timeblocksReturnSchema = createInsertSchema(timeblocks);
+const timeblocksUpdateSchema = Type.Omit(createSelectSchema(timeblocks), 
+  Type.Union([Type.Literal("userId"), Type.Literal("calendarId")]),
+);
+const timeblocksReturnSchema = createSelectSchema(timeblocks);
 const settingsSchema = Type.Omit(
   createUpdateSchema(calendars, {
     links: Type.Optional(
@@ -116,17 +119,39 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     method: "POST",
     url: "/:calendarId/timeblocks",
     schema: {
-      description:
-        "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
+      description: "Adds a timeblock to the calendar",
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: timeblocksSchema }),
+      response: { 201: Type.Object({ timeblock: timeblocksReturnSchema }) },
+    },
+    handler: async (request, reply) => {
+      const { calendarId } = request.params;
+      const { userid } = request.session.user;
+      const { block } = request.body;
+      const b = await service.addTimeblock(calendarId, {
+        ...block,
+        userId: userid,
+        calendarId: calendarId,
+      }, userid);
+      reply.code(201);
+      return { timeblock: b };
+    },
+  });
+
+  fastify.route({
+    method: "PATCH",
+    url: "/:calendarId/timeblocks",
+    schema: {
+      description: "Updates the given timeblock",
+      params: Type.Object({ calendarId: Type.Integer() }),
+      body: Type.Object({ block: timeblocksUpdateSchema }),
       response: { 200: Type.Object({ timeblock: timeblocksReturnSchema }) },
     },
     handler: async (request) => {
       const { calendarId } = request.params;
       const { userid } = request.session.user;
       const { block } = request.body;
-      const b = await service.addTimeblock(calendarId, {
+      const b = await service.patchTimeblock(calendarId, {
         ...block,
         userId: userid,
         calendarId: calendarId,

@@ -121,14 +121,20 @@ export default function createCalendarService(
       const [timeblock] = await db
         .insert(timeblocks)
         .values(block)
-        .onConflictDoUpdate({
-          target: timeblocks.id,
-          set: {
-            start: block.start,
-            end: block.end,
-            description: block.description,
-          },
-        })
+        .returning();
+      if (!timeblock) {
+        throw AppError.serverError("Unable to add the timeblock");
+      }
+      return timeblock;
+    },
+
+    async patchTimeblock(id: number, block: UpdateTimeblock, userid: number) {
+      logger.info(`User ${userid} is modifying timeblock ${JSON.stringify(block)} for calendar ${id}`);
+      await this.getCalendar(id, userid, { role: Role.MEMBER });
+      const [timeblock] = await db
+        .update(timeblocks)
+        .set(block)
+        .where(eq(timeblocks.id, block.id))
         .returning();
       if (!timeblock) {
         throw AppError.serverError("Unable to add the timeblock");

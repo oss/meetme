@@ -296,9 +296,10 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
     });
     const res2 = await app.injectWithLogin({
       url: `/api/calendar/${calendar.id}/timeblocks`,
-      method: "POST",
+      method: "PATCH",
       body: {
         block: {
+          id: 1,
           description: "new description",
           start: now.toISOString(),
           end: later.toISOString(),
@@ -313,6 +314,31 @@ describe("POST /api/calendar/:calendarId/timeblocks", () => {
         start: now.toISOString(),
         end: later.toISOString(),
       },
+    });
+  });
+
+  it("should fail to SET a nonexistant timeblock", async (t) => {
+    const app = await build(t);
+    const calendar = await app.seedCalendar("MEMBER");
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
+    const res = await app.injectWithLogin({
+      url: `/api/calendar/${calendar.id}/timeblocks`,
+      method: "PATCH",
+      body: {
+        block: {
+          id: 1,
+          description: "new description",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: 'Unable to add the timeblock',
+      statusCode: 500
     });
   });
 
