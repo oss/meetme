@@ -1,11 +1,30 @@
 <script lang=ts>
     import CalendarLayout from '$lib/layout/CalendarLayout.svelte';
+    import * as CalendarAPI from '$lib/api/calendar.js';
 
     let calendar: CalendarLayout;
     let searchModal: HTMLDialogElement;
+    let searchTerm = $state("");
+    let searchLoading = $state(false);
+
+    let calendars: CalendarAPI.CalendarInfo[] | null = null;
+    let filtered: CalendarAPI.CalendarInfo[] | null = $state(null);
 
     function setDate(event: any) {
       calendar.setDate(event.target.value);
+    }
+
+    async function searchCalendars() {
+      if (calendars == null) {
+        searchLoading = true;
+        calendars = await CalendarAPI.getCalendars();
+        searchLoading = false;
+      }
+      if (searchTerm === "") {
+        filtered = calendars;
+      } else {
+        filtered = calendars.filter(c => c.name.includes(searchTerm.toLowerCase()));
+      }
     }
 </script>
 
@@ -46,13 +65,36 @@
 </CalendarLayout>
 
 <dialog id="search-modal" class="modal" bind:this={searchModal}>
-  <div class="modal-box">
+  <div class="modal-box h-[80dvh] w-[60dvw]">
     <label class="input input-ghost input-lg focus-within:outline-none border-0 border-b-2 border-base-300 w-full rounded-none">
       <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.3-4.3"></path> </g> </svg>
-      <input type="search" class="grow" placeholder="Search calendar..." />
+      <input type="search" class="grow" placeholder="Search calendar..." bind:value={searchTerm} oninput={searchCalendars}/>
     </label>
+
+    <div>
+      {#if searchLoading}
+        <span class="loading loading-spinner loading-xl"></span>
+      {:else}
+        <div class="flex flex-col mt-6 gap-6">
+          {#each filtered as calendar}
+            <button class="flex items-center w-full m-auto hover:bg-base-300 p-2 rounded-sm">
+              {#if calendar.organizationId !== null}
+                <div class="badge badge-sm badge-secondary">Org</div>
+                {:else}
+                  <div class="badge badge-sm badge-primary">User</div>
+              {/if}
+              <div class="ml-4 text-lg">{calendar.name}</div>
+              <div class="ml-18 text-xs opacity-50">{calendar.role}</div>
+              <a class="btn btn-ghost btn-xs ms-auto" href="/calendar/{calendar.id}" aria-label="Edit or View Calendar {calendar.name}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="opacity-50" width="16" height="16" fill="#000000" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+              </a>
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
   </div>
-  <form method="dialog" class="modal-backdrop">
-    <button>close</button>
-  </form>
 </dialog>
