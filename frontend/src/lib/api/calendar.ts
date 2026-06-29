@@ -54,4 +54,15 @@ export async function addTimeblock(calendarId: number, event: Calendar.Event): P
   };
 }
 
-  
+export interface Calendar {
+  id: number;
+  organizationId: number;
+  name: string;
+  role: string;
+};
+
+export async function getCalendars(): Promise<Calendar[]> {
+  const res = await fetch("/api/calendar/list");
+  const json = await res.json();
+  return json.calendars;
+}

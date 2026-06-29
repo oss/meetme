@@ -48,10 +48,8 @@
       <div class="btn bgn-ghost mr-2 ml-4">{authstore.user!.netid}</div>
       <ul tabindex="-1" class="dropdown-content menu bg-base-300 rounded-box z-4 w-52 p-2 mt-1 shadow-sm">
 	<li><a href="/dashboard">Dashboard</a></li>
-	<li><a href="/organizations/">Organizations</a></li>
-	<li><a href="/calendars">Calendars</a></li>
+	<li><a href="/list">Calendars & Orgs</a></li>
 	<li><a href="/profile">Profile</a></li>
-	<li><a href="/invites">Invites</a></li>
 	<li><a href="/api/auth/logout">Logout</a></li>
       </ul>
       </div>     
