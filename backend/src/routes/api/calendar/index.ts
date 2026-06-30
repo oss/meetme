@@ -204,6 +204,22 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.route({
+    method: "GET",
+    url: "/timeblocks/list",
+    schema: {
+      description: "Gets all timeblocks from the specified calendars, leave blank to get all timeblocks",
+      querystring: Type.Object({ calendars: Type.Optional(Type.Array(Type.Integer())) }),
+      response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksReturnSchema) }) },
+    },
+    handler: async (request) => {
+      const { calendars } = request.query;
+      const { userid } = request.session.user;
+      const blocks = await service.getAllTimeblocks(userid, calendars ?? []);
+      return { timeblocks: blocks };
+    },
+  });
+
+  fastify.route({
     method: "POST",
     url: "/:calendarId/share",
     schema: {

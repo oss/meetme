@@ -502,6 +502,145 @@ describe("DELETE /api/calendar/:calendarId/leave", () => {
   });
 });
 
+describe("GET /api/calendar/timeblocks/list", () => {
+  it("should successfully get all timeblocks of a user", async (t) => {
+    const app = await build(t);
+    const calendar1 = await app.seedCalendar("MEMBER");
+    const calendar2 = await app.seedCalendar("MEMBER");
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar1.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Focus Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar2.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Sleep Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    const res2 = await app.injectWithLogin({
+      url: `/api/calendar/timeblocks/list`,
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res2.payload), {
+      timeblocks: [
+        {
+          userId: 1,
+          calendarId: calendar1.id,
+          description: "Focus Time",
+        },
+        {
+          userId: 1,
+          calendarId: calendar2.id,
+          description: "Sleep Time",
+        },
+      ],
+    });
+  });
+  it("should successfully get timeblocks from the calendar of a user", async (t) => {
+    const app = await build(t);
+    const calendar1 = await app.seedCalendar("MEMBER");
+    const calendar2 = await app.seedCalendar("MEMBER");
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar1.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Focus Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar2.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Sleep Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    const res2 = await app.injectWithLogin({
+      url: `/api/calendar/timeblocks/list?calendars=1`,
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res2.payload), {
+      timeblocks: [
+        {
+          userId: 1,
+          calendarId: calendar1.id,
+          description: "Focus Time",
+        },
+      ],
+    });
+  });
+  it("should successfully get all timeblocks of a user (querystrings)", async (t) => {
+    const app = await build(t);
+    const calendar1 = await app.seedCalendar("MEMBER");
+    const calendar2 = await app.seedCalendar("MEMBER");
+    const now = new Date();
+    const later = new Date();
+    later.setHours(now.getHours() + 4);
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar1.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Focus Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    await app.injectWithLogin({
+      url: `/api/calendar/${calendar2.id}/timeblocks`,
+      method: "POST",
+      body: {
+        block: {
+          description: "Sleep Time",
+          start: now.toISOString(),
+          end: later.toISOString(),
+        },
+      },
+    });
+    const res2 = await app.injectWithLogin({
+      url: `/api/calendar/timeblocks/list?calendars=1&calendars=2`,
+    });
+    assert.partialDeepStrictEqual(JSON.parse(res2.payload), {
+      timeblocks: [
+        {
+          userId: 1,
+          calendarId: calendar1.id,
+          description: "Focus Time",
+        },
+        {
+          userId: 1,
+          calendarId: calendar2.id,
+          description: "Sleep Time",
+        },
+      ],
+    });
+  });
+});
+
 describe("DELETE /api/calendar/:calendarId/unshare", () => {
   it("should remove the user", async (t) => {
     const app = await build(t);

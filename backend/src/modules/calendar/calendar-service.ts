@@ -5,7 +5,7 @@ import { type Policy, Role, CompareType, canAccess } from "#common/rbac.js";
 import AppError from "#common/errors.js";
 
 import { unionAll } from "drizzle-orm/pg-core";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 type InsertCalendar = typeof calendars.$inferInsert;
 type InsertTimeblock = typeof timeblocks.$inferInsert;
@@ -280,6 +280,17 @@ export default function createCalendarService(
       
       if (!data) return [];
       return data;
+    },
+
+    async getAllTimeblocks(userid: number, calendars: number[]) {
+      logger.info(`User ${userid} fetching all timeblocks from ${calendars.toString()}`);
+      // If calendars is empty, we return all timeblocks held by the user
+      const blocks = await db.select().from(timeblocks).where(and(
+        eq(timeblocks.userId, userid),
+        calendars.length > 0 ? inArray(timeblocks.calendarId, calendars) : undefined
+      ));
+      if (!blocks) return [];
+      return blocks;
     }
   };
 }
