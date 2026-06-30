@@ -12,10 +12,9 @@
     interface Props {
         sidebar: Snippet<[]>;
         calendarId?: number;
-        events?: [Calendar.Event];
     }
 
-    let { sidebar, calendarId, events }: Props = $props();
+    let { sidebar, calendarId }: Props = $props();
 
     let selectedEvent = $state<Calendar.Event | null>(null);
     let editModal: HTMLDialogElement;
@@ -51,7 +50,6 @@
             theme['active'] = 'btn-primary';
             return theme;
         },
-        events: events ?? []
     });
 
     function addEvent(info: Calendar.SelectInfo) {
@@ -94,6 +92,14 @@
 
     export function setDate(value: Date) {
         options.date = value;
+    }
+
+    export function addEvents(events: Calendar.Event[]) {
+      if (calendar) {
+        for (const event of events) {
+          calendar.addEvent(event);
+        }
+      }
     }
 </script>
 
@@ -143,14 +149,14 @@
 </dialog>
 
 <style>
-:global {
+  :global {
     .ec {
-        --ec-bg-color: var(--color-base-100);
-        --ec-border-color: var(--color-base-300);
+      --ec-bg-color: var(--color-base-100);
+      --ec-border-color: var(--color-base-300);
     }
 
     .ec-main {
-        border-radius: 4px;
+      border-radius: 4px;
     }
 
     .ec-day {
@@ -160,19 +166,19 @@
     }
 
     .ec-time-grid .ec-body .ec-day {
-        background-image: 
-            linear-gradient(to top, var(--ec-day-bg-color) 1px, transparent 1px), 
-            linear-gradient(to top, var(--ec-border-color) 1px, transparent 1px), 
-            linear-gradient(to right, var(--ec-day-bg-color) 1px, transparent 1px), 
-            linear-gradient(to top, transparent 1px, transparent 1px);
+      background-image: 
+        linear-gradient(to top, var(--ec-day-bg-color) 1px, transparent 1px), 
+        linear-gradient(to top, var(--ec-border-color) 1px, transparent 1px), 
+        linear-gradient(to right, var(--ec-day-bg-color) 1px, transparent 1px), 
+        linear-gradient(to top, transparent 1px, transparent 1px);
     }
 
     .ec-time-grid .ec-body .ec-sidebar {
-        --ec-direction: unset;
+      --ec-direction: unset;
     }
 
     .ec-col-group, .ec-col-head {
-        border-right: none; 
+      border-right: none; 
     }
 
     .ec-col-group, .ec-col-head {
@@ -180,5 +186,5 @@
         background-color: var(--color-primary);
       }
     }
-}
+  }
 </style>

@@ -66,3 +66,20 @@ export async function getCalendars(): Promise<CalendarInfo[]> {
   const json = await res.json();
   return json.calendars;
 }
+
+interface Timeblock {
+  id: number;
+  userId: number;
+  calendarId: number;
+  start: Date;
+  end: Date;
+  description: string;
+};
+
+export async function getAllTimeblocks(calendars: number[]): Promise<Timeblock[]> {
+  let url = "/api/calendar/timeblocks/list";
+  let query = "?" + calendars.map(id => `calendars=${id}`).join("&");
+  const res = await fetch(calendars.length > 0 ? url + query : url);
+  const json = await res.json();
+  return json.timeblocks;
+}
