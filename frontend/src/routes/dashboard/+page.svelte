@@ -10,8 +10,18 @@
     let calendars: CalendarAPI.CalendarInfo[] | null = null;
     let filtered: CalendarAPI.CalendarInfo[] | null = $state(null);
 
-    function setDate(event: any) {
-      calendar.setDate(event.target.value);
+    interface SavedCalendar {
+      id: number;
+      name: string;
+    };
+    let savedCalendars: SavedCalendar[] = $state(JSON.parse(window.localStorage.getItem("calendars") ?? "[]"));
+
+    function addCalendar(id: number, name: string) {
+      if (savedCalendars.some(c => c.id === id)) {
+        return;
+      }
+      savedCalendars.push({ id: id, name: name });
+      window.localStorage.setItem("calendars", JSON.stringify(savedCalendars));
     }
 
     async function searchCalendars() {
@@ -25,6 +35,10 @@
       } else {
         filtered = calendars.filter(c => c.name.includes(searchTerm.toLowerCase()));
       }
+    }
+
+    function setDate(event: any) {
+      calendar.setDate(event.target.value);
     }
 </script>
 
@@ -41,12 +55,14 @@
     </a>
   </div>
 
-    <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4">
+    <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4 overflow-y-auto">
       <legend class="fieldset-legend">My Calendars</legend>
+      {#each savedCalendars as calendar}
       <label class="label">
         <input type="checkbox" class="checkbox checkbox-sm" />
-        Remember me
+        {calendar.name}
       </label>
+      {/each}
     </fieldset>
 
     <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4">
@@ -77,7 +93,9 @@
       {:else}
         <div class="flex flex-col mt-6 gap-6">
           {#each filtered as calendar}
-            <button class="flex items-center w-full m-auto hover:bg-base-300 p-2 rounded-sm">
+            <button class="flex items-center w-full m-auto hover:bg-base-300 p-2 rounded-sm"
+              onclick={() => addCalendar(calendar.id, calendar.name)}
+            >
               {#if calendar.organizationId !== null}
                 <div class="badge badge-sm badge-secondary">Org</div>
                 {:else}
