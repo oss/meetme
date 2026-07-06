@@ -5,7 +5,7 @@
 
     interface SavedCalendar {
       id: number;
-      organizationId: number | null;
+      isPersonal: boolean;
       name: string;
       checked: boolean;
     };
@@ -19,8 +19,13 @@
     let filtered: CalendarAPI.CalendarInfo[] | null = $state(null);
     let savedCalendars: SavedCalendar[] = $state(JSON.parse(window.localStorage.getItem("calendars") ?? "[]"));
    
-    // TODO: find a way to remove this deduplication, concatonation seems to break tailwindcss
-    const colors = ["!bg-primary", "!bg-secondary", "!bg-accent", "!bg-success", "!bg-info"];
+    // TODO: find a way to remove this deduplication, concating seems to break tailwindcss
+    const colors = [
+      "!bg-primary !text-primary-content",
+      "!bg-secondary !text-secondary-content",
+      "!bg-accent !text-accent-content",
+      "!bg-success !text-success-content",
+      "!bg-info !text-info-content"];
     const checks = [
       "checkbox-primary",
       "checkbox-secondary",
@@ -44,11 +49,13 @@
 
     // Timeblocks of saved calendars are loaded on startup after the user
     // selects them.
-    function addCalendar(id: number, name: string, organizationId: number | null) {
-      if (savedCalendars.some(c => c.id === id)) {
+    function addCalendar(calendar: CalendarAPI.CalendarInfo) {
+      // Already added, ignore
+      if (savedCalendars.some(c => c.id === calendar.id)) {
         return;
       }
-      savedCalendars.push({ id: id, name: name, organizationId: organizationId, checked: true });
+      const isPersonal = calendar.role === "OWNER" && calendar.organizationId === null ;
+      savedCalendars.push({ id: calendar.id, name: calendar.name, isPersonal: isPersonal, checked: true });
       window.localStorage.setItem("calendars", JSON.stringify(savedCalendars));
     }
 
@@ -88,29 +95,28 @@
       </a>
     </div>
 
-    <!-- Saved personal calendars -->
+    <!-- Saved personal calendars and non personal calendars -->
+    {#each [true, false] as isPersonal}
     <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4 overflow-y-auto">
-      <legend class="fieldset-legend">My Calendars</legend>
+      <legend class="fieldset-legend">{isPersonal ? "My Calendars" : "Other Calendars"}</legend>
       {#each savedCalendars as calendar, i}
+        {#if calendar.isPersonal === isPersonal}
         <div class="flex items-center gap-2">
           <label class="label">
             <input type="checkbox" class="checkbox checkbox-sm {checks[calendar.id % colors.length]}" bind:checked={savedCalendars[i].checked} onchange={saveCalendars}/>
             {calendar.name}
           </label>
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          <a href="/calendar/{calendar.id}" aria-label="View/edit to calendar {calendar.name}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+          </a>
+          <button aria-label="Remove {calendar.name} from the dashboard ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          </button>
         </div>
+        {/if}
       {/each}
     </fieldset>
-
-    <!-- Saved organization calendars -->
-    <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4">
-      <legend class="fieldset-legend">Organization Calendars</legend>
-      <label class="label">
-        <input type="checkbox" class="checkbox checkbox-sm" />
-        Remember me
-      </label>
-    </fieldset>
+    {/each}
 
     <!-- Date selection widget -->
     <calendar-date onchange={setDate} class="cally bg-base-100 border border-base-300 shadow-lg rounded-box mt-4">
@@ -138,7 +144,7 @@
         <div class="flex flex-col mt-6 gap-6">
           {#each filtered as calendar}
             <button class="flex items-center w-full m-auto hover:bg-base-300 p-2 rounded-sm"
-              onclick={() => addCalendar(calendar.id, calendar.name, calendar.organizationId)}
+              onclick={() => addCalendar(calendar)}
             >
               <!-- Shows if a calendar is personal or an organization one -->
               {#if calendar.organizationId !== null}

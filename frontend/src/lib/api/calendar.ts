@@ -2,6 +2,13 @@ import {Calendar} from "@event-calendar/core";
 
 // TODO: figure out a way to have 1. types for forms and 2. also add validation here
 
+export interface CalendarInfo {
+  id: number;
+  organizationId: number | null;
+  name: string;
+  role: string;
+};
+
 export async function create(json: any) {
     const res = await fetch("/api/calendar/", {
       method: "POST",
@@ -53,13 +60,6 @@ export async function addTimeblock(calendarId: number, event: Calendar.Event): P
     resourceIds: [timeblock.userId],
   };
 }
-
-export interface CalendarInfo {
-  id: number;
-  organizationId: number;
-  name: string;
-  role: string;
-};
 
 export async function getCalendars(): Promise<CalendarInfo[]> {
   const res = await fetch("/api/calendar/list");
