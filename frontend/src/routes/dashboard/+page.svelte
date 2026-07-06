@@ -5,7 +5,9 @@
 
     interface SavedCalendar {
       id: number;
+      organizationId: number | null;
       name: string;
+      checked: boolean;
     };
 
     let calendar: CalendarLayout;
@@ -17,15 +19,23 @@
     let filtered: CalendarAPI.CalendarInfo[] | null = $state(null);
     let savedCalendars: SavedCalendar[] = $state(JSON.parse(window.localStorage.getItem("calendars") ?? "[]"));
    
-    const colors = ["primary", "secondary", "accent", "success", "info"];
+    // TODO: find a way to remove this deduplication, concatonation seems to break tailwindcss
+    const colors = ["!bg-primary", "!bg-secondary", "!bg-accent", "!bg-success", "!bg-info"];
+    const checks = [
+      "checkbox-primary",
+      "checkbox-secondary",
+      "checkbox-accent",
+      "checkbox-success",
+      "checkbox-info"
+    ];
     let timeblocks;
     $effect(() => {
-       const ids = savedCalendars.map(cal => cal.id);
+       const ids = savedCalendars.filter(cal => cal.checked).map(cal => cal.id);
        CalendarAPI.getAllTimeblocks(ids).then((blocks) => {
          const events = blocks.map(block => ({
            ...block,
            resourceId: block.userId,
-           classNames: `!bg-${colors[colors.length % block.calendarId]}`
+           classNames: colors[block.calendarId % colors.length]
          }));
          timeblocks = Object.groupBy(blocks, (block) => block.calendarId);
          calendar.addEvents(events as unknown[] as Calendar.Event[]);
@@ -34,11 +44,15 @@
 
     // Timeblocks of saved calendars are loaded on startup after the user
     // selects them.
-    function addCalendar(id: number, name: string) {
+    function addCalendar(id: number, name: string, organizationId: number | null) {
       if (savedCalendars.some(c => c.id === id)) {
         return;
       }
-      savedCalendars.push({ id: id, name: name });
+      savedCalendars.push({ id: id, name: name, organizationId: organizationId, checked: true });
+      window.localStorage.setItem("calendars", JSON.stringify(savedCalendars));
+    }
+
+    function saveCalendars() {
       window.localStorage.setItem("calendars", JSON.stringify(savedCalendars));
     }
 
@@ -77,11 +91,15 @@
     <!-- Saved personal calendars -->
     <fieldset class="fieldset bg-base-100 border-base-300 h-34 rounded-box border p-4 overflow-y-auto">
       <legend class="fieldset-legend">My Calendars</legend>
-      {#each savedCalendars as calendar}
-        <label class="label">
-          <input type="checkbox" class="checkbox checkbox-sm checkbox-{colors[colors.length % calendar.id]}" />
-          {calendar.name}
-        </label>
+      {#each savedCalendars as calendar, i}
+        <div class="flex items-center gap-2">
+          <label class="label">
+            <input type="checkbox" class="checkbox checkbox-sm {checks[calendar.id % colors.length]}" bind:checked={savedCalendars[i].checked} onchange={saveCalendars}/>
+            {calendar.name}
+          </label>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" class="opacity-50" fill="#000000" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </div>
       {/each}
     </fieldset>
 
@@ -120,7 +138,7 @@
         <div class="flex flex-col mt-6 gap-6">
           {#each filtered as calendar}
             <button class="flex items-center w-full m-auto hover:bg-base-300 p-2 rounded-sm"
-              onclick={() => addCalendar(calendar.id, calendar.name)}
+              onclick={() => addCalendar(calendar.id, calendar.name, calendar.organizationId)}
             >
               <!-- Shows if a calendar is personal or an organization one -->
               {#if calendar.organizationId !== null}
