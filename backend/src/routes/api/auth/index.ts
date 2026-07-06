@@ -18,6 +18,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.route({
     method: "GET",
     url: "/login/callback",
+    schema: { tags: ["auth"] },
     handler: async (request, reply) => {
       const token = await cas.getAccessTokenFromAuthorizationCodeFlow(request);
       const res = await cas.userinfo(token.token);
@@ -43,6 +44,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/logout",
     schema: {
       description: "Log out of the current user session",
+      tags: ["auth"]
     },
     handler: async (request, reply) => {
       request.session.destroy();
@@ -55,6 +57,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/whoami",
     schema: {
       description: "Gets the current user session",
+      tags: ["auth"]
     },
     handler: async (request) => {
       return { user: request.session.user };

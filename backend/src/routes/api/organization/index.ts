@@ -14,6 +14,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/",
     schema: {
       description: "Creates an organization with the given name",
+      tags: ["organization"],
       body: Type.Object({ name: Type.String() }),
       response: { 201: Type.Object({ organization: organizationSchema }) },
     },
@@ -31,6 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:organizationId",
     schema: {
       description: "Gets an organization with the given id",
+      tags: ["organization"],
       params: Type.Object({ organizationId: Type.Number() }),
       response: { 200: Type.Object({ organization: organizationSchema }) },
     },
@@ -47,6 +49,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:organizationId",
     schema: {
       description: "Deletes an organization with the given id",
+      tags: ["organization"],
       params: Type.Object({ organizationId: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
@@ -63,6 +66,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:organizationId/leave",
     schema: {
       description: "Leaves the organization as the logged in user",
+      tags: ["organization", "user"],
       params: Type.Object({ organizationId: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
@@ -79,6 +83,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:organizationId/share",
     schema: {
       description: "Invites the given users to the given organization",
+      tags: ["organization", "user"],
       params: Type.Object({ organizationId: Type.Number() }),
       body: Type.Object({ users: Type.Array(Type.Number(), { minItems: 1 }) }),
       response: { 201: Type.Object({ users: Type.Array(usersOrganizationSchema) }) },
@@ -96,6 +101,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:organizationId/join",
     schema: {
       description: "Joins the organization as the logged in user, user must be invited",
+      tags: ["organization", "user"],
       params: Type.Object({ organizationId: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },

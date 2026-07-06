@@ -13,7 +13,7 @@ const timeblocksSchema = Type.Omit(createInsertSchema(timeblocks),
   Type.Union([Type.Literal("userId"), Type.Literal("calendarId")]),
 );
 const timeblocksUpdateSchema = Type.Omit(createSelectSchema(timeblocks), 
-  Type.Union([Type.Literal("userId"), Type.Literal("calendarId")]),
+  Type.Union([Type.Literal("userId"), Type.Literal("calendarId"), Type.Literal("id")]),
 );
 const timeblocksReturnSchema = createSelectSchema(timeblocks);
 const settingsSchema = Type.Omit(
@@ -40,6 +40,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     schema: {
       description:
         "Creates a calendar with the given settings as the logged in user, if organizationId is given, the calendar will be created for the organization instead",
+      tags: ["calendar"],
       body: calendarSchema,
       response: { 201: Type.Object({ calendar: calendarSchema }) },
     },
@@ -56,6 +57,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId",
     schema: {
       description: "Gets the information of the calendar given by the calendarId ",
+      tags: ["calendar"],
       params: Type.Object({ calendarId: Type.Integer() }),
       response: { 200: Type.Object({ calendar: calendarSchema }) },
     },
@@ -72,6 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId",
     schema: {
       description: "Deletes the given calendar",
+      tags: ["calendar"],
       params: Type.Object({ calendarId: Type.Integer() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
@@ -88,6 +91,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/settings",
     schema: {
       description: "Modifes a calendar with the given settings",
+      tags: ["calendar"],
       params: Type.Object({ calendarId: Type.Integer() }),
       body: settingsSchema,
       response: { 200: Type.Object({ calendar: calendarSchema }) },
@@ -110,6 +114,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/owner",
     schema: {
       description: "Transfers ownership of the calendar to the given owner",
+      tags: ["calendar"],
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ owner: Type.Number(), isOrg: Type.Boolean() }),
       response: { 200: Type.Object({ calendar: calendarSchema }) },
@@ -128,6 +133,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/timeblocks",
     schema: {
       description: "Adds a timeblock to the calendar",
+      tags: ["calendar", "timeblocks"],
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: timeblocksSchema }),
       response: { 201: Type.Object({ timeblock: timeblocksReturnSchema }) },
@@ -148,19 +154,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.route({
     method: "PATCH",
-    url: "/:calendarId/timeblocks",
+    url: "/:calendarId/timeblocks/:timeblockId",
     schema: {
       description: "Updates the given timeblock",
-      params: Type.Object({ calendarId: Type.Integer() }),
+      tags: ["calendar", "timeblocks"],
+      params: Type.Object({ calendarId: Type.Integer(), timeblockId: Type.Integer() }),
       body: Type.Object({ block: timeblocksUpdateSchema }),
       response: { 200: Type.Object({ timeblock: timeblocksReturnSchema }) },
     },
     handler: async (request) => {
-      const { calendarId } = request.params;
+      const { calendarId, timeblockId } = request.params;
       const { userid } = request.session.user;
       const { block } = request.body;
       const b = await service.patchTimeblock(calendarId, {
         ...block,
+        id: timeblockId,
         userId: userid,
         calendarId: calendarId,
       }, userid);
@@ -174,6 +182,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     schema: {
       description:
         "Adds a timeblock to the calendar, if the timeblock exsists alreay, it is modified instead",
+      tags: ["calendar", "timeblocks"],
       params: Type.Object({ calendarId: Type.Integer() }),
       body: Type.Object({ block: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
@@ -192,6 +201,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/timeblocks",
     schema: {
       description: "Gets all timeblocks for the given calendar",
+      tags: ["calendar", "timeblocks"],
       params: Type.Object({ calendarId: Type.Integer() }),
       response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksReturnSchema) }) },
     },
@@ -208,6 +218,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/timeblocks/list",
     schema: {
       description: "Gets all timeblocks from the specified calendars, leave blank to get all timeblocks",
+      tags: ["timeblocks"],
       querystring: Type.Object({ calendars: Type.Optional(Type.Array(Type.Integer())) }),
       response: { 200: Type.Object({ timeblocks: Type.Array(timeblocksReturnSchema) }) },
     },
@@ -224,6 +235,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/share",
     schema: {
       description: "Share the calendar with the given users",
+      tags: ["calendar", "user"],
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ users: Type.Array(Type.Number(), { minItems: 1 }) }),
       response: { 201: Type.Object({ users: Type.Array(usersCalendarsSchema) }) },
@@ -243,6 +255,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/unshare",
     schema: {
       description: "Unshare the calendar with the given user",
+      tags: ["calendar", "user"],
       params: Type.Object({ calendarId: Type.Number() }),
       body: Type.Object({ user: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
@@ -261,6 +274,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/join",
     schema: {
       description: "Join the calendar as the logged-in user",
+      tags: ["calendar", "user"],
       params: Type.Object({ calendarId: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
@@ -277,6 +291,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:calendarId/leave",
     schema: {
       description: "Leave the calendar as the logged-in user",
+      tags: ["calendar", "user"],
       params: Type.Object({ calendarId: Type.Number() }),
       response: { 204: Type.Object({ message: Type.String() }) },
     },
@@ -293,6 +308,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/list",
     schema: {
       description: "Gets all calendars available to the user, the returned result will only have the id, name, organizationId, and user's role for the calendar",
+      tags: ["calendar"],
       response: { 200: Type.Object({ calendars: calendarListingSchema }) },
     },
     handler: async (request) => {

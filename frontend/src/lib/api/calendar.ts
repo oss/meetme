@@ -61,6 +61,28 @@ export async function addTimeblock(calendarId: number, event: Calendar.Event): P
   };
 }
 
+export async function editTimeblock(calendarId: number, timeblockId: number, event: Calendar.Event): Promise<Calendar.Event> {
+  const res = await fetch(`/api/calendar/${calendarId}/timeblocks/${timeblockId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      block: {
+        start: event.start,
+        end: event.end,
+        description: event.title
+      }
+    }),
+  });
+  const json = await res.json();
+  const timeblock = json.timeblock;
+  return {
+    ...event,
+    id: timeblockId,
+    classNames: ["!bg-primary !text-primary-content"],
+    resourceIds: [timeblock.userId],
+  };
+}
+
 export async function getCalendars(): Promise<CalendarInfo[]> {
   const res = await fetch("/api/calendar/list");
   const json = await res.json();

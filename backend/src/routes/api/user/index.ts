@@ -14,6 +14,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/alias",
     schema: {
       description: "Modifies the alias of the logged in user",
+      tags: ["user"],
       body: Type.Object({ alias: Type.String() }),
       response: { 200: Type.Object({ user: userSchema }) },
     },
@@ -30,6 +31,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/me",
     schema: {
       description: "Gets user data of logged in user",
+      tags: ["user"],
       response: { 200: Type.Object({ user: userSchema }) },
     },
     handler: async (request) => {
@@ -44,6 +46,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     url: "/:userid",
     schema: {
       description: "Gets user data of the user with the given netid",
+      tags: ["user"],
       params: Type.Object({ userid: Type.Number() }),
       response: { 200: Type.Object({ user: userSchema }) },
     },

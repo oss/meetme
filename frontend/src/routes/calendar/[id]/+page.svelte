@@ -3,16 +3,22 @@
   import CalendarLayout from "$lib/layout/CalendarLayout.svelte";
   import type { PageProps } from './$types';
   import { page } from '$app/state';
+  import { onMount } from 'svelte';
 
   let calendar: CalendarLayout;
   let { data }: PageProps = $props();
 
+  // TODO: add loading icon while calendar is loading timeblocks
+  onMount(() => {
+    calendar.addEvents(data.events);
+  });
+  
   function setDate(event: any) {
     calendar.setDate(event.target.value);
   }
 </script>
 
-<CalendarLayout bind:this={calendar} calendarId={parseInt(page.params.id ?? "")} events={data.events}>
+<CalendarLayout bind:this={calendar} calendarId={parseInt(page.params.id ?? "")}>
   {#snippet sidebar()}
   <div class="flex w-full content-center">
     <h1 class="ml-3 text-lg grow">Studious Student</h1>

@@ -2,105 +2,105 @@
      Also adds a modal for editing events. Accepts sidebar props.
   -- -->
 <script lang="ts">
-    import {Calendar, TimeGrid, DayGrid, Interaction} from "@event-calendar/core";
-    import { notifstore } from "$lib/services/notif.svelte.js";
-    import * as CalendarAPI from "$lib/api/calendar.js";
-    import { onMount } from 'svelte';
+  import {Calendar, TimeGrid, DayGrid, Interaction} from "@event-calendar/core";
+  import { notifstore } from "$lib/services/notif.svelte.js";
+  import * as CalendarAPI from "$lib/api/calendar.js";
+  import { onMount } from 'svelte';
 
-    import type { Snippet, SvelteComponent } from 'svelte';
+  import type { Snippet, SvelteComponent } from 'svelte';
+    
+  interface Props {
+    sidebar: Snippet<[]>;
+    calendarId?: number;
+    events?: Calendar.Event[]
+  }
 
-    interface Props {
-        sidebar: Snippet<[]>;
-        calendarId?: number;
+  let { sidebar, calendarId }: Props = $props();
+
+  let selectedEvent = $state<Calendar.Event | null>(null);
+  let editModal: HTMLDialogElement;
+  let form: HTMLFormElement;
+
+  let calendar = $state<SvelteComponent>();
+
+  onMount(() => {
+    import('cally');
+  });
+
+  // Used to set the scroll of the calendar, we want to show at least two
+  // hours before the current time
+  let date = new Date();
+  let options= $derived<Calendar.Options>({
+    view: 'timeGridWeek',
+    headerToolbar: {start: 'prev,next today', center: 'title', end: 'timeGridDay,timeGridWeek,dayGridMonth'},
+    height: '650px',
+    slotHeight: 25,
+    nowIndicator: true,
+    scrollTime: `${date.getHours() - 2}:00`,
+    editable: true,
+    selectable: true,
+    pointer: true,
+    select: addEvent,
+    eventClick: (info: Calendar.EventClickInfo) => {
+      selectedEvent = info.event;
+      editModal.showModal();
+    },
+    theme: function(theme: Calendar.Theme) {
+      theme['button'] = 'btn btn-sm join-item';
+      theme['buttonGroup'] = 'join';
+      theme['active'] = 'btn-primary';
+      return theme;
+    },
+  });
+
+  function addEvent(info: Calendar.SelectInfo) {
+    if (!calendarId) {
+      notifstore.info("Please create the calendar first");
+      return;
     }
+    CalendarAPI.addTimeblock(calendarId, {
+      start: info.start,
+      end: info.end,
+      allDay: info.allDay,
+    } as unknown as Calendar.Event)
+      .then((event) => { calendar?.addEvent(event) });
+    notifstore.success("Successfully saved timeblock to calendar");
+  }
 
-    let { sidebar, calendarId }: Props = $props();
-
-    let selectedEvent = $state<Calendar.Event | null>(null);
-    let editModal: HTMLDialogElement;
-    let form: HTMLFormElement;
-
-    let calendar = $state<SvelteComponent>();
-
-    onMount(() => {
-      import('cally');
-    });
-
-    // Used to set the scroll of the calendar, we want to show at least two
-    // hours before the current time
-    let date = new Date();
-    let options= $derived<Calendar.Options>({
-        view: 'timeGridWeek',
-        headerToolbar: {start: 'prev,next today', center: 'title', end: 'timeGridDay,timeGridWeek,dayGridMonth'},
-        height: '650px',
-        slotHeight: 25,
-        nowIndicator: true,
-        scrollTime: `${date.getHours() - 2}:00`,
-        editable: true,
-        selectable: true,
-        pointer: true,
-        select: addEvent,
-        eventClick: (info: Calendar.EventClickInfo) => {
-          selectedEvent = info.event;
-          editModal.showModal();
-        },
-        theme: function(theme: Calendar.Theme) {
-            theme['button'] = 'btn btn-sm join-item';
-            theme['buttonGroup'] = 'join';
-            theme['active'] = 'btn-primary';
-            return theme;
-        },
-    });
-
-    function addEvent(info: Calendar.SelectInfo) {
-        if (!calendarId) {
-          notifstore.info("Please create the calendar first");
-          return;
-        }
-        CalendarAPI.addTimeblock(calendarId, {
-          start: info.start,
-          end: info.end,
-          allDay: info.allDay,
-        } as unknown as Calendar.Event)
-        .then((event) => { calendar?.addEvent(event) });
-        notifstore.success("Saved timeblock to calendar");
+  async function saveEvent() {
+    if (!calendarId) {
+      notifstore.info("Please create the calendar first");
+      return;
     }
-
-    async function saveEvent() {
-        if (!calendarId) {
-          notifstore.info("Please create the calendar first");
-          return;
-        }
-        if (selectedEvent === null || !calendar) {
-          return;
-        }
-        const data = new FormData(form);
-        const start = data.get("startDate")?.toString() ?? "";
-        const end = data.get("endDate")?.toString() ?? "";
-        const description = data.get("description")?.toString() ?? "";
-
-        const event = await CalendarAPI.addTimeblock(calendarId, {
-          id: selectedEvent.id,
-          start: new Date(start),
-          end: new Date(end),
-          title: description,
-        } as unknown as Calendar.Event);
-        calendar.updateEvent(event);
-        editModal.close();
-        notifstore.success("Saved timeblock to calendar");
+    if (selectedEvent === null || !calendar) {
+      return;
     }
+    const data = new FormData(form);
+    const start = data.get("startDate")?.toString() ?? "";
+    const end = data.get("endDate")?.toString() ?? "";
+    const description = data.get("description")?.toString() ?? "";
+    const id = typeof selectedEvent.id === "string" ? parseInt(selectedEvent.id) : selectedEvent.id;
+    const event = await CalendarAPI.editTimeblock(calendarId, id, {
+      start: new Date(start),
+      end: new Date(end),
+      title: description,
+    } as unknown as Calendar.Event);
+    calendar.updateEvent(event);
+    editModal.close();
+    notifstore.success("Successfully updated timeblock");
+  }
 
-    export function setDate(value: Date) {
-        options.date = value;
-    }
+  export function setDate(value: Date) {
+    options.date = value;
+  }
 
-    export function addEvents(events: Calendar.Event[]) {
-      if (calendar) {
-        for (const event of events) {
-          calendar.addEvent(event);
-        }
+  export function addEvents(events: Calendar.Event[]) {
+    if (calendar) {
+      for (const event of events) {
+        calendar.addEvent(event);
       }
     }
+  }
 </script>
 
 <div class="flex max-w-9/10 gap-2 mt-8 m-auto">

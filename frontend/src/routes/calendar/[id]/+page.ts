@@ -10,6 +10,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
     resourceIds: [block.userId],
     title: block.description,
     start: block.start,
+    classNames: "!bg-primary !text-primary-content",
     end: block.end,
   }));
   return {
